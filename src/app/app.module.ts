@@ -7,7 +7,7 @@ import { FooterModule, ResetPasswordFormModule, CreateAccountFormModule, ChangeP
 import { AuthService, ScreenService, AppInfoService } from './shared/services';
 import { UnauthenticatedContentModule } from './unauthenticated-content';
 import { AppRoutingModule } from './app-routing.module';
-import { GridService } from './pages/pivot-grid/pivot.service';
+import { GridService } from './pivot-grid/pivot.service';
 
 
 @NgModule({

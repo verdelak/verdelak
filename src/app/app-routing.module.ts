@@ -17,9 +17,33 @@ import {
   DxTreeListModule, 
   DxSchedulerModule, 
   DxTabPanelModule,
-  DxGanttModule
+  DxGanttModule,
+  DxAccordionModule,
+  DxCheckBoxModule,
+  DxSliderModule,
+  DxTagBoxModule,
+  DxMenuModule,
+  DxTabsModule,
+  DxToolbarModule,
+  DxListModule,
+  DxTreeViewModule,
+  DxBoxModule,
+  DxScrollViewModule,
+  DxTileViewModule,
+  DxGalleryModule,
+  DxResizableModule,
+  DxSplitterModule,
+  DxAutocompleteModule,
+  DxCalendarModule,
+  DxDateBoxModule,
+  DxColorBoxModule,
+  DxDropDownBoxModule,
+  DxNumberBoxModule,
+  DxTextBoxModule,
+  DxTextAreaModule,
+  DxPopoverModule
 } from 'devextreme-angular';
-import { PivotGridComponent } from './pages/pivot-grid/pivot-grid.component';
+import { PivotGridComponent } from './pivot-grid/pivot-grid.component';
 import { TreeListComponent } from './pages/tree-list/tree-list.component';
 import { SchedulerComponent } from './pages/scheduler/scheduler.component';
 import { ApplyPipe } from './shared/pipes/apply.pipe';
@@ -28,8 +52,147 @@ import { BarComponent } from './pages/charts/bar/bar.component';
 import { BulletComponent } from './pages/charts/bullet/bullet.component';
 import { DonutComponent } from './pages/charts/donut/donut.component';
 import { GanttComponent } from './pages/charts/gantt/gantt.component';
+import { AccordionComponent } from './pages/nav/accordion/accordion.component';
+import { MenuComponent } from './pages/nav/menu/menu.component';
+import { TabPanelComponent } from './pages/nav/tab-panel/tab-panel.component';
+import { TabsComponent } from './pages/nav/tabs/tabs.component';
+import { ToolbarComponent } from './pages/nav/toolbar/toolbar.component';
+import { TreeviewComponent } from './pages/nav/treeview/treeview.component';
+import { DxiItemModule } from 'devextreme-angular/ui/nested';
+import { TileViewComponent } from './pages/layout/tile-view/tile-view.component';
+import { SplitterComponent } from './pages/layout/splitter/splitter.component';
+import { GalleryComponent } from './pages/layout/gallery/gallery.component';
+import { ScrollViewComponent } from './pages/layout/scroll-view/scroll-view.component';
+import { BoxComponent } from './pages/layout/box/box.component';
+import { ResizableComponent } from './pages/layout/resizable/resizable.component';
+import { AutocompleteComponent } from './pages/editors/autocomplete/autocomplete.component';
+import { CalendarComponent } from './pages/editors/calendar/calendar.component';
+import { CheckboxComponent } from './pages/editors/checkbox/checkbox.component';
+import { ColorboxComponent } from './pages/editors/colorbox/colorbox.component';
+import { DateboxComponent } from './pages/editors/datebox/datebox.component';
+import { DropdownComponent } from './pages/editors/dropdown/dropdown.component';
+import { NumberboxComponent } from './pages/editors/numberbox/numberbox.component';
+import { SelectboxComponent } from './pages/editors/selectbox/selectbox.component';
+import { TextboxComponent } from './pages/editors/textbox/textbox.component';
+import { TagboxComponent } from './pages/editors/tagbox/tagbox.component';
+import { TextareaComponent } from './pages/editors/textarea/textarea.component';
 
 const routes: Routes = [
+  {
+    path: 'editors/auto',
+    component: AutocompleteComponent,
+    canActivate: [ AuthGuardService ]
+  },
+  {
+    path: 'editors/calendar',
+    component: CalendarComponent,
+    canActivate: [ AuthGuardService ]
+  },
+  {
+    path: 'editors/check',
+    component: CheckboxComponent,
+    canActivate: [ AuthGuardService ]
+  },
+  {
+    path: 'editors/color',
+    component: ColorboxComponent,
+    canActivate: [ AuthGuardService ]
+  },
+  {
+    path: 'editors/date',
+    component: DateboxComponent,
+    canActivate: [ AuthGuardService ]
+  },
+  {
+    path: 'editors/drop',
+    component: DropdownComponent,
+    canActivate: [ AuthGuardService ]
+  },
+  {
+    path: 'editors/number',
+    component: NumberboxComponent,
+    canActivate: [ AuthGuardService ]
+  },
+  {
+    path: 'editors/select',
+    component: SelectboxComponent,
+    canActivate: [ AuthGuardService ]
+  },
+  {
+    path: 'editors/textbox',
+    component: TextboxComponent,
+    canActivate: [ AuthGuardService ]
+  },
+  {
+    path: 'editors/tagbox',
+    component: TagboxComponent,
+    canActivate: [ AuthGuardService ]
+  },
+  {
+    path: 'editors/textarea',
+    component: TextareaComponent,
+    canActivate: [ AuthGuardService ]
+  },  
+  {
+    path: 'layout/box',
+    component: BoxComponent,
+    canActivate: [ AuthGuardService ]
+  },
+  {
+    path: 'layout/gallery',
+    component: GalleryComponent,
+    canActivate: [ AuthGuardService ]
+  },
+  {
+    path: 'layout/resizable',
+    component: ResizableComponent,
+    canActivate: [ AuthGuardService ]
+  },
+  {
+    path: 'layout/scrollview',
+    component: ScrollViewComponent,
+    canActivate: [ AuthGuardService ]
+  },
+  {
+    path: 'layout/spliiter',
+    component: SplitterComponent,
+    canActivate: [ AuthGuardService ]
+  },
+  {
+    path: 'layout/tileview',
+    component: TileViewComponent,
+    canActivate: [ AuthGuardService ]
+  },
+  {
+    path: 'nav/accordion',
+    component: AccordionComponent,
+    canActivate: [ AuthGuardService ]
+  },
+  {
+    path: 'nav/menu',
+    component: MenuComponent,
+    canActivate: [ AuthGuardService ]
+  },
+  {
+    path: 'nav/tabs',
+    component: TabsComponent,
+    canActivate: [ AuthGuardService ]
+  },
+  {
+    path: 'nav/tabPanel',
+    component: TabPanelComponent,
+    canActivate: [ AuthGuardService ]
+  },
+  {
+    path: 'nav/toolbar',
+    component: ToolbarComponent,
+    canActivate: [ AuthGuardService ]
+  },
+  {
+    path: 'nav/treeview',
+    component: TreeviewComponent,
+    canActivate: [ AuthGuardService ]
+  },
   {
     path: 'charts/area',
     component: AreaComponent,
@@ -124,6 +287,31 @@ const routes: Routes = [
             DxBulletModule,
             DxPieChartModule,
             DxGanttModule,
+            DxAccordionModule,
+            DxCheckBoxModule,
+            DxTagBoxModule,
+            DxSliderModule,
+            DxMenuModule,
+            DxTabsModule,
+            DxToolbarModule,
+            DxListModule,
+            DxAutocompleteModule,
+            DxTreeViewModule,
+            DxiItemModule,
+            DxBoxModule,
+            DxTextBoxModule,
+            DxScrollViewModule,
+            DxSplitterModule,
+            DxResizableModule,
+            DxGalleryModule,
+            DxTileViewModule,
+            DxNumberBoxModule,
+            DxCalendarModule,
+            DxPopoverModule,
+            DxTextAreaModule,
+            DxDropDownBoxModule,
+            DxColorBoxModule,
+            DxDateBoxModule,
             DxPivotGridModule],
   providers: [AuthGuardService],
   exports: [RouterModule],
@@ -139,7 +327,30 @@ const routes: Routes = [
     BarComponent,
     BulletComponent,
     DonutComponent,
-    GanttComponent
+    GanttComponent,
+    AccordionComponent,
+    MenuComponent,
+    TabPanelComponent,
+    TabsComponent,
+    ToolbarComponent, 
+    TreeviewComponent,
+    TileViewComponent,
+    SplitterComponent,
+    GalleryComponent,
+    ScrollViewComponent,
+    BoxComponent,
+    ResizableComponent,
+    AutocompleteComponent,
+    CalendarComponent,
+    CheckboxComponent,
+    ColorboxComponent,
+    DateboxComponent,
+    DropdownComponent,
+    NumberboxComponent,
+    SelectboxComponent,
+    TextboxComponent,
+    TagboxComponent,
+    TextareaComponent
   ]
 })
 export class AppRoutingModule { }

@@ -20,7 +20,7 @@ export class DateboxComponent {
 
   disabledDates: Date[];
 
-  constructor(service: EditorService) {
+  constructor(private service: EditorService) {
     this.disabledDates = service.getFederalHolidays();
   }
 

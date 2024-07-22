@@ -16,7 +16,7 @@ export class SelectboxComponent {
 
   data: ArrayStore;
 
-  constructor(service: EditorService) {
+  constructor(private service: EditorService) {
     this.products = service.getProducts();
     this.simpleProducts = service.getSimpleProducts();
     this.data = new ArrayStore({

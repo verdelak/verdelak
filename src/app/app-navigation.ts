@@ -167,5 +167,44 @@ export const navigation = [
         text: 'Textarea'
       },
     ]
+  },
+  {
+    text: 'Gauges',
+    icon: 'folder',
+    items: [
+      {
+        path: 'gauges/bar',
+      text: 'Bar'
+            },
+        {
+          path: 'gauges/palette',
+          text: 'Palette'
+        },
+          {
+            path: 'gauges/circle',
+            text: 'Circle'
+          },
+            {
+              path: 'gauges/linear',
+              text: 'Linear'
+            }
+    ]
+  },
+  {
+    text: 'Files',
+    icon: 'folder',
+    items: [
+      {
+        path: 'files/upload',
+        text: 'File Upload'
+            },
+        {
+          path: 'files/manager',
+          text: 'File Manager'
+        }
+    ]
   }
+
 ];
+
+

@@ -34,7 +34,7 @@ export class AutocompleteComponent {
 
   fullInfo = '';
 
-  constructor(httpClient: HttpClient, service: EditorService) {
+  constructor(httpClient: HttpClient, private service: EditorService) {
     this.clientsStore = new CustomStore({
       key: 'Value',
       useDefaultSearch: true,

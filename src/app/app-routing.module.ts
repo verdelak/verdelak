@@ -41,7 +41,14 @@ import {
   DxNumberBoxModule,
   DxTextBoxModule,
   DxTextAreaModule,
-  DxPopoverModule
+  DxPopoverModule,
+  DxLinearGaugeModule,
+  DxCircularGaugeModule,
+  DxBarGaugeModule,
+  DxFileUploaderModule,
+  DxFileManagerModule,
+  DxButtonModule,
+  DxPopupModule
 } from 'devextreme-angular';
 import { PivotGridComponent } from './pivot-grid/pivot-grid.component';
 import { TreeListComponent } from './pages/tree-list/tree-list.component';
@@ -76,8 +83,51 @@ import { SelectboxComponent } from './pages/editors/selectbox/selectbox.componen
 import { TextboxComponent } from './pages/editors/textbox/textbox.component';
 import { TagboxComponent } from './pages/editors/tagbox/tagbox.component';
 import { TextareaComponent } from './pages/editors/textarea/textarea.component';
+import { ButtongroupComponent } from './pages/forms/buttongroup/buttongroup.component';
+import { FieldsetComponent } from './pages/forms/fieldset/fieldset.component';
+import { RadiogroupComponent } from './pages/forms/radiogroup/radiogroup.component';
+import { RangesliderComponent } from './pages/forms/rangeslider/rangeslider.component';
+import { GaugeBarComponent } from './pages/gauges/gaugebar/gaugebar.component';
+import { PaletteComponent } from './pages/gauges/palette/palette.component';
+import { CircleComponent } from './pages/gauges/circle/circle.component';
+import { LinearComponent } from './pages/gauges/linear/linear.component';
+import { FileuploaderComponent } from './pages/files/fileuploader/fileuploader.component';
+import { FilemanagerComponent } from './pages/files/filemanager/filemanager.component';
 
 const routes: Routes = [
+
+  {
+    path: 'files/upload',
+    component: FileuploaderComponent,
+    canActivate: [ AuthGuardService ]
+  },
+    {
+      path: 'files/manager',
+      component: FilemanagerComponent,
+      canActivate: [ AuthGuardService ]
+    },
+
+
+  {
+    path: 'gauges/bar',
+    component: GaugeBarComponent,
+    canActivate: [ AuthGuardService ]
+  },
+    {
+      path: 'gauges/palette',
+      component: PaletteComponent,
+      canActivate: [ AuthGuardService ]
+    },
+      {
+        path: 'gauges/circle',
+        component: CircleComponent,
+        canActivate: [ AuthGuardService ]
+      },
+        {
+          path: 'gauges/linear',
+          component: LinearComponent ,
+          canActivate: [ AuthGuardService ]
+        },
   {
     path: 'editors/auto',
     component: AutocompleteComponent,
@@ -311,7 +361,14 @@ const routes: Routes = [
             DxTextAreaModule,
             DxDropDownBoxModule,
             DxColorBoxModule,
+            DxLinearGaugeModule,
+            DxPopupModule,
+            DxCircularGaugeModule,
+            DxFileUploaderModule,
+            DxFileManagerModule,
+            DxButtonModule,
             DxDateBoxModule,
+            DxBarGaugeModule,
             DxPivotGridModule],
   providers: [AuthGuardService],
   exports: [RouterModule],
@@ -350,7 +407,17 @@ const routes: Routes = [
     SelectboxComponent,
     TextboxComponent,
     TagboxComponent,
-    TextareaComponent
+    TextareaComponent,
+    ButtongroupComponent,
+    FieldsetComponent,
+    RadiogroupComponent,
+    RangesliderComponent,
+    GaugeBarComponent,
+    PaletteComponent,
+    CircleComponent,
+    LinearComponent,
+    FileuploaderComponent,
+    FilemanagerComponent
   ]
 })
 export class AppRoutingModule { }

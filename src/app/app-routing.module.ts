@@ -51,7 +51,11 @@ import {
   DxPopupModule,
   DxButtonGroupModule,
   DxRadioGroupModule,
-  DxRangeSliderModule
+  DxRangeSliderModule,
+  DxRangeSelectorModule,
+  DxLoadIndicatorModule,
+  DxToastModule,
+  DxTooltipModule
 } from 'devextreme-angular';
 import { PivotGridComponent } from './pivot-grid/pivot-grid.component';
 import { TreeListComponent } from './pages/tree-list/tree-list.component';
@@ -97,8 +101,41 @@ import { LinearComponent } from './pages/gauges/linear/linear.component';
 import { FileuploaderComponent } from './pages/files/fileuploader/fileuploader.component';
 import { FilemanagerComponent } from './pages/files/filemanager/filemanager.component';
 
+import { RangeselectorComponent } from './pages/forms/rangeselector/rangeselector.component';
+import { LoadComponent } from './pages/dialogs/load/load.component';
+import { PopoverComponent } from './pages/dialogs/popover/popover.component';
+import { ToastComponent } from './pages/dialogs/toast/toast.component';
+import { TooltipComponent } from './pages/dialogs/tooltip/tooltip.component';
+import { PopupComponent } from './pages/dialogs/popup/popup.component';
+
 const routes: Routes = [
 
+
+  {
+    path: 'dialogs/load',
+    component: LoadComponent,
+    canActivate: [ AuthGuardService ]
+  },
+  {
+    path: 'dialogs/popup',
+    component: PopupComponent,
+  canActivate: [ AuthGuardService ]
+},
+  {
+    path: 'dialogs/popover',
+    component: PopoverComponent,
+  canActivate: [ AuthGuardService ]
+},
+{
+  path: 'dialogs/toast',
+  component: ToastComponent,
+  canActivate: [ AuthGuardService ]
+},
+{
+  path: 'dialogs/tooltip',
+  component: TooltipComponent,
+  canActivate: [ AuthGuardService ]
+},
 
   {
     path: 'forms/buttongroup',
@@ -120,7 +157,11 @@ const routes: Routes = [
   component: RangesliderComponent,
   canActivate: [ AuthGuardService ]
 },
-
+{
+  path: 'forms/rangeselector',
+  component: RangeselectorComponent,
+  canActivate: [ AuthGuardService ]
+},
   {
     path: 'files/upload',
     component: FileuploaderComponent,
@@ -380,6 +421,7 @@ const routes: Routes = [
             DxResizableModule,
             DxGalleryModule,
             DxTileViewModule,
+            DxTooltipModule,
             DxNumberBoxModule,
             DxCalendarModule,
             DxPopoverModule,
@@ -389,6 +431,8 @@ const routes: Routes = [
             DxLinearGaugeModule,
             DxPopupModule,
             DxCircularGaugeModule,
+            DxToastModule,
+            DxLoadIndicatorModule,
             DxFileUploaderModule,
             DxFileManagerModule,
             DxButtonModule,
@@ -397,6 +441,7 @@ const routes: Routes = [
             DxRangeSliderModule,
             DxButtonGroupModule,
             DxBarGaugeModule,
+            DxRangeSelectorModule,
             DxPivotGridModule],
   providers: [AuthGuardService],
   exports: [RouterModule],
@@ -445,7 +490,13 @@ const routes: Routes = [
     CircleComponent,
     LinearComponent,
     FileuploaderComponent,
-    FilemanagerComponent
+    FilemanagerComponent,
+    RangeselectorComponent,
+    LoadComponent,
+    PopoverComponent,
+    ToastComponent,
+    TooltipComponent,
+    PopupComponent
   ]
 })
 export class AppRoutingModule { }

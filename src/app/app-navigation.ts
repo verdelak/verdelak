@@ -224,7 +224,39 @@ export const navigation = [
       path: 'forms/rangeslider',
        text: 'Rangeslider'
       },
+      {
+        path: 'forms/rangeselector',       
+        text: 'Rangeselector'
+      },
+    ]
+  },
+  {
+    text: 'Dialogs',
+    icon: 'folder',
+    items: [
+      {
+        path: 'dialogs/load',
+        text: 'Load Indicator'
+      },
+      {
+        path: 'dialogs/popover',
+        text: 'Popover'
+      },
+      {
+        path: 'dialogs/popup',
+        text: 'Popup'
+      },
+      {
+      path: 'dialogs/toast',
+      text: 'Toast'
+      },
+      {
+      path: 'dialogs/tooltip',
+      text: 'Tooltip'
+      }
     ]
   }
-
 ];
+
+
+

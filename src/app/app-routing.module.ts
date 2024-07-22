@@ -48,7 +48,10 @@ import {
   DxFileUploaderModule,
   DxFileManagerModule,
   DxButtonModule,
-  DxPopupModule
+  DxPopupModule,
+  DxButtonGroupModule,
+  DxRadioGroupModule,
+  DxRangeSliderModule
 } from 'devextreme-angular';
 import { PivotGridComponent } from './pivot-grid/pivot-grid.component';
 import { TreeListComponent } from './pages/tree-list/tree-list.component';
@@ -95,6 +98,28 @@ import { FileuploaderComponent } from './pages/files/fileuploader/fileuploader.c
 import { FilemanagerComponent } from './pages/files/filemanager/filemanager.component';
 
 const routes: Routes = [
+
+
+  {
+    path: 'forms/buttongroup',
+    component: ButtongroupComponent ,
+    canActivate: [ AuthGuardService ]
+  },
+    {
+      path: 'forms/fieldset',
+      component: FieldsetComponent ,
+      canActivate: [ AuthGuardService ]
+    },
+{
+  path: 'forms/radiogroup',
+  component: RadiogroupComponent ,
+  canActivate: [ AuthGuardService ]
+},
+{
+  path: 'forms/rangeslider',
+  component: RangesliderComponent,
+  canActivate: [ AuthGuardService ]
+},
 
   {
     path: 'files/upload',
@@ -368,6 +393,9 @@ const routes: Routes = [
             DxFileManagerModule,
             DxButtonModule,
             DxDateBoxModule,
+            DxRadioGroupModule,
+            DxRangeSliderModule,
+            DxButtonGroupModule,
             DxBarGaugeModule,
             DxPivotGridModule],
   providers: [AuthGuardService],

@@ -203,8 +203,28 @@ export const navigation = [
           text: 'File Manager'
         }
     ]
+  },
+  {
+    text: 'Forms',
+    icon: 'folder',
+    items: [
+      {
+        path: 'forms/buttongroup',
+       text: 'Button Group'
+      },
+        {
+          path: 'forms/fieldset',
+       text: 'Fieldset'
+        },
+      {
+      path: 'forms/radiogroup',
+       text: 'Radiogroup'
+      },
+      {
+      path: 'forms/rangeslider',
+       text: 'Rangeslider'
+      },
+    ]
   }
 
 ];
-
-

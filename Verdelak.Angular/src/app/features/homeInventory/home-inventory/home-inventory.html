@@ -1,0 +1,22 @@
+<div class="home-inventory-container">
+  <div class="inventory-toolbar">
+    <h1>Home Inventory</h1>
+    <div class="toolbar-actions">
+    <input
+        type="text"
+        placeholder="Filter by name or room..."
+        [value]="filterText()"
+        (input)="filterText.set($any($event.target).value)"
+    />
+      <button (click)="inventory.clearSelectedItem()">Clear Item</button>
+    </div>
+  </div>
+  <div class="inventory-main">
+    <div class="item-list-panel">
+      <app-item-list [filterText]="filterText()"></app-item-list>
+    </div>
+    <div class="item-detail-panel" *ngIf="inventory.selectedItem()">
+      <app-item-detail></app-item-detail>
+    </div>
+  </div>
+</div>

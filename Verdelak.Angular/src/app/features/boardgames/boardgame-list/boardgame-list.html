@@ -1,0 +1,54 @@
+<h2>My Board Game Collection</h2>
+
+<div class="filters">
+  <label><input
+  type="checkbox"
+  [ngModel]="filterOwned()"
+  (ngModelChange)="filterOwned.set($event)"
+/> Owned</label>
+  <label><input
+  type="checkbox"
+  [ngModel]="filterWishlist()"
+  (ngModelChange)="filterWishlist.set($event)"
+/> Wishlist</label>
+
+<a routerLink="/boardgames/new">➕ Add New Game</a>
+</div>
+<div class="search-bar">
+  <input
+    type="text"
+    placeholder="Search by title..."
+    [ngModel]="searchTerm()"
+    (ngModelChange)="searchTerm.set($event)"
+  />
+</div>
+<table class="game-table">
+  <thead>
+    <tr>
+      <th (click)="toggleSort('title')">Title</th>
+      <th (click)="toggleSort('isExpansion')">Expansion</th>
+      <th (click)="toggleSort('owns')">Owned</th>
+      <th (click)="toggleSort('wishlist')">Wishlist</th>
+      <th (click)="toggleSort('personalRating')">My Rating</th>
+      <th (click)="toggleSort('bgg_Rating')">BGG Rating</th>
+      <th>Details</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let game of pagedGames(); let i = index" [class.alt]="i % 2 === 1">
+      <td>{{ game.title }}</td>
+      <td>{{ game.isExpansion ? 'Yes' : '' }}</td>
+      <td>{{ game.owns ? '✅' : '' }}</td>
+      <td>{{ game.wishlist ? '🛒' : '' }}</td>
+      <td>{{ game.personalRating ?? '—' }}</td>
+      <td>{{ game.bgg_Rating?.toFixed(3) ?? '—' }}</td>
+      <td><a [routerLink]="['/boardgames', game.gameID]">View</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="pagination">
+  <button (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 1">Previous</button>
+  Page {{ currentPage() }} of {{ totalPages }}
+  <button (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() === totalPages">Next</button>
+</div>

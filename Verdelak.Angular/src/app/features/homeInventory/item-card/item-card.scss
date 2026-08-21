@@ -1,0 +1,35 @@
+.item-card {
+  border: 1px solid #ccc;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  background: #fafafa;
+  cursor: pointer;
+  transition: box-shadow 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    background: #fff;
+  }
+
+  .item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+
+    h3 {
+      margin: 0;
+      font-size: 1.2rem;
+    }
+
+    .item-room {
+      font-size: 0.9rem;
+      color: #666;
+    }
+  }
+
+  .item-body p {
+    margin: 0.25rem 0;
+    font-size: 0.95rem;
+  }
+}

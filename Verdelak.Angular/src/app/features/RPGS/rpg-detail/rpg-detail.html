@@ -1,0 +1,36 @@
+<section class="detail">
+  <header class="head">
+    <h2>{{ vm()?.productName }}</h2>
+    <div class="actions">
+      <a *ngIf="auth.isAdmin()" mat-flat-button color="primary" [routerLink]="['/rpg', vm()?.id, 'edit']">Edit</a>
+      <a mat-stroked-button [routerLink]="['/rpg']">Back</a>
+    </div>
+  </header>
+
+  <div class="grid">
+    <div class="left">
+      <p *ngIf="vm()?.description">{{ vm()?.description }}</p>
+      <dl>
+        <dt>System</dt><dd>{{ vm()?.system || '-' }}</dd>
+        <dt>Series</dt><dd>{{ vm()?.series || '-' }}</dd>
+        <dt>Type</dt><dd>{{ vm()?.type || '-' }}</dd>
+        <dt>Edition</dt><dd>{{ vm()?.edition || '-' }}</dd>
+        <dt>ISBN</dt><dd>{{ vm()?.isbn || '-' }}</dd>
+        <dt>Status</dt><dd>{{ vm()?.status === 'H' ? 'Owned' : vm()?.status === 'W' ? 'Wanted' : 'Unknown' }}</dd>
+        <dt>Product #</dt><dd>{{ vm()?.productNum || '-' }}</dd>
+      </dl>
+    </div>
+
+    <div class="right">
+      <section *ngIf="vm()?.systemNotes?.length">
+        <h3>System Notes</h3>
+        <ul><li *ngFor="let n of vm()?.systemNotes">{{ n }}</li></ul>
+      </section>
+
+      <section *ngIf="vm()?.seriesNotes?.length">
+        <h3>Series Notes</h3>
+        <ul><li *ngFor="let n of vm()?.seriesNotes">{{ n }}</li></ul>
+      </section>
+    </div>
+  </div>
+</section>

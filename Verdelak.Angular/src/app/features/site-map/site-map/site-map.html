@@ -1,0 +1,76 @@
+<section class="grid gap-4">
+  <header class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+    <div class="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+      <div>
+        <p class="text-xs font-bold uppercase tracking-wider text-blue-600">Misc</p>
+        <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">Site Map</h1>
+        <p class="mt-1 text-sm text-slate-600">Search and browse the application index by section, status, role, or tag.</p>
+      </div>
+      <div class="text-sm font-semibold text-slate-500">{{ visibleCount() }} of {{ totalCount() }} entries shown</div>
+    </div>
+
+    <div class="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_12rem_auto_auto]">
+      <input
+        class="rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+        type="search"
+        placeholder="Search pages, routes, roles, tags"
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)" />
+
+      <select
+        class="rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+        [ngModel]="statusFilter()"
+        (ngModelChange)="statusFilter.set($event)">
+        <option *ngFor="let status of statuses" [ngValue]="status">{{ status }}</option>
+      </select>
+
+      <label class="flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700">
+        <input type="checkbox" [ngModel]="showPlaceholders()" (ngModelChange)="showPlaceholders.set($event)" />
+        Placeholders
+      </label>
+
+      <button type="button" class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="clearFilters()">Clear</button>
+    </div>
+  </header>
+
+  <section *ngFor="let group of filteredGroups()" class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+    <div class="flex items-center justify-between gap-3">
+      <h2 class="text-lg font-bold text-slate-950">{{ group.area }}</h2>
+      <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600">{{ group.entries.length }}</span>
+    </div>
+
+    <div class="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+      <article *ngFor="let entry of group.entries" class="rounded-lg border border-slate-200 p-4">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <a *ngIf="entry.link" [routerLink]="entry.link" class="text-base font-bold text-slate-950 transition hover:text-blue-700">{{ entry.title }}</a>
+            <h3 *ngIf="!entry.link" class="text-base font-bold text-slate-950">{{ entry.title }}</h3>
+            <p class="mt-1 truncate text-xs font-semibold uppercase tracking-wide text-slate-400">{{ entry.path.join(' / ') }}</p>
+          </div>
+          <span class="shrink-0 rounded-full px-2.5 py-1 text-xs font-bold" [ngClass]="statusClass(entry.status)">{{ entry.status }}</span>
+        </div>
+
+        <p class="mt-3 text-sm leading-6 text-slate-600">{{ entry.description }}</p>
+
+        <div class="mt-3 grid gap-2 text-xs font-semibold text-slate-500">
+          <div *ngIf="entry.link" class="truncate">
+            <span class="font-bold text-slate-700">Route:</span>
+            {{ entry.link }}
+          </div>
+          <div>
+            <span class="font-bold text-slate-700">Access:</span>
+            {{ entry.roles.length ? entry.roles.join(', ') : 'Signed in users' }}
+          </div>
+        </div>
+
+        <div class="mt-3 flex flex-wrap gap-2" *ngIf="entry.tags.length">
+          <span *ngFor="let tag of entry.tags" class="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-bold text-indigo-700">{{ tag }}</span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <div *ngIf="filteredGroups().length === 0" class="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-500">
+    No site map entries match the current filters.
+  </div>
+</section>

@@ -1,0 +1,6 @@
+   .detail { display: grid; gap: 14px; }
+    .head { display:flex; align-items:center; justify-content: space-between; }
+    .grid { display: grid; grid-template-columns: 2fr 1fr; gap: 18px; }
+    dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 12px; }
+    dt { font-weight: 600; }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }

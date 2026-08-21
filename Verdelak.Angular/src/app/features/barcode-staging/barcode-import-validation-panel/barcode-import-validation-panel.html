@@ -1,0 +1,254 @@
+      <details class="mt-4 rounded-lg border border-slate-200 bg-white p-3">
+        <summary class="cursor-pointer text-sm font-bold text-slate-900">
+          Import validation preview {{ importPreview() ? '(' + importPreview()!.readyCount + ' ready / ' + importPreview()!.blockedCount + ' blocked)' : '' }}
+        </summary>
+        <div class="mt-3 grid gap-3">
+          <div class="flex flex-wrap items-center gap-2">
+            <button type="button" class="rounded-md border border-blue-200 bg-white px-3 py-2 text-sm font-bold text-blue-700 shadow-sm transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="loadingImportPreview() || selectedCount() === 0" (click)="previewSelectedImport()">
+              {{ loadingImportPreview() ? 'Checking.' : 'Preview selected' }}
+            </button>
+            <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="loadingImportPreview() || !batchFilter()" (click)="previewCurrentBatchImport()">
+              Preview current batch
+            </button>
+            <button type="button" class="rounded-md border border-emerald-200 bg-white px-3 py-2 text-sm font-bold text-emerald-700 shadow-sm transition hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="loadingImportCommit() || selectedCount() === 0" (click)="commitSelectedImport()">
+              {{ loadingImportCommit() ? 'Importing.' : 'Import selected' }}
+            </button>
+            <button type="button" class="rounded-md border border-emerald-200 bg-white px-3 py-2 text-sm font-bold text-emerald-700 shadow-sm transition hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="loadingImportCommit() || !batchFilter()" (click)="commitCurrentBatchImport()">
+              Import current batch
+            </button>
+            <button type="button" class="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-bold text-emerald-800 shadow-sm transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="loadingImportCommit() || readyImportRows().length === 0" (click)="commitPreviewReadyRows()">
+              Import preview-ready only
+            </button>
+            <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="!importPreview()" (click)="downloadImportPreviewCsv()">
+              Download preview CSV
+            </button>
+            <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="!importCommitResult()" (click)="downloadImportResultCsv()">
+              Download result CSV
+            </button>
+            <span class="text-sm text-slate-500">Checks approval, supported type, title, code type, duplicate staging codes, and low confidence. Commit currently creates Books, CDs, and DVDs.</span>
+          </div>
+
+          <div *ngIf="importCommitResult() as result" class="rounded-lg border border-emerald-200 bg-emerald-50 p-3">
+            <div class="grid gap-2 text-sm sm:grid-cols-3">
+              <div>
+                <span class="font-bold text-emerald-900">{{ result.requestedCount }}</span>
+                <p class="text-emerald-700">Requested</p>
+              </div>
+              <div>
+                <span class="font-bold text-emerald-900">{{ result.importedCount }}</span>
+                <p class="text-emerald-700">Imported</p>
+              </div>
+              <div>
+                <span class="font-bold text-emerald-900">{{ result.skippedCount }}</span>
+                <p class="text-emerald-700">Skipped</p>
+              </div>
+            </div>
+            <div *ngIf="result.messages.length" class="mt-3 max-h-40 overflow-auto rounded border border-emerald-200 bg-white p-2 text-xs text-slate-700">
+              <div *ngFor="let resultMessage of result.messages" class="border-b border-slate-100 py-1 last:border-b-0">{{ resultMessage }}</div>
+            </div>
+          </div>
+
+          <div *ngIf="importPreview() as preview" class="grid gap-3">
+            <div class="grid gap-2 sm:grid-cols-4">
+              <div class="rounded border border-slate-200 bg-slate-50 p-3">
+                <span class="text-lg font-bold text-slate-950">{{ preview.totalCount }}</span>
+                <p class="text-xs font-semibold text-slate-500">Checked</p>
+              </div>
+              <div class="rounded border border-emerald-200 bg-emerald-50 p-3">
+                <span class="text-lg font-bold text-emerald-800">{{ preview.readyCount }}</span>
+                <p class="text-xs font-semibold text-emerald-700">Ready</p>
+              </div>
+              <div class="rounded border border-amber-200 bg-amber-50 p-3">
+                <span class="text-lg font-bold text-amber-800">{{ preview.warningCount }}</span>
+                <p class="text-xs font-semibold text-amber-700">Warnings</p>
+              </div>
+              <div class="rounded border border-rose-200 bg-rose-50 p-3">
+                <span class="text-lg font-bold text-rose-800">{{ preview.blockedCount }}</span>
+                <p class="text-xs font-semibold text-rose-700">Blocked</p>
+              </div>
+            </div>
+
+            <div *ngIf="duplicateDetailRows().length" class="rounded-lg border border-amber-200 bg-amber-50 p-3">
+              <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <h4 class="text-sm font-black text-amber-950">Duplicate details</h4>
+                  <p class="mt-1 text-xs font-semibold text-amber-800">Rows with exact inventory matches, staging matches, similar titles, or duplicate-check limitations.</p>
+                </div>
+                <span class="rounded-full bg-white/80 px-3 py-1 text-xs font-black text-amber-800">{{ duplicateDetailRows().length }} row{{ duplicateDetailRows().length === 1 ? '' : 's' }}</span>
+              </div>
+              <div class="mt-3 grid max-h-80 gap-2 overflow-auto xl:grid-cols-2">
+                <article *ngFor="let detail of duplicateDetailRows().slice(0, 12)" class="rounded border border-amber-100 bg-white/85 p-3 text-xs">
+                  <div class="flex items-start justify-between gap-2">
+                    <div>
+                      <div class="font-black text-slate-950">{{ detail.row.item.suggestedTitle || detail.row.item.normalizedCode }}</div>
+                      <div class="mt-0.5 font-mono text-[11px] text-slate-500">{{ detail.row.item.normalizedCode }} / {{ detail.row.item.itemType }} / {{ detail.row.severity }}</div>
+                    </div>
+                    <button type="button" class="rounded border border-slate-300 bg-white px-2 py-1 font-bold text-slate-700" (click)="selectValidationRow(detail.row)">Fix row</button>
+                  </div>
+                  <div class="mt-2 flex flex-wrap gap-1">
+                    <span *ngFor="let message of detail.messages" class="rounded px-2 py-0.5 font-bold ring-1" [ngClass]="message.tone">
+                      {{ message.label }}: {{ message.message }}
+                    </span>
+                  </div>
+                </article>
+              </div>
+              <p *ngIf="duplicateDetailRows().length > 12" class="mt-2 text-xs font-bold text-amber-800">+{{ duplicateDetailRows().length - 12 }} more duplicate detail row{{ duplicateDetailRows().length - 12 === 1 ? '' : 's' }}</p>
+            </div>
+
+            <div *ngIf="importValidationGroups().length" class="grid gap-3 xl:grid-cols-3">
+              <article *ngFor="let group of importValidationGroups()" class="rounded-lg border p-3 shadow-sm" [ngClass]="group.tone">
+                <div class="flex items-start justify-between gap-2">
+                  <div>
+                    <h4 class="text-sm font-black">{{ group.label }}</h4>
+                    <p class="mt-1 text-xs font-semibold opacity-80">{{ group.helper }}</p>
+                    <p class="mt-1 text-xs font-bold opacity-80">{{ validationGroupSummary(group) }}</p>
+                  </div>
+                  <span class="rounded-full bg-white/80 px-2.5 py-1 text-xs font-black">{{ group.rows.length }}</span>
+                </div>
+
+                <div class="mt-3 grid max-h-72 gap-2 overflow-auto">
+                  <div *ngFor="let row of group.rows.slice(0, 8)" class="rounded border border-white/80 bg-white/80 p-2 text-xs">
+                    <div class="flex items-start justify-between gap-2">
+                      <div>
+                        <div class="font-black text-slate-950">{{ row.item.suggestedTitle || row.item.normalizedCode }}</div>
+                        <div class="mt-0.5 font-mono text-[11px] text-slate-500">{{ row.item.normalizedCode }} / {{ row.item.itemType }}</div>
+                      </div>
+                      <button type="button" class="rounded border border-slate-300 bg-white px-2 py-1 font-bold text-slate-700" (click)="selectValidationRow(row)">Fix row</button>
+                    </div>
+                    <div class="mt-2 flex flex-wrap gap-1">
+                      <span *ngFor="let message of validationMessages(row)" class="rounded px-2 py-0.5 font-bold ring-1" [ngClass]="message.tone">
+                        {{ message.label }}: {{ message.message }}
+                      </span>
+                      <span *ngIf="row.messages.length === 0" class="rounded bg-emerald-100 px-2 py-0.5 font-bold text-emerald-800">Ready to import.</span>
+                    </div>
+                  </div>
+                  <p *ngIf="group.rows.length > 8" class="text-xs font-bold opacity-80">+{{ group.rows.length - 8 }} more {{ group.label.toLowerCase() }} row{{ group.rows.length - 8 === 1 ? '' : 's' }}</p>
+                </div>
+              </article>
+            </div>
+
+            <div *ngIf="importTypePanels().length" class="grid gap-3 xl:grid-cols-2 2xl:grid-cols-3">
+              <article *ngFor="let panel of importTypePanels()" class="rounded-lg border p-3 shadow-sm" [ngClass]="importPanelTone(panel)">
+                <div class="flex items-start justify-between gap-2">
+                  <div>
+                    <h4 class="font-bold text-slate-950">{{ panel.itemType }} commit panel</h4>
+                    <p class="mt-1 text-xs font-semibold text-slate-600">Destination: {{ panel.destinationEntity }}</p>
+                  </div>
+                  <span class="rounded-full bg-white/80 px-2.5 py-1 text-xs font-black text-slate-700">{{ panel.rows.length }} row{{ panel.rows.length === 1 ? '' : 's' }}</span>
+                </div>
+                <p class="mt-2 text-xs text-slate-600">{{ panel.destination }}</p>
+                <div class="mt-3 grid grid-cols-3 gap-2 text-center text-xs font-black">
+                  <span class="rounded bg-white/80 px-2 py-1 text-emerald-700">{{ panel.readyCount }} ready</span>
+                  <span class="rounded bg-white/80 px-2 py-1 text-amber-700">{{ panel.warningCount }} warn</span>
+                  <span class="rounded bg-white/80 px-2 py-1 text-rose-700">{{ panel.blockedCount }} block</span>
+                </div>
+
+                <div class="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
+                  <div *ngFor="let check of panel.readinessChecklist" class="rounded border px-2 py-2 text-xs" [ngClass]="check.tone">
+                    <div class="flex items-start justify-between gap-2">
+                      <div>
+                        <div class="font-black uppercase opacity-75">{{ check.label }}</div>
+                        <div class="mt-1 font-bold">{{ check.value }}</div>
+                      </div>
+                      <span class="rounded-full bg-white/70 px-2 py-0.5 text-[11px] font-black ring-1 ring-black/5">{{ check.status }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mt-3 grid gap-2 lg:grid-cols-2">
+                  <div class="rounded border border-white/80 bg-white/80 p-2">
+                    <p class="text-xs font-black uppercase text-slate-500">Destination fields</p>
+                    <div class="mt-2 flex flex-wrap gap-1">
+                      <span *ngFor="let field of panel.destinationFields" class="rounded bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-700">{{ field }}</span>
+                    </div>
+                  </div>
+                  <div class="rounded border border-white/80 bg-white/80 p-2">
+                    <p class="text-xs font-black uppercase text-slate-500">Trace fields</p>
+                    <div class="mt-2 flex flex-wrap gap-1">
+                      <span *ngFor="let field of panel.traceFields" class="rounded bg-blue-50 px-2 py-0.5 text-xs font-bold text-blue-800">{{ field }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mt-3 grid gap-2 lg:grid-cols-2">
+                  <div class="rounded border border-emerald-100 bg-white/80 p-2">
+                    <p class="text-xs font-black uppercase text-emerald-700">Backend fields written</p>
+                    <div class="mt-2 flex flex-wrap gap-1">
+                      <span *ngFor="let field of panel.commitFields" class="rounded bg-emerald-50 px-2 py-0.5 text-xs font-bold text-emerald-800">{{ field }}</span>
+                    </div>
+                  </div>
+                  <div class="rounded border border-blue-100 bg-white/80 p-2">
+                    <p class="text-xs font-black uppercase text-blue-700">Trace behavior</p>
+                    <ul class="mt-2 grid gap-1 text-xs font-semibold text-blue-900">
+                      <li *ngFor="let behavior of panel.traceBehavior">{{ behavior }}</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div *ngIf="panel.warningMessages.length" class="mt-3 rounded border border-amber-200 bg-white/80 p-2">
+                  <p class="text-xs font-black uppercase text-amber-700">Review notes</p>
+                  <ul class="mt-1 grid gap-1 text-xs font-semibold text-amber-800">
+                    <li *ngFor="let warning of panel.warningMessages">{{ warning }}</li>
+                  </ul>
+                </div>
+
+                <div class="mt-3 grid gap-2">
+                  <div *ngFor="let row of panel.rows.slice(0, 4)" class="rounded border border-white/80 bg-white/80 p-2 text-xs">
+                    <div class="flex items-center justify-between gap-2">
+                      <span class="font-bold text-slate-900">{{ importRowCommitTitle(row) }}</span>
+                      <span class="rounded-full px-2 py-0.5 font-black" [ngClass]="row.severity === 'Ready' ? 'bg-emerald-50 text-emerald-800' : row.severity === 'Warning' ? 'bg-amber-50 text-amber-800' : 'bg-rose-50 text-rose-800'">{{ row.severity }}</span>
+                    </div>
+                    <p class="mt-1 font-mono text-[11px] text-slate-500">{{ row.item.normalizedCode }} &middot; {{ row.item.lookupProvider || row.item.source }}</p>
+                    <p class="mt-2 text-xs font-semibold text-slate-700">{{ importRowCommitSummary(row) }}</p>
+                    <div class="mt-2 flex flex-wrap gap-1">
+                      <span *ngFor="let field of importRowCommitFields(row)" class="rounded border border-slate-200 bg-slate-50 px-2 py-0.5 font-bold text-slate-700">{{ field }}</span>
+                    </div>
+                    <div class="mt-2 flex flex-wrap gap-1">
+                      <span *ngFor="let field of panel.requiredFields" class="rounded border px-2 py-0.5 font-bold" [ngClass]="importFieldTone(importFieldValue(row.item, field))">Required {{ field }}: {{ importFieldValue(row.item, field) }}</span>
+                    </div>
+                    <div *ngIf="row.messages.length" class="mt-2 flex flex-wrap gap-1">
+                      <span *ngFor="let message of validationMessages(row)" class="rounded px-2 py-0.5 text-[11px] font-bold ring-1" [ngClass]="message.tone">
+                        {{ message.label }}: {{ message.message }}
+                      </span>
+                    </div>
+                  </div>
+                  <p *ngIf="panel.rows.length > 4" class="text-xs font-semibold text-slate-600">+{{ panel.rows.length - 4 }} more {{ panel.itemType }} row{{ panel.rows.length - 4 === 1 ? '' : 's' }}</p>
+                </div>
+              </article>
+            </div>
+            <div class="max-h-96 overflow-auto rounded-lg border border-slate-200">
+              <table class="min-w-full divide-y divide-slate-200 text-left text-xs">
+                <thead class="bg-slate-50 font-bold uppercase text-slate-500">
+                  <tr>
+                    <th class="px-3 py-2">Severity</th>
+                    <th class="px-3 py-2">Code</th>
+                    <th class="px-3 py-2">Type</th>
+                    <th class="px-3 py-2">Title</th>
+                    <th class="px-3 py-2">Messages</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  <tr *ngFor="let row of preview.rows" class="align-top">
+                    <td class="px-3 py-2">
+                      <span class="rounded-full px-2 py-1 font-bold" [ngClass]="row.severity === 'Ready' ? 'bg-emerald-50 text-emerald-800' : row.severity === 'Warning' ? 'bg-amber-50 text-amber-800' : 'bg-rose-50 text-rose-800'">
+                        {{ row.severity }}
+                      </span>
+                    </td>
+                    <td class="px-3 py-2 font-mono text-slate-800">{{ row.item.normalizedCode }}</td>
+                    <td class="px-3 py-2 text-slate-700">{{ row.item.itemType }}</td>
+                    <td class="px-3 py-2 text-slate-700">{{ row.item.suggestedTitle || '-' }}</td>
+                    <td class="px-3 py-2">
+                      <div class="flex flex-wrap gap-1">
+                        <span *ngFor="let message of validationMessages(row)" class="rounded px-2 py-0.5 font-bold ring-1" [ngClass]="message.tone">
+                          {{ message.label }}: {{ message.message }}
+                        </span>
+                        <span *ngIf="row.messages.length === 0" class="rounded bg-emerald-100 px-2 py-0.5 font-bold text-emerald-800">Ready to import.</span>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </details>

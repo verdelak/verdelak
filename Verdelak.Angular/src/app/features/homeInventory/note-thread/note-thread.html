@@ -1,0 +1,17 @@
+<div class="note-thread">
+  <div class="note-part" *ngFor="let note of notes" class="note-part">
+    <div *ngIf="editingId !== note.id; else editBlock">
+        {{ note.note }}
+        <button (click)="startEdit(note)">Edit</button>
+        <button (click)="delete(note.id)">Delete</button>
+    </div>
+    <ng-template #editBlock>
+        <textarea title="editText" [(ngModel)]="editText"></textarea>
+        <button (click)="saveEdit(note.id)">Save</button>
+        <button (click)="cancelEdit()">Cancel</button>
+    </ng-template>
+    </div>
+
+    <textarea [(ngModel)]="replyText" placeholder="Reply..."></textarea>
+    <button (click)="submitReply()">Reply</button>
+</div>

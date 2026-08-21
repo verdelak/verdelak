@@ -1,0 +1,709 @@
+<main class="mx-auto grid w-full max-w-7xl gap-5 px-4 py-5 sm:px-6 lg:px-8">
+  <header class="flex flex-col gap-3 border-b border-slate-200 pb-4 lg:flex-row lg:items-end lg:justify-between">
+    <div>
+      <p class="text-xs font-bold uppercase tracking-wide text-emerald-700">Chores</p>
+      <h1 class="text-3xl font-bold text-slate-950">Gardening Diary</h1>
+      <p class="mt-1 text-sm text-slate-600">Plan seeds, trays, garden areas, and seasonal notes.</p>
+    </div>
+    <div class="flex flex-wrap items-end gap-3">
+      <label class="grid gap-1 text-sm font-bold text-slate-700">
+        Year
+        <input type="number" min="2000" max="2100" step="1" class="w-28 rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="selectedYear()" (ngModelChange)="setYear($event)">
+      </label>
+      <label class="grid min-w-56 gap-1 text-sm font-bold text-slate-700">
+        Tray
+        <select class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="selectedTrayId()" (ngModelChange)="setTray($event)">
+          <option [ngValue]="null">Choose tray</option>
+          <option *ngFor="let tray of trays()" [ngValue]="tray.id">{{ tray.trayName }}</option>
+        </select>
+      </label>
+      <label class="grid min-w-56 gap-1 text-sm font-bold text-slate-700">
+        Garden Area
+        <select class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="selectedPlotId()" (ngModelChange)="setPlot($event)">
+          <option [ngValue]="null">Choose area</option>
+          <option *ngFor="let plot of plots()" [ngValue]="plot.id">{{ plot.gardenName }}</option>
+        </select>
+      </label>
+      <button type="button" class="rounded bg-emerald-900 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" [disabled]="loading()" (click)="load()">
+        {{ loading() ? 'Refreshing.' : 'Refresh' }}
+      </button>
+    </div>
+  </header>
+
+  <div *ngIf="error()" class="rounded border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-800">
+    {{ error() }}
+  </div>
+
+  <section class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+    <div class="rounded border border-emerald-200 bg-emerald-50 p-3">
+      <div class="text-xs font-bold uppercase text-emerald-700">Seeds</div>
+      <div class="text-2xl font-bold text-emerald-950">{{ seeds().length }}</div>
+    </div>
+    <div class="rounded border border-sky-200 bg-sky-50 p-3">
+      <div class="text-xs font-bold uppercase text-sky-700">Indoor Starts</div>
+      <div class="text-2xl font-bold text-sky-950">{{ indoorSeeds().length }}</div>
+    </div>
+    <div class="rounded border border-amber-200 bg-amber-50 p-3">
+      <div class="text-xs font-bold uppercase text-amber-700">Reorder</div>
+      <div class="text-2xl font-bold text-amber-950">{{ reorderSeeds().length }}</div>
+    </div>
+    <div class="rounded border border-slate-200 bg-white p-3">
+      <div class="text-xs font-bold uppercase text-slate-600">Garden Areas</div>
+      <div class="text-2xl font-bold text-slate-950">{{ plots().length }}</div>
+    </div>
+  </section>
+
+  <section class="overflow-hidden rounded border border-slate-200 bg-white shadow-sm">
+    <div class="flex flex-wrap items-end justify-between gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3">
+      <div>
+        <p class="text-xs font-black uppercase text-emerald-700">Planning Report</p>
+        <h2 class="text-lg font-bold text-slate-950">Seed Starts by Month</h2>
+        <p class="text-sm text-slate-600">{{ monthName(selectedReportMonth()) }} {{ selectedYear() }} seed starts, direct sowing, tray planning, and bed planning.</p>
+      </div>
+      <div class="flex flex-wrap items-end gap-2">
+        <button type="button" class="rounded border border-slate-300 bg-white px-3 py-2 text-xs font-black text-slate-700" (click)="downloadSeedStartReportCsv()">Export Detail CSV</button>
+        <button type="button" class="rounded border border-slate-300 bg-white px-3 py-2 text-xs font-black text-slate-700" (click)="downloadSeedStartSummaryCsv()">Export Summary CSV</button>
+      </div>
+      <label class="grid min-w-44 gap-1 text-sm font-bold text-slate-700">
+        Month
+        <select class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="selectedReportMonth()" (ngModelChange)="setReportMonth($event)">
+          <option *ngFor="let month of monthOptions" [ngValue]="month.value">{{ month.label }}</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="grid gap-3 border-b border-slate-200 p-4 sm:grid-cols-2 lg:grid-cols-6">
+      <div class="rounded border border-slate-200 bg-slate-50 p-3">
+        <div class="text-xs font-black uppercase text-slate-500">Rows</div>
+        <div class="text-2xl font-black text-slate-950">{{ monthlySeedStartRows().length }}</div>
+      </div>
+      <div class="rounded border border-sky-200 bg-sky-50 p-3">
+        <div class="text-xs font-black uppercase text-sky-700">Indoor</div>
+        <div class="text-2xl font-black text-sky-950">{{ monthlyIndoorStartCount() }}</div>
+      </div>
+      <div class="rounded border border-lime-200 bg-lime-50 p-3">
+        <div class="text-xs font-black uppercase text-lime-700">Outdoor</div>
+        <div class="text-2xl font-black text-lime-950">{{ monthlyOutdoorStartCount() }}</div>
+      </div>
+      <div class="rounded border border-violet-200 bg-violet-50 p-3">
+        <div class="text-xs font-black uppercase text-violet-700">Trays</div>
+        <div class="text-2xl font-black text-violet-950">{{ monthlyTraySummaries().length }}</div>
+      </div>
+      <div class="rounded border border-teal-200 bg-teal-50 p-3">
+        <div class="text-xs font-black uppercase text-teal-700">Areas</div>
+        <div class="text-2xl font-black text-teal-950">{{ monthlyAreaSummaries().length }}</div>
+      </div>
+      <div class="rounded border border-amber-200 bg-amber-50 p-3">
+        <div class="text-xs font-black uppercase text-amber-700">Warnings</div>
+        <div class="text-2xl font-black text-amber-950">{{ monthlyPlanningWarningCount() }}</div>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap gap-2 border-b border-slate-200 px-4 pb-4">
+      <button type="button" class="rounded border px-3 py-1.5 text-xs font-black transition" [ngClass]="seedStartReportScope() === 'all' ? 'border-slate-800 bg-slate-900 text-white' : 'border-slate-300 bg-white text-slate-700'" (click)="setSeedStartReportScope('all')">All {{ monthlySeedStartRows().length }}</button>
+      <button type="button" class="rounded border px-3 py-1.5 text-xs font-black transition" [ngClass]="seedStartReportScope() === 'tray' ? 'border-violet-700 bg-violet-800 text-white' : 'border-slate-300 bg-white text-slate-700'" (click)="setSeedStartReportScope('tray')">Has Tray {{ monthlyTrayAssignmentCount() }}</button>
+      <button type="button" class="rounded border px-3 py-1.5 text-xs font-black transition" [ngClass]="seedStartReportScope() === 'area' ? 'border-teal-700 bg-teal-800 text-white' : 'border-slate-300 bg-white text-slate-700'" (click)="setSeedStartReportScope('area')">Has Area {{ monthlyAreaSummaries().length }}</button>
+      <button type="button" class="rounded border px-3 py-1.5 text-xs font-black transition" [ngClass]="seedStartReportScope() === 'warnings' ? 'border-amber-700 bg-amber-500 text-amber-950' : 'border-slate-300 bg-white text-slate-700'" (click)="setSeedStartReportScope('warnings')">Warnings {{ monthlyPlanningWarningCount() }}</button>
+      <span class="rounded border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-black text-rose-700">Inventory alerts {{ monthlySeedInventoryWarningCount() }}</span>
+      <span class="rounded border border-orange-200 bg-orange-50 px-3 py-1.5 text-xs font-black text-orange-800">Unassigned {{ monthlyUnassignedSeedStartCount() }}</span>
+    </div>
+
+    <div class="grid gap-4 border-b border-slate-200 p-4 xl:grid-cols-2">
+      <section class="rounded border border-violet-100 bg-violet-50 p-3">
+        <div class="mb-3 flex items-center justify-between gap-2">
+          <div>
+            <h3 class="text-sm font-black uppercase text-violet-900">By Tray</h3>
+            <p class="text-xs font-semibold text-violet-800">Seed starts and planned cells for {{ monthName(selectedReportMonth()) }}.</p>
+          </div>
+          <span class="rounded border border-violet-200 bg-white px-2 py-1 text-xs font-black text-violet-900">{{ monthlyTraySummaries().length }} trays</span>
+        </div>
+        <div class="grid gap-2">
+          <article *ngFor="let tray of monthlyTraySummaries()" class="rounded border border-violet-200 bg-white p-3">
+            <div class="flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <div class="font-black text-slate-950">{{ tray.trayName }}</div>
+                <div class="text-xs font-semibold text-slate-500">First date {{ formatDate(tray.firstDate) }}</div>
+              </div>
+              <div class="flex flex-wrap justify-end gap-1 text-xs font-black">
+                <span class="rounded bg-violet-50 px-2 py-1 text-violet-800">{{ tray.seedCount }} seeds</span>
+                <span class="rounded bg-slate-100 px-2 py-1 text-slate-700">{{ tray.cellCount }} cells</span>
+                <span class="rounded bg-amber-50 px-2 py-1 text-amber-800">{{ tray.plannedCount }} planned</span>
+                <span class="rounded bg-sky-50 px-2 py-1 text-sky-800">{{ tray.startedCount }} started</span>
+                <span class="rounded bg-emerald-50 px-2 py-1 text-emerald-800">{{ tray.successCount }} success</span>
+              </div>
+            </div>
+            <div class="mt-2 flex flex-wrap gap-1">
+              <span *ngFor="let seed of tray.seeds.slice(0, 6)" class="rounded bg-slate-50 px-2 py-1 text-xs font-bold text-slate-700">{{ seed }}</span>
+              <span *ngIf="tray.seeds.length > 6" class="rounded bg-slate-50 px-2 py-1 text-xs font-bold text-slate-500">+{{ tray.seeds.length - 6 }} more</span>
+            </div>
+            <p class="mt-2 text-xs font-semibold text-violet-800">{{ tray.emptyCount === null ? 'No tray size set' : tray.emptyCount + ' open cells remain' }}</p>
+            <div class="mt-2 max-h-28 overflow-auto rounded border border-violet-100 bg-violet-50 p-2">
+              <div *ngFor="let row of tray.rows.slice(0, 6)" class="flex items-center justify-between gap-2 text-xs font-semibold text-violet-950">
+                <span class="truncate">{{ formatDate(row.date) }} / {{ row.seedName }}</span>
+                <span class="rounded bg-white px-1.5 py-0.5 text-violet-800">{{ row.action }}</span>
+              </div>
+              <p *ngIf="tray.rows.length === 0" class="text-xs font-semibold text-violet-800">No detail rows for this tray.</p>
+            </div>
+          </article>
+          <p *ngIf="monthlyTraySummaries().length === 0" class="text-sm text-violet-800">No tray work is scheduled for this month.</p>
+        </div>
+      </section>
+
+      <section class="rounded border border-teal-100 bg-teal-50 p-3">
+        <div class="mb-3 flex items-center justify-between gap-2">
+          <div>
+            <h3 class="text-sm font-black uppercase text-teal-900">By Garden Area</h3>
+            <p class="text-xs font-semibold text-teal-800">Bed planning, planting, and quantity totals for the selected month.</p>
+          </div>
+          <span class="rounded border border-teal-200 bg-white px-2 py-1 text-xs font-black text-teal-900">Qty {{ monthlyAreaQtyTotal() }}</span>
+        </div>
+        <div class="grid gap-2">
+          <article *ngFor="let area of monthlyAreaSummaries()" class="rounded border border-teal-200 bg-white p-3">
+            <div class="flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <div class="font-black text-slate-950">{{ area.areaName }}</div>
+                <div class="text-xs font-semibold text-slate-500">First date {{ formatDate(area.firstDate) }}</div>
+              </div>
+              <div class="flex flex-wrap justify-end gap-1 text-xs font-black">
+                <span class="rounded bg-teal-50 px-2 py-1 text-teal-800">{{ area.seedCount }} seeds</span>
+                <span class="rounded bg-slate-100 px-2 py-1 text-slate-700">{{ area.cellCount }} cells</span>
+                <span class="rounded bg-lime-50 px-2 py-1 text-lime-800">Qty {{ area.totalQty }}</span>
+                <span class="rounded bg-amber-50 px-2 py-1 text-amber-800">{{ area.plannedCount }} planned</span>
+                <span class="rounded bg-emerald-50 px-2 py-1 text-emerald-800">{{ area.successCount }} success</span>
+              </div>
+            </div>
+            <div class="mt-2 flex flex-wrap gap-1">
+              <span *ngFor="let seed of area.seeds.slice(0, 6)" class="rounded bg-slate-50 px-2 py-1 text-xs font-bold text-slate-700">{{ seed }}</span>
+              <span *ngIf="area.seeds.length > 6" class="rounded bg-slate-50 px-2 py-1 text-xs font-bold text-slate-500">+{{ area.seeds.length - 6 }} more</span>
+            </div>
+            <p class="mt-2 text-xs font-semibold text-teal-800">{{ area.emptyCount === null ? 'No bed size set' : area.emptyCount + ' open cells remain' }}</p>
+            <div class="mt-2 max-h-28 overflow-auto rounded border border-teal-100 bg-teal-50 p-2">
+              <div *ngFor="let row of area.rows.slice(0, 6)" class="flex items-center justify-between gap-2 text-xs font-semibold text-teal-950">
+                <span class="truncate">{{ formatDate(row.date) }} / {{ row.seedName }}</span>
+                <span class="rounded bg-white px-1.5 py-0.5 text-teal-800">Qty {{ row.qty || '-' }}</span>
+              </div>
+              <p *ngIf="area.rows.length === 0" class="text-xs font-semibold text-teal-800">No detail rows for this area.</p>
+            </div>
+          </article>
+          <p *ngIf="monthlyAreaSummaries().length === 0" class="text-sm text-teal-800">No garden area work is scheduled for this month.</p>
+        </div>
+      </section>
+    </div>
+
+    <div class="overflow-auto">
+      <table class="min-w-full divide-y divide-slate-200 text-sm">
+        <thead class="bg-slate-50 text-left text-xs font-bold uppercase text-slate-600">
+          <tr>
+            <th class="px-4 py-2">Date</th>
+            <th class="px-4 py-2">Action</th>
+            <th class="px-4 py-2">Seed</th>
+            <th class="px-4 py-2">Tray</th>
+            <th class="px-4 py-2">Garden Area</th>
+            <th class="px-4 py-2">Qty</th>
+            <th class="px-4 py-2">Inventory</th>
+            <th class="px-4 py-2">Warnings</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <tr *ngFor="let row of scopedMonthlySeedStartRows()" class="align-top">
+            <td class="whitespace-nowrap px-4 py-3 font-semibold text-slate-700">{{ formatDate(row.date) }}</td>
+            <td class="px-4 py-3">
+              <div class="font-bold text-slate-950">{{ row.action }}</div>
+              <div class="text-xs font-semibold" [ngClass]="row.method === 'Indoor' ? 'text-sky-700' : 'text-lime-700'">{{ row.method }}</div>
+            </td>
+            <td class="px-4 py-3">
+              <div class="font-bold text-slate-950">{{ row.seedName }}</div>
+              <div class="max-w-sm text-xs text-slate-500">{{ row.notes || '-' }}</div>
+            </td>
+            <td class="px-4 py-3 text-slate-700">
+              <div *ngIf="row.trayLocations.length; else noTray" class="flex flex-wrap gap-1">
+                <span *ngFor="let tray of row.trayLocations" class="rounded bg-violet-50 px-2 py-1 text-xs font-bold text-violet-800">{{ tray }}</span>
+              </div>
+              <ng-template #noTray><span class="text-xs text-slate-400">Not assigned</span></ng-template>
+            </td>
+            <td class="px-4 py-3 text-slate-700">
+              <div *ngIf="row.gardenAreas.length; else noArea" class="flex flex-wrap gap-1">
+                <span *ngFor="let area of row.gardenAreas" class="rounded bg-lime-50 px-2 py-1 text-xs font-bold text-lime-800">{{ area }}</span>
+              </div>
+              <ng-template #noArea><span class="text-xs text-slate-400">Not assigned</span></ng-template>
+            </td>
+            <td class="px-4 py-3 text-slate-700">{{ row.qty || '-' }}</td>
+            <td class="px-4 py-3">
+              <span class="rounded border px-2 py-1 text-xs font-bold" [ngClass]="planningInventoryTone(row)">{{ row.inventoryStatus }} ({{ row.inventoryQty }})</span>
+            </td>
+            <td class="px-4 py-3">
+              <div *ngIf="row.warnings.length; else noWarnings" class="grid gap-1">
+                <span *ngFor="let warning of row.warnings" class="rounded border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-bold text-amber-800">{{ warning }}</span>
+              </div>
+              <ng-template #noWarnings><span class="text-xs font-semibold text-emerald-700">Ready</span></ng-template>
+            </td>
+          </tr>
+          <tr *ngIf="scopedMonthlySeedStartRows().length === 0">
+            <td colspan="8" class="px-4 py-8 text-center text-sm text-slate-500">No seed-start planning rows for the current scope in {{ monthName(selectedReportMonth()) }} {{ selectedYear() }}.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  @defer (on viewport) {
+    <app-gardening-year-comparison-panel
+      [comparison]="yearComparison()"
+      [comparisonYear]="comparisonYear()"
+      [loading]="loadingYearComparison()"
+      [topCropComparisons]="topCropComparisons()"
+      [topAreaComparisons]="topAreaComparisons()"
+      (comparisonYearChange)="setComparisonYear($event)"
+      (refresh)="refreshYearComparison()" />
+  } @placeholder {
+    <section class="rounded border border-emerald-100 bg-white p-4 text-sm font-semibold text-slate-600 shadow-sm">
+      Season comparison will load when this section scrolls into view.
+    </section>
+  }
+  @defer (on viewport) {
+    <app-gardening-seed-inventory-panel
+      [seeds]="filteredSeeds()"
+      [trayPlants]="trayPlants()"
+      [plotPlants]="plotPlants()"
+      [selectedYear]="selectedYear()"
+      [seedFilter]="seedFilter()"
+      [seedInventoryFilter]="seedInventoryFilter()"
+      [seedInventorySort]="seedInventorySort()"
+      [totalQty]="seedInventoryTotalQty()"
+      [lowCount]="lowSeedCount()"
+      [emptyCount]="emptySeedCount()"
+      [reorderCount]="reorderSeeds().length"
+      [savingSeed]="savingSeed()"
+      [seedForm]="seedForm()"
+      [seedMessage]="seedMessage()"
+      [seedImportCsv]="seedImportCsv()"
+      [seedImportPreviewRows]="seedImportPreviewRows()"
+      [seedImportPreviewLabel]="seedImportPreviewLabel()"
+      [seedImportUpdateExisting]="seedImportUpdateExisting()"
+      [importingSeeds]="importingSeeds()"
+      [seedImportResult]="seedImportResult()"
+      [seedImportMessage]="seedImportMessage()"
+      (seedFilterChange)="setSeedFilter($event)"
+      (seedInventoryFilterChange)="setSeedInventoryFilter($event)"
+      (seedInventorySortChange)="setSeedInventorySort($event)"
+      (adjustSeedQuantity)="adjustSeedQuantity($event.seed, $event.delta)"
+      (setSeedQuantity)="setSeedQuantity($event.seed, $event.value)"
+      (setSeedReorder)="setSeedReorder($event.seed, $event.value)"
+      (useSeedForTray)="useSeedForTray($event)"
+      (useSeedForBed)="useSeedForBed($event)"
+      (markSeedEmpty)="markSeedEmpty($event)"
+      (markSeedStocked)="markSeedStocked($event)"
+      (editSeed)="editSeed($event)"
+      (deleteSeed)="deleteSeed($event)"
+      (newSeed)="newSeed()"
+      (patchSeedForm)="patchSeedForm($event)"
+      (saveSeed)="saveSeed()"
+      (downloadSeedImportTemplateCsv)="downloadSeedImportTemplateCsv()"
+      (downloadSeedsCsv)="downloadSeedsCsv()"
+      (downloadSeedImportPreviewCsv)="downloadSeedImportPreviewCsv()"
+      (downloadSeedImportResultCsv)="downloadSeedImportResultCsv()"
+      (loadSeedImportFile)="loadSeedImportFile($event)"
+      (seedImportCsvChange)="setSeedImportCsv($event)"
+      (clearSeedImportCsv)="clearSeedImportCsv()"
+      (seedImportUpdateExistingChange)="setSeedImportUpdateExisting($event)"
+      (importSeedsCsv)="importSeedsCsv()" />
+  } @placeholder {
+    <section class="rounded border border-emerald-100 bg-white p-4 text-sm font-semibold text-slate-600 shadow-sm">
+      Seed inventory and import tools will load when this section scrolls into view.
+    </section>
+  }
+  @defer (on viewport) {
+    <app-gardening-tray-grid-panel [vm]="viewModel" />
+  } @placeholder {
+    <section class="rounded border border-emerald-100 bg-white p-4 text-sm font-semibold text-slate-600 shadow-sm">
+      Tray grid and legend tools will load when this section scrolls into view.
+    </section>
+  }
+  <section class="grid gap-5">
+    <aside class="grid content-start gap-4">
+      <section class="rounded border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="mb-3 flex flex-col gap-3">
+          <div class="flex flex-wrap items-start justify-between gap-2">
+            <div>
+              <h2 class="text-lg font-bold text-slate-950">Garden Diary</h2>
+              <p class="text-sm text-slate-600">{{ filteredNotes().length }} matching of {{ notes().length }} notes</p>
+              <p class="mt-1 text-xs font-bold uppercase text-emerald-800">{{ noteFilterLabel() }}</p>
+            </div>
+            <button type="button" class="rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700" (click)="newNote()">New Entry</button>
+          </div>
+          <div class="grid gap-3 rounded border border-emerald-100 bg-emerald-50 p-3">
+            <div class="grid gap-2 sm:grid-cols-4">
+              <span class="rounded border border-emerald-200 bg-white px-2 py-1 text-xs font-black text-emerald-900">{{ notes().length }} total</span>
+              <span class="rounded border border-emerald-200 bg-white px-2 py-1 text-xs font-black text-emerald-900">{{ noteAreaSummaries().length }} areas</span>
+              <span class="rounded border border-emerald-200 bg-white px-2 py-1 text-xs font-black text-emerald-900">{{ filteredNotes().length }} filtered</span>
+              <span class="rounded border border-emerald-200 bg-white px-2 py-1 text-xs font-black text-emerald-900">{{ noteMonthlySummaries().length }} months</span>
+              <span class="rounded border border-emerald-200 bg-white px-2 py-1 text-xs font-black text-emerald-900">{{ filteredNoteWordTotal() }} words</span>
+              <span class="rounded border border-emerald-200 bg-white px-2 py-1 text-xs font-black text-emerald-900">Latest {{ formatDate(latestFilteredNoteDate()) }}</span>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button *ngFor="let summary of noteAreaSummaries()" type="button" class="rounded border px-2 py-1 text-xs font-black transition" [ngClass]="notePlotFilter() === summary.plotId ? 'border-emerald-400 bg-emerald-100 text-emerald-950' : 'border-emerald-200 bg-white text-emerald-800 hover:bg-emerald-50'" (click)="setNotePlotFilter(summary.plotId)">
+                {{ summary.name }} {{ summary.count }}
+              </button>
+            </div>
+            <div class="flex flex-wrap gap-2 border-t border-emerald-100 pt-2">
+              <button *ngFor="let summary of noteMonthlySummaries().slice(0, 8)" type="button" class="rounded border border-emerald-200 bg-white px-2 py-1 text-xs font-black text-emerald-900 hover:bg-emerald-50" (click)="filterNotesForMonth(summary)">
+                {{ summary.label }} {{ summary.count }}
+              </button>
+              <span *ngIf="noteMonthlySummaries().length > 8" class="rounded border border-emerald-200 bg-white px-2 py-1 text-xs font-black text-emerald-700">+{{ noteMonthlySummaries().length - 8 }} more</span>
+            </div>
+            <div *ngIf="noteKeywordSummaries().length" class="flex flex-wrap gap-2 border-t border-emerald-100 pt-2">
+              <button *ngFor="let summary of noteKeywordSummaries()" type="button" class="rounded border border-sky-200 bg-white px-2 py-1 text-xs font-black text-sky-800 hover:bg-sky-50" (click)="filterNotesForKeyword(summary.label)">
+                {{ summary.label }} {{ summary.count }}
+              </button>
+            </div>
+            <div class="flex flex-wrap items-center gap-2 border-t border-emerald-100 pt-2">
+              <button type="button" class="rounded border border-emerald-200 bg-white px-3 py-1.5 text-xs font-black text-emerald-800 disabled:opacity-50" [disabled]="loadingNoteReport()" (click)="refreshNoteReport()">Refresh report</button>
+              <button type="button" class="rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-black text-slate-700" (click)="downloadFilteredNotesCsv()">Export filtered CSV</button>
+              <button type="button" class="rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-black text-slate-700" (click)="downloadDiarySummaryCsv()">Export summary CSV</button>
+              <button type="button" class="rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-black text-slate-700 disabled:opacity-50" [disabled]="loadingNoteReport()" (click)="downloadDiaryReportCsv()">Export year CSV</button>
+              <span *ngIf="noteReport()" class="text-xs font-semibold text-emerald-800">Report total: {{ noteReport()!.totalCount }}</span>
+            </div>
+          </div>
+          <div class="grid gap-2 md:grid-cols-2">
+            <input type="search" class="rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" placeholder="Search notes" [ngModel]="noteFilter()" (ngModelChange)="setNoteFilter($event)">
+            <select class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="noteSort()" (ngModelChange)="setNoteSort($event)">
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+              <option value="area">Group by area</option>
+              <option value="month">Group by month</option>
+            </select>
+          </div>
+          <div class="grid gap-2 md:grid-cols-[1fr_1fr_auto]">
+            <input type="date" class="rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="noteFromDate()" (ngModelChange)="setNoteFromDate($event)" title="From date">
+            <input type="date" class="rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="noteToDate()" (ngModelChange)="setNoteToDate($event)" title="To date">
+            <button type="button" class="rounded border border-slate-300 bg-white px-3 py-2 text-xs font-black text-slate-700" (click)="clearNoteFilters()">Clear Filters</button>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" class="rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-black text-slate-700" (click)="filterNotesToday()">Today</button>
+            <button type="button" class="rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-black text-slate-700" (click)="filterNotesThisWeek()">This Week</button>
+            <button type="button" class="rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-black text-slate-700" (click)="filterNotesThisMonth()">This Month</button>
+            <button type="button" class="rounded border border-emerald-200 bg-white px-3 py-1.5 text-xs font-black text-emerald-800" (click)="filterNotesSelectedArea()">Selected Area</button>
+          </div>
+        </div>
+        <div class="grid gap-3 rounded border border-slate-200 bg-slate-50 p-3">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-black text-slate-700">{{ isEditingNote() ? 'Editing entry' : 'New entry' }}</span>
+            <span class="rounded border border-emerald-200 bg-white px-2 py-1 text-xs font-black text-emerald-800">{{ noteFormAreaName() }}</span>
+            <span class="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-black text-slate-600">{{ noteFormWordCount() }} words / {{ noteFormCharacterCount() }} chars</span>
+          </div>
+          <label class="grid gap-1 text-sm font-bold text-slate-700">
+            Area
+            <select class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="noteForm().gardenPlotId" (ngModelChange)="setNotePlot($event)">
+              <option [ngValue]="null">Choose area</option>
+              <option *ngFor="let plot of plots()" [ngValue]="plot.id">{{ plot.gardenName }}</option>
+            </select>
+          </label>
+
+          <div class="grid grid-cols-2 gap-2">
+            <label class="grid gap-1 text-sm font-bold text-slate-700">
+              Date
+              <input type="date" class="rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="noteForm().date" (ngModelChange)="patchNoteForm({ date: $event })">
+            </label>
+            <label class="grid gap-1 text-sm font-bold text-slate-700">
+              Year
+              <input type="number" min="2000" max="2100" class="rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="noteForm().year" (ngModelChange)="patchNoteForm({ year: $event })">
+            </label>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" class="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-black text-slate-700" (click)="useTodayForNote()">Today</button>
+            <button type="button" class="rounded border border-emerald-200 bg-white px-2 py-1 text-xs font-black text-emerald-800" (click)="useSelectedAreaForNote()">Use Selected Area</button>
+            <button type="button" class="rounded border border-emerald-200 bg-emerald-50 px-2 py-1 text-xs font-black text-emerald-800" (click)="applyNoteTemplate('observation')">Observation</button>
+            <button type="button" class="rounded border border-lime-200 bg-lime-50 px-2 py-1 text-xs font-black text-lime-800" (click)="applyNoteTemplate('planting')">Planting</button>
+            <button type="button" class="rounded border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-black text-amber-800" (click)="applyNoteTemplate('harvest')">Harvest</button>
+            <button type="button" class="rounded border border-sky-200 bg-sky-50 px-2 py-1 text-xs font-black text-sky-800" (click)="applyNoteTemplate('maintenance')">Maintenance</button>
+            <button *ngFor="let prompt of notePrompts" type="button" class="rounded border border-violet-200 bg-violet-50 px-2 py-1 text-xs font-black text-violet-800" (click)="applyNotePrompt(prompt)">{{ prompt.label }} prompt</button>
+          </div>
+          <label class="grid gap-1 text-sm font-bold text-slate-700">
+            Note
+            <textarea rows="5" class="rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="noteForm().note" (ngModelChange)="patchNoteForm({ note: $event })"></textarea>
+          </label>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" class="rounded bg-emerald-900 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" [disabled]="savingNote()" (click)="saveNote()">{{ isEditingNote() ? 'Save Changes' : 'Add Note' }}</button>
+            <button *ngIf="isEditingNote()" type="button" class="rounded border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700" (click)="newNote()">Cancel Edit</button>
+          </div>
+          <p *ngIf="noteMessage()" class="rounded border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700">{{ noteMessage() }}</p>
+        </div>
+
+        <div class="mt-5 grid gap-2">
+          <div class="flex items-center justify-between gap-2">
+            <h3 class="text-sm font-black uppercase text-slate-600">Entries</h3>
+            <select class="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-700" [ngModel]="notePlotFilter()" (ngModelChange)="setNotePlotFilter($event)">
+              <option [ngValue]="null">All areas</option>
+              <option *ngFor="let plot of plots()" [ngValue]="plot.id">{{ plot.gardenName }}</option>
+            </select>
+          </div>
+          <section *ngFor="let group of noteEntryGroups()" class="rounded border border-slate-200 bg-white p-2">
+            <div class="mb-2 flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2">
+              <div>
+                <h4 class="text-sm font-black text-slate-900">{{ group.label }}</h4>
+                <p class="text-xs font-semibold text-slate-500">{{ group.detail }}</p>
+              </div>
+            </div>
+            <article *ngFor="let note of group.notes" class="rounded border border-slate-200 bg-slate-50 p-3 [&+article]:mt-2">
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <div class="text-xs font-bold uppercase text-slate-500">{{ formatDate(note.date) }}</div>
+                  <div class="text-xs font-semibold text-emerald-700">{{ plotName(note.gardenPlotId) }}</div>
+                </div>
+                <div class="flex flex-wrap justify-end gap-1">
+                  <button type="button" class="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-700" (click)="editNote(note)">Edit</button>
+                  <button type="button" class="rounded border border-emerald-200 bg-white px-2 py-1 text-xs font-bold text-emerald-800" (click)="duplicateNote(note)">Duplicate</button>
+                  <button type="button" class="rounded border border-rose-200 bg-white px-2 py-1 text-xs font-bold text-rose-700" (click)="deleteNote(note)">Delete</button>
+                </div>
+              </div>
+              <p class="mt-1 whitespace-pre-line text-sm text-slate-700">{{ note.note || '-' }}</p>
+            </article>
+          </section>
+          <p *ngIf="recentNotes().length === 0" class="text-sm text-slate-500">No garden notes match the current filters.</p>
+          <p *ngIf="filteredNotes().length > recentNotes().length" class="text-xs font-semibold text-slate-500">Showing latest {{ recentNotes().length }} of {{ filteredNotes().length }} matching notes.</p>
+        </div>
+      </section>
+
+      <section class="rounded border border-amber-100 bg-amber-50 p-4 shadow-sm">
+        <div class="mb-3 flex flex-wrap items-start justify-between gap-2">
+          <div>
+            <h2 class="text-lg font-bold text-amber-950">Harvest Log</h2>
+            <p class="text-sm text-amber-800">{{ harvests().length }} entries / {{ harvestCropCount() }} crops / Qty {{ harvestTotalQuantity() }}</p>
+            <p class="mt-1 text-xs font-black uppercase text-amber-800">Filtered: {{ filteredHarvests().length }} / {{ filteredHarvestCropCount() }} crops / Qty {{ filteredHarvestTotalQuantity() }} / {{ harvestFilterLabel() }}</p>
+          </div>
+          <button type="button" class="rounded border border-amber-200 bg-white px-3 py-1.5 text-xs font-bold text-amber-800" (click)="newHarvest()">New Harvest</button>
+        </div>
+
+        <div class="grid gap-3 rounded border border-amber-200 bg-white p-3">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="rounded border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-black text-amber-900">{{ isEditingHarvest() ? 'Editing harvest' : 'New harvest' }}</span>
+            <button type="button" class="rounded border border-amber-200 bg-white px-2 py-1 text-xs font-black text-amber-800" (click)="useSelectedAreaForHarvest()">Use Selected Area</button>
+          </div>
+          <label class="grid gap-1 text-sm font-bold text-slate-700">
+            Area
+            <select class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="harvestForm().gardenPlotId" (ngModelChange)="setHarvestPlot($event)">
+              <option [ngValue]="null">Choose area</option>
+              <option *ngFor="let plot of plots()" [ngValue]="plot.id">{{ plot.gardenName }}</option>
+            </select>
+          </label>
+          <label class="grid gap-1 text-sm font-bold text-slate-700">
+            Seed / Crop
+            <select class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="harvestForm().seedId" (ngModelChange)="setHarvestSeed($event)">
+              <option [ngValue]="null">Choose crop</option>
+              <option *ngFor="let seed of sortedSeeds()" [ngValue]="seed.id">{{ seed.name }}</option>
+            </select>
+          </label>
+          <div class="grid grid-cols-3 gap-2">
+            <label class="grid gap-1 text-sm font-bold text-slate-700">
+              Date
+              <input type="date" class="rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="harvestForm().harvestDate" (ngModelChange)="patchHarvestForm({ harvestDate: $event })">
+            </label>
+            <label class="grid gap-1 text-sm font-bold text-slate-700">
+              Year
+              <input type="number" min="2000" max="2100" class="rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="harvestForm().year" (ngModelChange)="patchHarvestForm({ year: $event })">
+            </label>
+            <label class="grid gap-1 text-sm font-bold text-slate-700">
+              Qty
+              <input type="number" min="0" step="0.01" class="rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="harvestForm().quantity" (ngModelChange)="patchHarvestForm({ quantity: $event })">
+            </label>
+          </div>
+          <label class="grid gap-1 text-sm font-bold text-slate-700">
+            Notes
+            <textarea rows="3" class="rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="harvestForm().notes" (ngModelChange)="patchHarvestForm({ notes: $event })"></textarea>
+          </label>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" class="rounded bg-amber-700 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" [disabled]="savingHarvest()" (click)="saveHarvest()">{{ isEditingHarvest() ? 'Save Harvest' : 'Add Harvest' }}</button>
+            <button *ngIf="isEditingHarvest()" type="button" class="rounded border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700" (click)="newHarvest()">Cancel Edit</button>
+          </div>
+          <p *ngIf="harvestMessage()" class="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-900">{{ harvestMessage() }}</p>
+        </div>
+
+        <div class="mt-4 grid gap-3 rounded border border-amber-200 bg-white p-3">
+          <div class="flex flex-wrap items-start justify-between gap-2">
+            <div>
+              <h3 class="text-sm font-black uppercase text-amber-900">Harvest Report</h3>
+              <p class="text-xs font-semibold text-amber-800">Monthly, crop, and garden area totals for {{ selectedYear() }}.</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" class="rounded border border-amber-200 bg-white px-3 py-1.5 text-xs font-black text-amber-800 disabled:opacity-50" [disabled]="loadingHarvestReport()" (click)="refreshHarvestReport()">Refresh</button>
+              <button type="button" class="rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-black text-slate-700" (click)="downloadFilteredHarvestsCsv()">Export Filtered</button>
+              <button type="button" class="rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-black text-slate-700 disabled:opacity-50" [disabled]="loadingHarvestReport()" (click)="downloadHarvestReportCsv()">Export CSV</button>
+            </div>
+          </div>
+
+          <div *ngIf="harvestReport() as report" class="grid gap-3">
+            <div class="grid gap-2 sm:grid-cols-3">
+              <span class="rounded border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-black text-amber-900">{{ report.totalCount }} entries</span>
+              <span class="rounded border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-black text-amber-900">Qty {{ report.totalQuantity }}</span>
+              <span class="rounded border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-black text-amber-900">{{ report.cropSummaries.length }} crops</span>
+            </div>
+
+            <div class="grid gap-3 lg:grid-cols-3">
+              <section class="rounded border border-slate-200 bg-slate-50 p-2">
+                <h4 class="text-xs font-black uppercase text-slate-600">By Month</h4>
+                <div class="mt-2 grid gap-1">
+                  <div *ngFor="let month of report.monthlySummaries.slice(0, 6)" class="flex items-center justify-between gap-2 rounded bg-white px-2 py-1 text-xs font-bold text-slate-700">
+                    <span>{{ month.monthName }}</span>
+                    <span>{{ month.count }} / Qty {{ month.totalQuantity }}</span>
+                  </div>
+                  <p *ngIf="report.monthlySummaries.length === 0" class="text-xs font-semibold text-slate-500">No monthly harvests yet.</p>
+                </div>
+              </section>
+
+              <section class="rounded border border-slate-200 bg-slate-50 p-2">
+                <h4 class="text-xs font-black uppercase text-slate-600">Top Crops</h4>
+                <div class="mt-2 grid gap-1">
+                  <div *ngFor="let crop of report.cropSummaries.slice(0, 6)" class="grid gap-0.5 rounded bg-white px-2 py-1 text-xs font-bold text-slate-700">
+                    <div class="flex items-center justify-between gap-2"><span class="truncate">{{ crop.seedName }}</span><span>Qty {{ crop.totalQuantity }}</span></div>
+                    <div class="text-[0.7rem] font-semibold text-slate-500">{{ crop.count }} entries / latest {{ formatDate(crop.latestDate) }}</div>
+                  </div>
+                  <p *ngIf="report.cropSummaries.length === 0" class="text-xs font-semibold text-slate-500">No crop totals yet.</p>
+                </div>
+              </section>
+
+              <section class="rounded border border-slate-200 bg-slate-50 p-2">
+                <h4 class="text-xs font-black uppercase text-slate-600">Top Areas</h4>
+                <div class="mt-2 grid gap-1">
+                  <div *ngFor="let area of report.areaSummaries.slice(0, 6)" class="grid gap-0.5 rounded bg-white px-2 py-1 text-xs font-bold text-slate-700">
+                    <div class="flex items-center justify-between gap-2"><span class="truncate">{{ area.gardenPlotName }}</span><span>Qty {{ area.totalQuantity }}</span></div>
+                    <div class="text-[0.7rem] font-semibold text-slate-500">{{ area.count }} entries / latest {{ formatDate(area.latestDate) }}</div>
+                  </div>
+                  <p *ngIf="report.areaSummaries.length === 0" class="text-xs font-semibold text-slate-500">No area totals yet.</p>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 grid gap-3 rounded border border-amber-200 bg-white p-3">
+          <div class="flex flex-wrap items-center gap-2">
+            <select class="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-700" [ngModel]="harvestPlotFilter()" (ngModelChange)="setHarvestPlotFilter($event)">
+              <option [ngValue]="null">All areas</option>
+              <option *ngFor="let plot of plots()" [ngValue]="plot.id">{{ plot.gardenName }}</option>
+            </select>
+            <select class="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-700" [ngModel]="harvestSeedFilter()" (ngModelChange)="setHarvestSeedFilter($event)">
+              <option [ngValue]="null">All crops</option>
+              <option *ngFor="let seed of sortedSeeds()" [ngValue]="seed.id">{{ seed.name }}</option>
+            </select>
+            <input type="date" class="rounded border border-slate-300 px-2 py-1 text-xs font-bold text-slate-700" [ngModel]="harvestFromDate()" (ngModelChange)="setHarvestFromDate($event)" title="From date">
+            <input type="date" class="rounded border border-slate-300 px-2 py-1 text-xs font-bold text-slate-700" [ngModel]="harvestToDate()" (ngModelChange)="setHarvestToDate($event)" title="To date">
+            <select class="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-700" [ngModel]="harvestSort()" (ngModelChange)="setHarvestSort($event)">
+              <option value="newest">Newest</option>
+              <option value="oldest">Oldest</option>
+              <option value="crop">Crop</option>
+              <option value="area">Area</option>
+              <option value="qty">Quantity</option>
+            </select>
+            <button type="button" class="rounded border border-amber-200 bg-white px-2 py-1 text-xs font-black text-amber-800" (click)="filterHarvestSelectedArea()">Selected Area</button>
+            <button type="button" class="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-black text-slate-700" (click)="clearHarvestFilters()">Clear</button>
+          </div>
+        </div>
+
+        <div class="mt-4 grid gap-2">
+          <h3 class="text-sm font-black uppercase text-amber-900">Harvest Entries</h3>
+          <article *ngFor="let harvest of recentHarvests()" class="rounded border border-amber-200 bg-white p-3">
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <div class="text-xs font-bold uppercase text-slate-500">{{ formatDate(harvest.harvestDate) }}</div>
+                <div class="font-bold text-slate-950">{{ harvest.seedName || 'Unknown crop' }}</div>
+                <div class="text-xs font-semibold text-amber-700">{{ harvest.gardenPlotName || plotName(harvest.gardenPlotId) }} / Qty {{ harvest.quantity ?? '-' }}</div>
+              </div>
+              <div class="flex flex-wrap justify-end gap-1">
+                <button type="button" class="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-700" (click)="editHarvest(harvest)">Edit</button>
+                <button type="button" class="rounded border border-rose-200 bg-white px-2 py-1 text-xs font-bold text-rose-700" (click)="deleteHarvest(harvest)">Delete</button>
+              </div>
+            </div>
+            <p *ngIf="harvest.notes" class="mt-1 whitespace-pre-line text-sm text-slate-700">{{ harvest.notes }}</p>
+          </article>
+          <p *ngIf="recentHarvests().length === 0" class="text-sm text-amber-800">No harvest entries for {{ selectedYear() }} yet.</p>
+        </div>
+      </section>
+    </aside>
+  </section>
+
+  @defer (on viewport) {
+    <app-gardening-plot-grid-panel [vm]="viewModel" />
+  } @placeholder {
+    <section class="rounded border border-lime-100 bg-white p-4 text-sm font-semibold text-slate-600 shadow-sm">
+      Garden bed grid and legend tools will load when this section scrolls into view.
+    </section>
+  }
+  @defer (on viewport) {
+    <app-gardening-schedule-panel
+      [activeTaskCount]="activeGardeningTasks()"
+      [taskCount]="gardeningTasks().length"
+      [openActivityCount]="openGardeningActivityCount()"
+      [openScheduleCount]="openGardeningScheduleCount()"
+      [completedScheduleCount]="completedGardeningScheduleCount()"
+      [skippedScheduleCount]="skippedGardeningScheduleCount()"
+      [generateDays]="generateDays()"
+      [generatingTasks]="generatingTasks()"
+      [scheduleLoading]="scheduleLoading()"
+      [schedule]="gardeningSchedule()"
+      [activity]="gardeningActivity()"
+      [tasks]="gardeningTasks()"
+      [taskForm]="taskForm()"
+      [savingTask]="savingTask()"
+      [taskMessage]="taskMessage()"
+      [scheduleActionId]="scheduleActionId()"
+      [scheduleMoveId]="scheduleMoveId()"
+      [scheduleMoveDate]="scheduleMoveDate()"
+      [scheduleActionNote]="scheduleActionNote()"
+      (generateDaysChange)="setGenerateDays($event)"
+      (generateSchedule)="generateGardeningSchedule()"
+      (loadSchedule)="loadGardeningSchedule()"
+      (loadActivity)="loadGardeningActivity()"
+      (completeOccurrence)="completeGardeningOccurrence($event.item, $event.note)"
+      (startMoveOccurrence)="startMoveGardeningOccurrence($event)"
+      (skipOccurrence)="skipGardeningOccurrence($event.item, $event.note)"
+      (reopenOccurrence)="reopenGardeningOccurrence($event.item, $event.note)"
+      (moveDateChange)="scheduleMoveDate.set($event)"
+      (actionNoteChange)="scheduleActionNote.set($event)"
+      (moveOccurrence)="moveGardeningOccurrence($event.item, $event.note)"
+      (cancelMoveOccurrence)="cancelMoveGardeningOccurrence()"
+      (editTask)="editTask($event)"
+      (deleteTask)="deleteTask($event)"
+      (newTask)="newTask()"
+      (patchTaskForm)="patchTaskForm($event)"
+      (applyTaskTemplate)="applyTaskTemplate($event)"
+      (saveTask)="saveTask()" />
+  } @placeholder {
+    <section class="rounded border border-slate-200 bg-white p-4 text-sm font-semibold text-slate-600 shadow-sm">
+      Gardening schedule tools will load when this section scrolls into view.
+    </section>
+  }</main>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

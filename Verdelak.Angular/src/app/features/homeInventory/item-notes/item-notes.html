@@ -1,0 +1,23 @@
+<div *ngIf="loading()">Loading notes…</div>
+<div *ngIf="error()" class="error">{{ error() }}</div>
+
+<div *ngIf="groupedNotes().length === 0 && !loading()">
+  <p>No notes available.</p>
+</div>
+
+<!-- Existing Threads -->
+<app-note-thread
+  *ngFor="let thread of groupedNotes()"
+  [notes]="thread"
+  (addPart)="addNotePart(thread[0].noteNum, $event)"
+  (editing)="editNote($event)"
+  (deleting)="deleteNote($event)"
+></app-note-thread>
+
+<!-- New Thread Form -->
+<div class="note-thread new-thread">
+    <hr/>
+  <textarea [(ngModel)]="newNoteText" placeholder="Add new note..."></textarea>
+  <button (click)="addNewThread()">Add Note</button>
+</div>
+

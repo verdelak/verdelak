@@ -1,0 +1,41 @@
+<mat-form-field appearance="fill">
+  <mat-label>Filter by Topic</mat-label>
+  <mat-select [ngModel]="selectedTopic()" (ngModelChange)="selectedTopic.set($event)">
+    <mat-option value="">All</mat-option>
+    <mat-option *ngFor="let group of groupedLinks()" [value]="group.topic">
+      {{ group.topic }}
+    </mat-option>
+  </mat-select>
+</mat-form-field>
+
+<mat-form-field appearance="outline">
+  <mat-label>Search links</mat-label>
+  <input matInput title="mySearch" [ngModel]="search()" (ngModelChange)="search.set($event)" />
+
+</mat-form-field>
+
+<mat-accordion multi *ngIf="filtered().length; else loading">
+  <mat-expansion-panel *ngFor="let group of filtered()">
+    <mat-expansion-panel-header>
+      <mat-panel-title>{{ group.topic }}</mat-panel-title>
+    </mat-expansion-panel-header>
+
+    <mat-accordion multi>
+      <mat-expansion-panel *ngFor="let sub of group.subTopics">
+        <mat-expansion-panel-header>
+          <mat-panel-title>{{ sub.subTopic }}</mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <ul>
+          <li *ngFor="let link of sub.links">
+            <a [href]="link.url" target="_blank">{{ link.name }}</a>
+          </li>
+        </ul>
+      </mat-expansion-panel>
+    </mat-accordion>
+  </mat-expansion-panel>
+</mat-accordion>
+
+<ng-template #loading>
+  <p>Loading or no links found.</p>
+</ng-template>

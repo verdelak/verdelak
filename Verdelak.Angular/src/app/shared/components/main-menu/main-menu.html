@@ -1,0 +1,64 @@
+<header class="sticky-top z-40 border-bottom border-slate-200 bg-white shadow-sm">
+  <nav class="navbar navbar-expand-lg app-navbar-container gap-3 py-2 py-lg-3">
+    <a routerLink="/" class="navbar-brand mb-0 shrink-0 text-lg font-bold tracking-tight text-slate-950">
+      Verdelak
+    </a>
+
+    <div class="min-w-0 flex-wrap justify-content-end gap-1 d-none d-lg-flex">
+      <ng-container *ngFor="let item of menu(); let index = index">
+        <app-menu-button
+          [item]="item"
+          mode="desktop"
+          [path]="index.toString()"
+          [openPath]="openMenuPath()"
+          (openPathChange)="setOpenMenu($event)"
+          (navigate)="closeMenus()"
+        ></app-menu-button>
+      </ng-container>
+    </div>
+
+    <div class="align-items-center gap-2 border-start border-slate-200 ps-3 d-none d-lg-flex" *ngIf="auth.user() as user">
+      <span class="text-sm font-semibold text-slate-600">{{ user.username }}</span>
+      <span class="rounded-full bg-slate-100 px-2 py-1 text-xs font-bold text-slate-600">{{ user.role }}</span>
+      <button type="button" class="btn btn-outline-secondary btn-sm fw-semibold" (click)="auth.logout()">
+        Sign out
+      </button>
+    </div>
+
+    <a
+      *ngIf="!auth.isAuthenticated()"
+      routerLink="/login"
+      class="btn btn-outline-secondary btn-sm fw-semibold ms-auto d-none d-lg-inline-flex"
+    >
+      Sign in
+    </a>
+
+    <button
+      type="button"
+      class="navbar-toggler ms-auto d-lg-none"
+      (click)="toggleMobileMenu()"
+      [attr.aria-expanded]="showMobileMenu()"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+  </nav>
+
+  <div class="border-top border-slate-200 bg-white shadow-sm d-lg-none" *ngIf="showMobileMenu()">
+    <div class="app-navbar-container d-grid gap-1 py-3">
+      <ng-container *ngFor="let item of menu(); let index = index">
+        <app-menu-button
+          [item]="item"
+          mode="mobile"
+          [path]="index.toString()"
+          [openPath]="openMenuPath()"
+          (openPathChange)="setOpenMenu($event)"
+          (navigate)="closeMenus()"
+        ></app-menu-button>
+      </ng-container>
+      <button type="button" class="btn btn-outline-secondary btn-sm mt-2 fw-semibold" (click)="auth.logout()" *ngIf="auth.isAuthenticated()">
+        Sign out
+      </button>
+    </div>
+  </div>
+</header>

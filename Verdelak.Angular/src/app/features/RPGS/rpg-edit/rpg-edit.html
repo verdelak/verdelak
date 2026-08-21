@@ -1,0 +1,78 @@
+<section class="edit">
+  <header class="head">
+    <h2>{{ isEdit ? 'Edit Product' : 'Add Product' }}</h2>
+    <a mat-stroked-button [routerLink]="['/rpg']">Back</a>
+  </header>
+
+  <form [formGroup]="form" (ngSubmit)="save()">
+    <mat-form-field appearance="outline">
+      <mat-label>Product Name</mat-label>
+      <input matInput formControlName="productName" required />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Description</mat-label>
+      <textarea matInput rows="3" formControlName="description"></textarea>
+    </mat-form-field>
+
+    <div class="row">
+      <mat-form-field appearance="outline">
+        <mat-label>System</mat-label>
+        <mat-select formControlName="systemID">
+          <mat-option [value]="null">-</mat-option>
+          <mat-option *ngFor="let s of systems" [value]="s.id">{{ s.name }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Series</mat-label>
+        <mat-select formControlName="seriesID">
+          <mat-option [value]="null">-</mat-option>
+          <mat-option *ngFor="let s of series" [value]="s.id">{{ s.name }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Type</mat-label>
+        <mat-select formControlName="productTypeID">
+          <mat-option [value]="null">-</mat-option>
+          <mat-option *ngFor="let t of types" [value]="t.id">{{ t.name }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="row">
+      <mat-form-field appearance="outline">
+        <mat-label>Edition</mat-label>
+        <input matInput formControlName="edition" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>ISBN</mat-label>
+        <input matInput formControlName="isbn" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Product #</mat-label>
+        <input matInput formControlName="productNum" />
+      </mat-form-field>
+    </div>
+
+    <div class="row">
+      <mat-form-field appearance="outline">
+        <mat-label>Status</mat-label>
+        <mat-select formControlName="status">
+          <mat-option value="H">Owned</mat-option>
+          <mat-option value="W">Wanted</mat-option>
+          <mat-option value="">Unknown</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <footer class="actions">
+      <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid">Save</button>
+      <button mat-stroked-button type="button" (click)="cancel()">Cancel</button>
+      <button *ngIf="isEdit" mat-stroked-button color="warn" type="button" (click)="delete()">Delete</button>
+    </footer>
+  </form>
+</section>

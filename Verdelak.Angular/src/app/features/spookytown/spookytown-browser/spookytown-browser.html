@@ -1,0 +1,188 @@
+<section class="grid gap-4">
+  <header class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+      <div>
+        <p class="text-xs font-bold uppercase tracking-wider text-blue-600">Inventory</p>
+        <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">Spookytown</h1>
+        <p class="mt-1 text-sm text-slate-600">{{ total() }} items</p>
+      </div>
+      <div class="flex flex-wrap gap-2 lg:justify-end">
+        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50" (click)="exportCurrentPageCsv()" [disabled]="items().length === 0">Page CSV</button>
+        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50" (click)="exportReportCsv()" [disabled]="items().length === 0">Report CSV</button>
+        <button *ngIf="canManage()" type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="startNew()">New item</button>
+      </div>
+    </div>
+  </header>
+
+  <div *ngIf="error()" class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800">{{ error() }}</div>
+  <div *ngIf="message()" class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">{{ message() }}</div>
+
+  <section *ngIf="items().length > 0" class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+    <article *ngFor="let card of summaryCards()" class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <p class="text-xs font-bold uppercase text-slate-500">{{ card.label }}</p>
+      <strong class="mt-2 block text-2xl font-bold leading-none text-slate-950">{{ card.value | number }}</strong>
+      <span class="mt-2 block text-xs text-slate-500">{{ card.detail }}</span>
+    </article>
+  </section>
+
+  <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+    <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-7">
+      <input class="rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 xl:col-span-2" type="search" [ngModel]="query()" (ngModelChange)="query.set($event)" placeholder="Search name or SKU" />
+      <select class="rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="typeId()" (ngModelChange)="typeId.set($event || null)">
+        <option [ngValue]="null">All types</option>
+        <option *ngFor="let type of types()" [ngValue]="type.id">{{ type.type }}</option>
+      </select>
+      <select class="rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="owned()" (ngModelChange)="owned.set($event)">
+        <option value="all">Owned: all</option>
+        <option value="true">Owned</option>
+        <option value="false">Not owned</option>
+      </select>
+      <select class="rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="wanted()" (ngModelChange)="wanted.set($event)">
+        <option value="all">Wanted: all</option>
+        <option value="true">Wanted</option>
+        <option value="false">Not wanted</option>
+      </select>
+      <select class="rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="retired()" (ngModelChange)="retired.set($event)">
+        <option value="all">Retired: all</option>
+        <option value="true">Retired</option>
+        <option value="false">Active</option>
+      </select>
+      <input class="rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="number" [ngModel]="year()" (ngModelChange)="year.set($event ? +$event : null)" placeholder="Year" />
+    </div>
+    <div class="mt-3 flex flex-wrap gap-2">
+      <button type="button" class="rounded-md bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700" (click)="applyFilters()">Apply</button>
+      <button type="button" class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="clearFilters()">Clear</button>
+    </div>
+  </section>
+
+  <section *ngIf="items().length > 0" class="grid gap-4 xl:grid-cols-3">
+    <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <h2 class="text-base font-bold text-slate-950">Type Report</h2>
+      <div class="mt-3 grid gap-2">
+        <button type="button" *ngFor="let row of typeReportRows()" class="grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 rounded-md border border-slate-200 px-3 py-2 text-left text-sm transition hover:bg-blue-50" (click)="applyTypeReport(row)">
+          <span class="font-semibold text-slate-900">{{ row.name }}</span>
+          <strong class="text-slate-950">{{ row.itemCount | number }}</strong>
+          <small class="col-span-2 text-slate-500">{{ row.quantity | number }} qty / {{ row.wantedCount | number }} wanted / {{ row.retiredCount | number }} retired</small>
+        </button>
+      </div>
+    </article>
+
+    <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <h2 class="text-base font-bold text-slate-950">Year Report</h2>
+      <div class="mt-3 grid gap-2">
+        <button type="button" *ngFor="let row of yearReportRows()" class="grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 rounded-md border border-slate-200 px-3 py-2 text-left text-sm transition hover:bg-blue-50" (click)="applyYearReport(row)">
+          <span class="font-semibold text-slate-900">{{ row.name }}</span>
+          <strong class="text-slate-950">{{ row.itemCount | number }}</strong>
+          <small class="col-span-2 text-slate-500">{{ row.quantity | number }} qty / {{ row.missingSkuCount | number }} missing SKU</small>
+        </button>
+      </div>
+    </article>
+
+    <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <h2 class="text-base font-bold text-slate-950">Attention</h2>
+      <div class="mt-3 grid gap-2">
+        <button type="button" *ngFor="let item of attentionRows()" class="grid gap-1 rounded-md border border-slate-200 px-3 py-2 text-left text-sm transition hover:bg-blue-50" (click)="selectItem(item)">
+          <span class="font-semibold text-slate-900">{{ item.name }}</span>
+          <small class="text-slate-500">
+            <ng-container *ngIf="item.want">Wanted</ng-container>
+            <ng-container *ngIf="!item.sku"> / Missing SKU</ng-container>
+            <ng-container *ngIf="!item.typeName"> / Missing type</ng-container>
+            <ng-container *ngIf="!item.year"> / Missing year</ng-container>
+            <ng-container *ngIf="(item.qty ?? 0) <= 0"> / Missing qty</ng-container>
+          </small>
+        </button>
+        <div *ngIf="attentionRows().length === 0" class="rounded-md border border-slate-200 px-3 py-6 text-center text-sm text-slate-500">No current-page rows need attention.</div>
+      </div>
+    </article>
+  </section>
+
+  <div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_28rem]">
+    <section class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-slate-200 text-sm">
+          <thead class="bg-slate-50 text-left text-xs font-bold uppercase text-slate-600">
+            <tr>
+              <th class="px-4 py-3"><button type="button" class="font-bold hover:text-blue-700" (click)="sortBy('name')">Name <span class="normal-case text-slate-400">{{ sortLabel('name') }}</span></button></th>
+              <th class="px-4 py-3">SKU</th>
+              <th class="px-4 py-3"><button type="button" class="font-bold hover:text-blue-700" (click)="sortBy('year')">Year <span class="normal-case text-slate-400">{{ sortLabel('year') }}</span></button></th>
+              <th class="px-4 py-3"><button type="button" class="font-bold hover:text-blue-700" (click)="sortBy('type')">Type <span class="normal-case text-slate-400">{{ sortLabel('type') }}</span></button></th>
+              <th class="px-4 py-3"><button type="button" class="font-bold hover:text-blue-700" (click)="sortBy('qty')">Qty <span class="normal-case text-slate-400">{{ sortLabel('qty') }}</span></button></th>
+              <th class="px-4 py-3">Flags</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <tr *ngFor="let item of items()" class="cursor-pointer hover:bg-blue-50/60" [class.bg-blue-50]="form().id === item.id" (click)="selectItem(item)">
+              <td class="px-4 py-3 font-semibold text-slate-900">{{ item.name }}</td>
+              <td class="px-4 py-3 text-slate-700">{{ item.sku || '-' }}</td>
+              <td class="px-4 py-3 text-slate-700">{{ item.year || '-' }}</td>
+              <td class="px-4 py-3 text-slate-700">{{ item.typeName || '-' }}</td>
+              <td class="px-4 py-3 text-slate-700">{{ item.qty ?? '-' }}</td>
+              <td class="px-4 py-3">
+                <span *ngIf="item.own" class="mr-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700">Own</span>
+                <span *ngIf="item.want" class="mr-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-700">Want</span>
+                <span *ngIf="item.retired" class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600">Retired</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div *ngIf="items().length === 0 && !loading()" class="border-t border-slate-200 p-8 text-center text-sm text-slate-500">No Spookytown items found.</div>
+      <div class="flex items-center justify-between border-t border-slate-200 px-4 py-3 text-sm text-slate-600">
+        <button type="button" class="rounded-md border border-slate-300 px-3 py-1.5 font-bold disabled:cursor-not-allowed disabled:opacity-50" [disabled]="page() <= 1" (click)="load(page() - 1)">Previous</button>
+        <span>Page {{ page() }} of {{ totalPages() }}</span>
+        <button type="button" class="rounded-md border border-slate-300 px-3 py-1.5 font-bold disabled:cursor-not-allowed disabled:opacity-50" [disabled]="page() >= totalPages()" (click)="load(page() + 1)">Next</button>
+      </div>
+    </section>
+
+    <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <h2 class="text-lg font-bold text-slate-950">{{ form().id ? 'Edit Spookytown Item' : 'Spookytown Item' }}</h2>
+      <form class="mt-4 grid gap-4" (ngSubmit)="save()">
+        <label class="grid gap-1 text-sm font-semibold text-slate-700">
+          Name
+          <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" name="name" [ngModel]="form().name" (ngModelChange)="setFormField('name', $event)" [disabled]="!canManage()" />
+        </label>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <label class="grid gap-1 text-sm font-semibold text-slate-700">
+            SKU
+            <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" name="sku" [ngModel]="form().sku" (ngModelChange)="setFormField('sku', $event)" [disabled]="!canManage()" />
+          </label>
+          <label class="grid gap-1 text-sm font-semibold text-slate-700">
+            Type
+            <select class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="typeId" [ngModel]="form().typeId" (ngModelChange)="setFormField('typeId', $event || null)" [disabled]="!canManage()">
+              <option [ngValue]="null">No type</option>
+              <option *ngFor="let type of types()" [ngValue]="type.id">{{ type.type }}</option>
+            </select>
+          </label>
+        </div>
+        <div class="grid gap-4 sm:grid-cols-3">
+          <label class="grid gap-1 text-sm font-semibold text-slate-700">
+            Year
+            <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="number" name="year" [ngModel]="form().year" (ngModelChange)="setFormField('year', $event ? +$event : null)" [disabled]="!canManage()" />
+          </label>
+          <label class="grid gap-1 text-sm font-semibold text-slate-700">
+            Qty
+            <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="number" name="qty" [ngModel]="form().qty" (ngModelChange)="setFormField('qty', $event ? +$event : null)" [disabled]="!canManage()" />
+          </label>
+          <label class="grid gap-1 text-sm font-semibold text-slate-700">
+            Retired
+            <input class="h-10 w-5" type="checkbox" name="retired" [ngModel]="form().retired" (ngModelChange)="setFormField('retired', $event)" [disabled]="!canManage()" />
+          </label>
+        </div>
+        <label class="grid gap-1 text-sm font-semibold text-slate-700">
+          URL
+          <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="url" name="url" [ngModel]="form().url" (ngModelChange)="setFormField('url', $event)" [disabled]="!canManage()" />
+        </label>
+        <div class="flex gap-6 text-sm font-semibold text-slate-700">
+          <label class="flex items-center gap-2"><input type="checkbox" name="own" [ngModel]="form().own" (ngModelChange)="setFormField('own', $event)" [disabled]="!canManage()" /> Own</label>
+          <label class="flex items-center gap-2"><input type="checkbox" name="want" [ngModel]="form().want" (ngModelChange)="setFormField('want', $event)" [disabled]="!canManage()" /> Want</label>
+        </div>
+
+        <div class="flex flex-col gap-2 sm:flex-row" *ngIf="canManage()">
+          <button type="submit" class="rounded-md bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60" [disabled]="loading()">Save</button>
+          <button type="button" class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="startNew()">Clear</button>
+          <button type="button" class="rounded-md border border-red-200 bg-white px-4 py-2 text-sm font-bold text-red-700 shadow-sm transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50" (click)="deleteSelected()" [disabled]="loading() || !form().id">Delete</button>
+        </div>
+      </form>
+    </section>
+  </div>
+</section>

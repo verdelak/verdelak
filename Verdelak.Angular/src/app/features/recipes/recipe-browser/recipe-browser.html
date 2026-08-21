@@ -1,0 +1,590 @@
+<main class="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
+  <section class="flex flex-col gap-3 border-b border-slate-200 pb-4 lg:flex-row lg:items-end lg:justify-between">
+    <div>
+      <p class="text-sm font-bold uppercase tracking-wide text-emerald-700">Personal</p>
+      <h1 class="text-3xl font-bold text-slate-950">Recipes</h1>
+      <p class="mt-1 text-sm text-slate-600">Browse recipes by category, cuisine, ingredient, and food tags.</p>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+      <span class="rounded border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700">{{ shownCount() }} shown</span>
+      <button *ngIf="isAdmin()" type="button" class="rounded border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700" (click)="toggleSourceManager()">{{ managingSources() ? 'Hide Sources' : 'Sources' }}</button>
+      <button *ngIf="isAdmin()" type="button" class="rounded bg-emerald-900 px-4 py-2 text-sm font-bold text-white" (click)="newRecipe()">New Recipe</button>
+      <button type="button" class="rounded border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 disabled:opacity-50" [disabled]="loading()" (click)="load()">
+        {{ loading() ? 'Refreshing.' : 'Refresh' }}
+      </button>
+    </div>
+  </section>
+
+  <section class="grid gap-3 rounded border border-slate-200 bg-white p-4 shadow-sm md:grid-cols-2 xl:grid-cols-6">
+    <label class="text-sm font-bold text-slate-700 xl:col-span-2">
+      Search
+      <input class="mt-1 w-full rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="search()" (ngModelChange)="search.set($event)" (keyup.enter)="applyFilters()" placeholder="title, ingredient, notes">
+    </label>
+
+    <label class="text-sm font-bold text-slate-700">
+      Ingredient
+      <input class="mt-1 w-full rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="ingredientFilter()" (ngModelChange)="ingredientFilter.set($event)" (keyup.enter)="applyFilters()" placeholder="rice, tomato">
+    </label>
+
+    <label class="text-sm font-bold text-slate-700">
+      Category
+      <select class="mt-1 w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="categoryFilter()" (ngModelChange)="categoryFilter.set($event); applyFilters()">
+        <option value="All">All categories</option>
+        <option *ngFor="let category of categoryOptions()" [value]="category">{{ category }}</option>
+      </select>
+    </label>
+
+    <label class="text-sm font-bold text-slate-700">
+      Cuisine
+      <select class="mt-1 w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="cuisineFilter()" (ngModelChange)="cuisineFilter.set($event); applyFilters()">
+        <option value="All">All cuisines</option>
+        <option *ngFor="let cuisine of cuisineOptions()" [value]="cuisine">{{ cuisine }}</option>
+      </select>
+    </label>
+
+    <label class="text-sm font-bold text-slate-700">
+      Tag
+      <select class="mt-1 w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="tagFilter()" (ngModelChange)="tagFilter.set($event); applyFilters()">
+        <option value="All">All tags</option>
+        <option *ngFor="let tag of tagOptions()" [value]="tag">{{ tag }}</option>
+      </select>
+    </label>
+
+    <label class="text-sm font-bold text-slate-700">
+      Cookbook
+      <select class="mt-1 w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="bookFilter()" (ngModelChange)="bookFilter.set($event === null || $event === 'null' ? null : +$event); applyFilters()">
+        <option [ngValue]="null">All books</option>
+        <option *ngFor="let book of recipeBooks()" [ngValue]="book.id">{{ book.name }}</option>
+      </select>
+    </label>
+
+    <label class="text-sm font-bold text-slate-700">
+      Source
+      <select class="mt-1 w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="sourceStatusFilter()" (ngModelChange)="sourceStatusFilter.set($event); applyFilters()">
+        <option value="All">Any source</option>
+        <option value="Linked">Linked source</option>
+        <option value="Missing">Missing source</option>
+      </select>
+    </label>
+
+    <label class="text-sm font-bold text-slate-700">
+      Readiness
+      <select class="mt-1 w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="readinessFilter()" (ngModelChange)="readinessFilter.set($event); applyFilters()">
+        <option value="All">Any readiness</option>
+        <option value="Ready">Ready</option>
+        <option value="MissingIngredients">Missing ingredients</option>
+        <option value="MissingInstructions">Missing instructions</option>
+        <option value="MissingServings">Missing servings</option>
+      </select>
+    </label>
+
+    <label class="text-sm font-bold text-slate-700">
+      Max time
+      <input type="number" min="0" step="5" class="mt-1 w-full rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="maxTotalMinutesFilter()" (ngModelChange)="maxTotalMinutesFilter.set($event === '' ? null : +$event)" (keyup.enter)="applyFilters()" placeholder="minutes">
+    </label>
+
+    <label class="text-sm font-bold text-slate-700">
+      Type
+      <select class="mt-1 w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="canningFilter()" (ngModelChange)="canningFilter.set($event); applyFilters()">
+        <option value="All">All recipes</option>
+        <option value="Canning">Canning only</option>
+        <option value="NotCanning">Not canning</option>
+      </select>
+    </label>
+
+    <div class="flex flex-wrap items-end gap-3 xl:col-span-2">
+      <label class="flex items-center gap-2 text-sm font-bold text-slate-700">
+        <input type="checkbox" class="h-4 w-4 rounded border-slate-300" [ngModel]="favoritesOnly()" (ngModelChange)="favoritesOnly.set($event); applyFilters()">
+        Favorites
+      </label>
+      <label *ngIf="isAdmin()" class="flex items-center gap-2 text-sm font-bold text-slate-700">
+        <input type="checkbox" class="h-4 w-4 rounded border-slate-300" [ngModel]="includeInactive()" (ngModelChange)="includeInactive.set($event); applyFilters()">
+        Inactive
+      </label>
+      <label class="flex items-center gap-2 text-sm font-bold text-slate-700">
+        <input type="checkbox" class="h-4 w-4 rounded border-slate-300" [ngModel]="recentlyUsedOnly()" (ngModelChange)="recentlyUsedOnly.set($event); applyFilters()">
+        Recently used
+      </label>
+      <label *ngIf="recentlyUsedOnly()" class="text-sm font-bold text-slate-700">
+        Window
+        <select class="ml-2 rounded border border-slate-300 bg-white px-2 py-1.5 text-sm font-semibold text-slate-800" [ngModel]="recentlyUsedDays()" (ngModelChange)="recentlyUsedDays.set(+$event); applyFilters()">
+          <option [ngValue]="30">30 days</option>
+          <option [ngValue]="90">90 days</option>
+          <option [ngValue]="180">180 days</option>
+          <option [ngValue]="365">1 year</option>
+        </select>
+      </label>
+      <button type="button" class="rounded bg-slate-900 px-4 py-2 text-sm font-bold text-white" (click)="applyFilters()">Apply</button>
+      <button type="button" class="rounded border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700" (click)="clearFilters()">Clear</button>
+    </div>
+  </section>
+
+  <section *ngIf="isAdmin() && managingSources()" class="rounded border border-slate-200 bg-white p-4 shadow-sm">
+    <div class="flex flex-col gap-3 border-b border-slate-200 pb-3 lg:flex-row lg:items-start lg:justify-between">
+      <div>
+        <h2 class="text-lg font-bold text-slate-950">Recipe Books / Sources</h2>
+        <p class="text-sm text-slate-600">Use these for cookbooks, binders, recipe cards, magazines, or other reusable recipe sources.</p>
+        <p class="mt-1 text-xs font-bold uppercase text-slate-500">Scope: {{ sourceScopeLabel() }}</p>
+      </div>
+      <button type="button" class="rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700" (click)="exportRecipeSourceCsv()">Export sources</button>
+    </div>
+
+    <div class="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+      <article *ngFor="let card of recipeSourceCards()" class="rounded border border-slate-200 bg-slate-50 px-3 py-2">
+        <p class="text-xs font-bold uppercase text-slate-500">{{ card.label }}</p>
+        <p class="mt-1 text-xl font-bold text-slate-950">{{ card.value }}</p>
+        <p class="text-xs font-semibold text-slate-600">{{ card.detail }}</p>
+      </article>
+    </div>
+
+    <div class="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      <section class="rounded border border-slate-200 bg-white">
+        <div class="border-b border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold uppercase text-slate-500">Source Coverage</div>
+        <div class="divide-y divide-slate-100">
+          <article *ngFor="let row of sourceCoverageRows()" class="px-3 py-2">
+            <div class="flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <p class="text-sm font-bold text-slate-950">{{ row.label }}</p>
+                <p class="text-xs font-semibold text-slate-500">{{ row.favoriteCount }} favorite / {{ row.canningCount }} canning / {{ row.recentCount }} used</p>
+              </div>
+              <span class="rounded border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-bold text-slate-700">{{ row.count }} recipe{{ row.count === 1 ? '' : 's' }}</span>
+            </div>
+            <button *ngIf="row.label !== 'Source not set'" type="button" class="mt-2 rounded border border-emerald-200 px-2 py-1 text-xs font-bold text-emerald-800" (click)="filterToSourceLabel(row.label)">Filter</button>
+          </article>
+          <p *ngIf="sourceCoverageRows().length === 0" class="px-3 py-4 text-sm text-slate-500">No source coverage in the current filter set.</p>
+        </div>
+      </section>
+
+      <section class="rounded border border-slate-200 bg-white">
+        <div class="border-b border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold uppercase text-slate-500">Missing Source Review</div>
+        <div class="divide-y divide-slate-100">
+          <article *ngFor="let recipe of missingSourceRecipes()" class="px-3 py-2">
+            <div class="flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <p class="text-sm font-bold text-slate-950">{{ recipe.title }}</p>
+                <p class="text-xs font-semibold text-slate-500">{{ recipe.category }}{{ recipe.cuisine ? ' / ' + recipe.cuisine : '' }}</p>
+              </div>
+              <span class="rounded border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-bold text-amber-800">Needs source</span>
+            </div>
+            <button type="button" class="mt-2 rounded border border-sky-200 px-2 py-1 text-xs font-bold text-sky-800" (click)="selectRecipe(recipe.id)">Open</button>
+          </article>
+          <p *ngIf="missingSourceRecipes().length === 0" class="px-3 py-4 text-sm text-slate-500">No visible recipes are missing a cookbook/source link.</p>
+        </div>
+      </section>
+    </div>
+
+    <div class="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
+      <div class="overflow-hidden rounded border border-slate-200">
+        <table class="min-w-full divide-y divide-slate-200 text-sm">
+          <thead class="bg-slate-50 text-left text-xs font-bold uppercase text-slate-500">
+            <tr>
+              <th class="px-3 py-2">Name</th>
+              <th class="px-3 py-2">Description</th>
+              <th class="px-3 py-2 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <tr *ngFor="let book of recipeBooks()" class="align-top">
+              <td class="px-3 py-2 font-semibold text-slate-950">{{ book.name }}</td>
+              <td class="px-3 py-2 text-slate-600">{{ book.description || '-' }}</td>
+              <td class="whitespace-nowrap px-3 py-2 text-right">
+                <button type="button" class="rounded border border-sky-200 px-2 py-1 text-xs font-bold text-sky-800" (click)="editBook(book)">Edit</button>
+                <button type="button" class="ml-2 rounded border border-rose-200 px-2 py-1 text-xs font-bold text-rose-700" (click)="deleteBook(book)">Delete</button>
+              </td>
+            </tr>
+            <tr *ngIf="recipeBooks().length === 0">
+              <td colspan="3" class="px-3 py-4 text-sm text-slate-500">No recipe books or sources yet.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <form class="rounded border border-slate-200 bg-slate-50 p-3" (ngSubmit)="saveBook()">
+        <h3 class="text-sm font-bold uppercase text-slate-500">{{ bookForm().id ? 'Edit source' : 'New source' }}</h3>
+        <label class="mt-3 block text-sm font-bold text-slate-700">Name
+          <input class="mt-1 w-full rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="bookForm().name" (ngModelChange)="setBookForm('name', $event)" name="recipeBookName" required>
+        </label>
+        <label class="mt-3 block text-sm font-bold text-slate-700">Description
+          <textarea rows="4" class="mt-1 w-full rounded border border-slate-300 px-3 py-2 text-sm text-slate-800" [ngModel]="bookForm().description" (ngModelChange)="setBookForm('description', $event)" name="recipeBookDescription"></textarea>
+        </label>
+        <div class="mt-3 flex flex-wrap gap-2">
+          <button type="submit" class="rounded bg-emerald-900 px-3 py-2 text-sm font-bold text-white disabled:opacity-50" [disabled]="saving()">{{ saving() ? 'Saving.' : 'Save Source' }}</button>
+          <button type="button" class="rounded border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700" (click)="cancelBookEdit()">Clear</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <details *ngIf="isAdmin()" class="rounded border border-slate-200 bg-white p-4 shadow-sm">
+    <summary class="cursor-pointer text-sm font-bold text-slate-900">
+      Bulk import / paste recipes {{ importPreview().length ? '(' + validImportRows().length + ' ready)' : '' }}
+    </summary>
+
+    <div class="mt-4 grid gap-3">
+      <textarea rows="6" class="w-full rounded border border-slate-300 px-3 py-2 text-sm text-slate-800" [ngModel]="importText()" (ngModelChange)="importText.set($event)" placeholder="One title per line, or CSV/TSV with columns: title, category, cuisine, tags, description, notes, book, page, prep minutes, cook minutes, servings, canning&#10;Lasagna, Dinner, Italian, Pasta; Freezer, Family lasagna&#10;Dill Pickles, Canning, American, Pickles; Summer"></textarea>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <button type="button" class="rounded bg-emerald-900 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" [disabled]="importing() || validImportRows().length === 0" (click)="importRows()">
+          {{ importing() ? 'Importing.' : 'Import Valid Rows' }}
+        </button>
+        <button type="button" class="rounded border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700" [disabled]="importing() || importText().length === 0" (click)="clearImport()">Clear</button>
+        <span class="text-sm font-semibold text-slate-600">{{ validImportRows().length }} valid / {{ importPreview().length }} parsed</span>
+      </div>
+
+      <div *ngIf="importPreview().length" class="max-h-80 overflow-auto rounded border border-slate-200">
+        <table class="min-w-full divide-y divide-slate-200 text-sm">
+          <thead class="bg-slate-50 text-left text-xs font-bold uppercase text-slate-500">
+            <tr>
+              <th class="px-3 py-2">Title</th>
+              <th class="px-3 py-2">Category</th>
+              <th class="px-3 py-2">Cuisine</th>
+              <th class="px-3 py-2">Tags</th>
+              <th class="px-3 py-2">Source</th>
+              <th class="px-3 py-2">Flags</th>
+              <th class="px-3 py-2">Warnings</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <tr *ngFor="let row of importPreview()" class="align-top">
+              <td class="px-3 py-2 font-semibold text-slate-950">{{ row.title || '-' }}</td>
+              <td class="px-3 py-2 text-slate-700">{{ row.category }}</td>
+              <td class="px-3 py-2 text-slate-700">{{ row.cuisine || '-' }}</td>
+              <td class="px-3 py-2 text-slate-700">{{ row.tags.length ? row.tags.join(', ') : '-' }}</td>
+              <td class="px-3 py-2 text-slate-700">{{ row.recipeBookId ? 'Cookbook' : (row.sourceDetail || '-') }}</td>
+              <td class="whitespace-nowrap px-3 py-2 text-slate-700">{{ row.isCanning ? 'Canning' : '-' }}</td>
+              <td class="px-3 py-2">
+                <span class="rounded border px-2 py-1 text-xs font-bold" [ngClass]="row.warnings.length ? 'border-amber-200 bg-amber-50 text-amber-800' : 'border-emerald-200 bg-emerald-50 text-emerald-800'">
+                  {{ row.warnings.length ? row.warnings.join(' ') : 'Ready' }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </details>
+
+  <div *ngIf="error()" class="rounded border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-800">{{ error() }}</div>
+  <div *ngIf="message()" class="rounded border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">{{ message() }}</div>
+
+  <section class="grid gap-6 lg:grid-cols-[22rem_minmax(0,1fr)]">
+    <aside class="overflow-hidden rounded border border-slate-200 bg-white shadow-sm">
+      <div class="border-b border-slate-200 bg-slate-50 px-4 py-3">
+        <h2 class="text-lg font-bold text-slate-950">Recipe Box</h2>
+      </div>
+
+      <div *ngIf="loading()" class="p-6 text-sm text-slate-500">Loading recipes.</div>
+      <div *ngIf="!loading() && recipes().length === 0" class="p-6 text-sm text-slate-500">No recipes match the current filters.</div>
+
+      <div class="max-h-[42rem] divide-y divide-slate-100 overflow-auto">
+        <button *ngFor="let recipe of recipes()" type="button" class="block w-full px-4 py-3 text-left hover:bg-emerald-50" [class.bg-emerald-50]="selected()?.id === recipe.id" (click)="selectRecipe(recipe.id)">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <div class="truncate text-sm font-bold text-slate-950">{{ recipe.title }}</div>
+              <div class="mt-1 text-xs font-semibold text-slate-500">{{ recipe.category }}{{ recipe.cuisine ? ' / ' + recipe.cuisine : '' }}</div>
+              <div *ngIf="recipe.recipeBookName" class="mt-1 truncate text-xs font-semibold text-emerald-700">{{ recipe.recipeBookName }}</div>
+            </div>
+            <span *ngIf="recipe.isFavorite" class="rounded border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-bold text-amber-800">Fav</span>
+          </div>
+          <p class="mt-2 line-clamp-2 text-sm text-slate-600">{{ recipe.description || tagLabel(recipe) }}</p>
+        </button>
+      </div>
+    </aside>
+
+    <section *ngIf="!editing() && selected()" class="rounded border border-slate-200 bg-white shadow-sm">
+      <div class="flex flex-col gap-3 border-b border-slate-200 p-4 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <h2 class="text-2xl font-bold text-slate-950">{{ selected()!.title }}</h2>
+            <span *ngIf="selected()!.isFavorite" class="rounded border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-bold text-amber-800">Favorite</span>
+            <span *ngIf="selected()!.isCanning" class="rounded border border-emerald-200 bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-800">Canning</span>
+            <span *ngIf="!selected()!.isActive" class="rounded border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-bold text-slate-600">Inactive</span>
+          </div>
+          <p class="mt-1 text-sm text-slate-600">{{ selected()!.description || 'No description yet.' }}</p>
+          <div class="mt-3 flex flex-wrap gap-2">
+            <span class="rounded border border-emerald-200 bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-800">{{ selected()!.category }}</span>
+            <span *ngIf="selected()!.cuisine" class="rounded border border-sky-200 bg-sky-50 px-2 py-1 text-xs font-bold text-sky-800">{{ selected()!.cuisine }}</span>
+            <span *ngIf="selected()!.recipeBookName" class="rounded border border-purple-200 bg-purple-50 px-2 py-1 text-xs font-bold text-purple-800">{{ selected()!.recipeBookName }}</span>
+            <span *ngFor="let tag of selected()!.tags" class="rounded border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-bold text-slate-700">{{ tag.name }}</span>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button *ngIf="isAdmin()" type="button" class="rounded border border-purple-200 px-4 py-2 text-sm font-bold text-purple-800 disabled:opacity-50" [disabled]="saving()" (click)="markUsed()">
+            {{ saving() ? 'Saving.' : 'Mark Used' }}
+          </button>
+          <button *ngIf="isAdmin()" type="button" class="rounded border border-emerald-200 px-4 py-2 text-sm font-bold text-emerald-800 disabled:opacity-50" [disabled]="shopping() || selectedIngredientCount() === 0" (click)="addToShoppingList()">
+            {{ shopping() ? 'Adding.' : 'Add Selected' }}
+          </button>
+          <button *ngIf="isAdmin()" type="button" class="rounded border border-sky-200 px-4 py-2 text-sm font-bold text-sky-800" (click)="editSelected()">Edit</button>
+          <button *ngIf="isAdmin()" type="button" class="rounded border border-rose-200 px-4 py-2 text-sm font-bold text-rose-700 disabled:opacity-50" [disabled]="deleting()" (click)="deleteSelected()">Delete</button>
+        </div>
+      </div>
+
+      <div class="grid gap-4 p-4 xl:grid-cols-[minmax(0,1fr)_20rem]">
+        <div class="grid gap-4">
+          <section>
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h3 class="text-lg font-bold text-slate-950">Ingredients</h3>
+                <p *ngIf="isAdmin()" class="mt-1 text-xs font-semibold text-slate-500">{{ selectedIngredientCount() }} selected for shopping</p>
+              </div>
+              <div *ngIf="isAdmin()" class="flex flex-wrap items-end gap-2">
+                <label class="text-xs font-bold text-slate-700">
+                  Target servings
+                  <input type="number" min="0" class="mt-1 w-28 rounded border border-slate-300 px-2 py-1.5 text-sm font-semibold text-slate-800" [ngModel]="targetServings()" (ngModelChange)="targetServings.set($event === '' ? null : +$event)">
+                </label>
+                <label class="text-xs font-bold text-slate-700">
+                  Store
+                  <input class="mt-1 w-28 rounded border border-slate-300 px-2 py-1.5 text-sm font-semibold text-slate-800" [ngModel]="shoppingStore()" (ngModelChange)="shoppingStore.set($event)" placeholder="Meijer">
+                </label>
+                <label class="text-xs font-bold text-slate-700">
+                  Aisle
+                  <input class="mt-1 w-28 rounded border border-slate-300 px-2 py-1.5 text-sm font-semibold text-slate-800" [ngModel]="shoppingAisle()" (ngModelChange)="shoppingAisle.set($event)" placeholder="Produce">
+                </label>
+                <label class="text-xs font-bold text-slate-700">
+                  Sort start
+                  <input type="number" min="0" step="1" class="mt-1 w-24 rounded border border-slate-300 px-2 py-1.5 text-sm font-semibold text-slate-800" [ngModel]="shoppingSortOrderStart()" (ngModelChange)="shoppingSortOrderStart.set($event === '' ? null : +$event)">
+                </label>
+                <label class="text-xs font-bold text-slate-700">
+                  Group
+                  <input class="mt-1 w-40 rounded border border-slate-300 px-2 py-1.5 text-sm font-semibold text-slate-800" [ngModel]="shoppingGroupName()" (ngModelChange)="shoppingGroupName.set($event)" placeholder="Chili + Pickles">
+                </label>
+                <label class="flex items-center gap-2 pb-1.5 text-xs font-bold text-slate-700">
+                  <input type="checkbox" class="h-4 w-4 rounded border-slate-300" [ngModel]="combineShoppingDuplicates()" (ngModelChange)="combineShoppingDuplicates.set($event)">
+                  Combine matches
+                </label>
+                <label class="flex items-center gap-2 pb-1.5 text-xs font-bold text-slate-700">
+                  <input type="checkbox" class="h-4 w-4 rounded border-slate-300" [ngModel]="skipPantryItems()" (ngModelChange)="skipPantryItems.set($event)">
+                  Skip pantry
+                </label>
+                <button type="button" class="rounded border border-slate-300 px-3 py-1.5 text-xs font-bold text-slate-700" (click)="selectAllIngredients()">All</button>
+                <button type="button" class="rounded border border-slate-300 px-3 py-1.5 text-xs font-bold text-slate-700" (click)="clearSelectedIngredients()">None</button>
+              </div>
+            </div>
+            <div class="mt-2 divide-y divide-slate-100 rounded border border-slate-200">
+              <div *ngFor="let ingredient of selected()!.ingredients" class="grid gap-2 px-3 py-2 text-sm sm:grid-cols-[2rem_7rem_minmax(0,1fr)_9rem_9rem]">
+                <label *ngIf="isAdmin()" class="flex items-center">
+                  <input type="checkbox" class="h-4 w-4 rounded border-slate-300" [ngModel]="selectedIngredientIds().includes(ingredient.id)" (ngModelChange)="toggleIngredient(ingredient.id, $event)">
+                </label>
+                <span *ngIf="!isAdmin()"></span>
+                <span class="font-bold text-slate-700">{{ quantityLabel(ingredient) || '-' }}</span>
+                <span class="text-slate-950">{{ ingredient.itemName }}</span>
+                <span class="text-slate-500">{{ ingredient.preparation || ingredient.shoppingCategory }}</span>
+                <span class="font-semibold text-emerald-800">{{ scaledQuantityLabel(ingredient) }}</span>
+              </div>
+              <div *ngIf="selected()!.ingredients.length === 0" class="px-3 py-4 text-sm text-slate-500">No ingredients yet.</div>
+            </div>
+
+            <div *ngIf="isAdmin()" class="mt-3 rounded border border-slate-200 bg-slate-50 p-3">
+              <div class="mb-3 grid gap-2 lg:grid-cols-4">
+                <article *ngFor="let card of mealPlanSummaryCards()" class="rounded border border-slate-200 bg-white px-3 py-2">
+                  <p class="text-xs font-bold uppercase text-slate-500">{{ card.label }}</p>
+                  <p class="mt-1 truncate text-sm font-bold text-slate-950">{{ card.value }}</p>
+                  <p class="text-xs font-semibold text-slate-600">{{ card.detail }}</p>
+                </article>
+              </div>
+              <div *ngIf="mealPlanGroupSuggestions().length" class="mb-3 flex flex-wrap items-center gap-2">
+                <span class="text-xs font-bold uppercase text-slate-500">Group presets</span>
+                <button *ngFor="let preset of mealPlanGroupSuggestions()" type="button" class="rounded border border-emerald-200 bg-white px-2 py-1 text-xs font-bold text-emerald-800" (click)="applyMealPlanGroupName(preset)">
+                  {{ preset }}
+                </button>
+              </div>
+              <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <h4 class="text-sm font-bold text-slate-950">Shopping readiness</h4>
+                  <p class="mt-1 text-xs font-semibold text-slate-500">
+                    {{ shoppingPreviewRows().length }} shopping row{{ shoppingPreviewRows().length === 1 ? '' : 's' }} previewed
+                    <span *ngIf="shoppingScaleFactor() !== 1"> / scale x{{ shoppingScaleFactor() }}</span>
+                  </p>
+                </div>
+                <span class="rounded border px-2 py-1 text-xs font-bold" [ngClass]="shoppingReadinessWarnings().length ? 'border-amber-200 bg-amber-50 text-amber-800' : 'border-emerald-200 bg-emerald-50 text-emerald-800'">
+                  {{ shoppingReadinessWarnings().length ? 'Needs attention' : 'Ready' }}
+                </span>
+              </div>
+
+              <ul *ngIf="shoppingReadinessWarnings().length" class="mt-2 grid gap-1 text-xs font-semibold text-amber-800">
+                <li *ngFor="let warning of shoppingReadinessWarnings()">{{ warning }}</li>
+              </ul>
+
+              <div *ngIf="shoppingPreviewGroups().length" class="mt-3 grid max-h-72 gap-2 overflow-auto rounded border border-slate-200 bg-white p-2">
+                <section *ngFor="let group of shoppingPreviewGroups()" class="rounded border border-slate-100">
+                  <div class="flex items-center justify-between gap-2 bg-slate-50 px-3 py-2">
+                    <h5 class="text-xs font-bold uppercase text-slate-600">{{ group.label }}</h5>
+                    <span class="text-xs font-bold text-slate-500">{{ group.rows.length }} row{{ group.rows.length === 1 ? '' : 's' }}</span>
+                  </div>
+                  <div class="divide-y divide-slate-100">
+                    <div *ngFor="let row of group.rows" class="grid gap-2 px-3 py-2 text-xs sm:grid-cols-[minmax(0,1fr)_5rem_4rem_minmax(0,1fr)_7rem]">
+                      <span class="font-semibold text-slate-950">{{ row.itemName }}</span>
+                      <span class="text-slate-700">{{ previewQuantityLabel(row) }}</span>
+                      <span class="text-slate-700">{{ row.sortOrder ?? '-' }}</span>
+                      <span class="text-slate-600">{{ row.notes || '-' }}</span>
+                      <span class="rounded border px-2 py-1 text-center text-xs font-bold" [ngClass]="row.pantryMatchCount ? (skipPantryItems() ? 'border-amber-200 bg-amber-50 text-amber-800' : 'border-teal-200 bg-teal-50 text-teal-800') : 'border-slate-200 bg-slate-50 text-slate-500'" [title]="row.pantryMatchDetail || ''">
+                        {{ row.pantryMatchCount ? (skipPantryItems() ? 'Will skip' : 'On hand') : 'Need' }}
+                      </span>
+                    </div>
+                  </div>
+                </section>
+              </div>
+
+              <div *ngIf="lastShoppingResult() as result" class="mt-3 rounded border border-emerald-200 bg-emerald-50 p-3">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <h4 class="text-sm font-bold text-emerald-950">Last Shopping Push</h4>
+                    <p class="text-xs font-semibold text-emerald-800">{{ result.createdCount }} created / {{ result.updatedCount }} updated / scale x{{ result.scaleFactor }}</p>
+                  </div>
+                  <span *ngIf="result.skippedPantryCount" class="rounded border border-amber-200 bg-white px-2 py-1 text-xs font-bold text-amber-800">{{ result.skippedPantryCount }} skipped from pantry</span>
+                </div>
+                <div *ngIf="result.skippedPantryItems.length" class="mt-2 rounded border border-amber-200 bg-white p-2">
+                  <h5 class="text-xs font-bold uppercase text-amber-800">Skipped Pantry Matches</h5>
+                  <div class="mt-2 grid gap-2 md:grid-cols-2">
+                    <div *ngFor="let item of result.skippedPantryItems" class="rounded border border-amber-100 bg-amber-50 px-3 py-2 text-xs">
+                      <p class="font-bold text-slate-950">{{ item.itemName }}</p>
+                      <p class="font-semibold text-slate-700">{{ previewQuantityLabel(item) }} / {{ item.category }}</p>
+                      <p class="text-slate-600">{{ item.pantryMatch || 'Pantry match' }}</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="mt-2 grid gap-2 lg:grid-cols-2">
+                  <section *ngFor="let group of lastShoppingResultGroups()" class="rounded border border-emerald-100 bg-white">
+                    <div class="flex items-center justify-between gap-2 bg-emerald-50 px-3 py-2">
+                      <h5 class="text-xs font-bold uppercase text-emerald-800">{{ group.label }}</h5>
+                      <span class="text-xs font-bold text-emerald-700">{{ group.rows.length }} row{{ group.rows.length === 1 ? '' : 's' }}</span>
+                    </div>
+                    <div class="divide-y divide-emerald-100">
+                      <div *ngFor="let row of group.rows" class="flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-xs">
+                        <div>
+                          <p class="font-bold text-slate-950">{{ row.itemName }}</p>
+                          <p class="font-semibold text-slate-600">{{ previewQuantityLabel(row) }} / sort {{ row.sortOrder ?? '-' }}</p>
+                        </div>
+                        <span class="rounded border px-2 py-1 text-xs font-bold" [ngClass]="shoppingResultTone(row)">{{ shoppingResultVerb(row) }}</span>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section>
+            <h3 class="text-lg font-bold text-slate-950">Instructions</h3>
+            <ol class="mt-2 grid gap-2">
+              <li *ngFor="let instruction of selected()!.instructions" class="rounded border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800">
+                <span class="font-bold text-slate-950">{{ instruction.stepNumber }}.</span>
+                {{ instruction.text }}
+              </li>
+            </ol>
+            <div *ngIf="selected()!.instructions.length === 0" class="mt-2 rounded border border-slate-200 px-3 py-4 text-sm text-slate-500">No instructions yet.</div>
+          </section>
+        </div>
+
+        <aside class="rounded border border-slate-200 bg-slate-50 p-4">
+          <h3 class="text-lg font-bold text-slate-950">Details</h3>
+          <dl class="mt-3 grid gap-3 text-sm">
+            <div><dt class="font-bold text-slate-500">Time</dt><dd class="text-slate-900">{{ timeLabel(selected()!) }}<span *ngIf="selectedTotalMinutes()"> / {{ selectedTotalMinutes() }}m total</span></dd></div>
+            <div><dt class="font-bold text-slate-500">Servings</dt><dd class="text-slate-900">{{ selected()!.servings || '-' }}</dd></div>
+            <div><dt class="font-bold text-slate-500">Cookbook</dt><dd class="text-slate-900">{{ selected()!.recipeBookName || '-' }}</dd></div>
+            <div><dt class="font-bold text-slate-500">Page</dt><dd class="text-slate-900">{{ selected()!.sourcePage || '-' }}</dd></div>
+            <div><dt class="font-bold text-slate-500">Source</dt><dd class="break-words text-slate-900">{{ selected()!.sourceUrl || '-' }}</dd></div>
+            <div><dt class="font-bold text-slate-500">Source detail</dt><dd class="whitespace-pre-wrap text-slate-900">{{ selected()!.sourceDetail || '-' }}</dd></div>
+            <div><dt class="font-bold text-slate-500">Last used</dt><dd class="text-slate-900">{{ selected()!.lastUsedAt ? (selected()!.lastUsedAt | date:'shortDate') : '-' }}</dd></div>
+            <div><dt class="font-bold text-slate-500">Notes</dt><dd class="whitespace-pre-wrap text-slate-900">{{ selected()!.notes || '-' }}</dd></div>
+          </dl>
+        </aside>
+      </div>
+    </section>
+
+    <form *ngIf="editing()" class="rounded border border-slate-200 bg-white p-4 shadow-sm" (ngSubmit)="saveRecipe()">
+      <div class="mb-4 flex flex-col gap-2 border-b border-slate-200 pb-4 sm:flex-row sm:items-center sm:justify-between">
+        <h2 class="text-xl font-bold text-slate-950">{{ form().id ? 'Edit Recipe' : 'New Recipe' }}</h2>
+        <div class="flex flex-wrap gap-2">
+          <button type="submit" class="rounded bg-emerald-900 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" [disabled]="saving()">{{ saving() ? 'Saving.' : 'Save Recipe' }}</button>
+          <button type="button" class="rounded border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700" [disabled]="saving()" (click)="cancelEdit()">Cancel</button>
+        </div>
+      </div>
+
+      <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
+        <label class="text-sm font-bold text-slate-700 xl:col-span-3">Title
+          <input class="mt-1 w-full rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="form().title" (ngModelChange)="setForm('title', $event)" name="recipeTitle" required>
+        </label>
+        <label class="text-sm font-bold text-slate-700">Category
+          <input class="mt-1 w-full rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" list="recipe-categories" [ngModel]="form().category" (ngModelChange)="setForm('category', $event)" name="recipeCategory">
+          <datalist id="recipe-categories"><option *ngFor="let category of categoryOptions()" [value]="category"></option></datalist>
+        </label>
+        <label class="text-sm font-bold text-slate-700">Cuisine
+          <input class="mt-1 w-full rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" list="recipe-cuisines" [ngModel]="form().cuisine" (ngModelChange)="setForm('cuisine', $event)" name="recipeCuisine">
+          <datalist id="recipe-cuisines"><option *ngFor="let cuisine of cuisineOptions()" [value]="cuisine"></option></datalist>
+        </label>
+        <label class="text-sm font-bold text-slate-700">Servings
+          <input type="number" min="0" class="mt-1 w-full rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="form().servings" (ngModelChange)="setForm('servings', $event === '' ? null : +$event)" name="recipeServings">
+        </label>
+        <label class="text-sm font-bold text-slate-700">Prep Minutes
+          <input type="number" min="0" class="mt-1 w-full rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="form().prepMinutes" (ngModelChange)="setForm('prepMinutes', $event === '' ? null : +$event)" name="recipePrep">
+        </label>
+        <label class="text-sm font-bold text-slate-700">Cook Minutes
+          <input type="number" min="0" class="mt-1 w-full rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="form().cookMinutes" (ngModelChange)="setForm('cookMinutes', $event === '' ? null : +$event)" name="recipeCook">
+        </label>
+        <label class="text-sm font-bold text-slate-700 xl:col-span-2">Tags
+          <input class="mt-1 w-full rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="form().tagsText" (ngModelChange)="setForm('tagsText', $event)" name="recipeTags" placeholder="Dinner, Soup, Spicy">
+        </label>
+        <label class="text-sm font-bold text-slate-700 xl:col-span-2">Source URL
+          <input class="mt-1 w-full rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="form().sourceUrl" (ngModelChange)="setForm('sourceUrl', $event)" name="recipeSourceUrl">
+        </label>
+        <label class="text-sm font-bold text-slate-700 xl:col-span-2">Cookbook
+          <select class="mt-1 w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="form().recipeBookId" (ngModelChange)="setForm('recipeBookId', $event === null || $event === 'null' ? null : +$event)" name="recipeBookId">
+            <option [ngValue]="null">No cookbook</option>
+            <option *ngFor="let book of recipeBooks()" [ngValue]="book.id">{{ book.name }}</option>
+          </select>
+        </label>
+        <label class="text-sm font-bold text-slate-700">Page
+          <input class="mt-1 w-full rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="form().sourcePage" (ngModelChange)="setForm('sourcePage', $event)" name="recipeSourcePage">
+        </label>
+        <div class="flex items-end gap-4">
+          <label class="flex items-center gap-2 text-sm font-bold text-slate-700"><input type="checkbox" [ngModel]="form().isFavorite" (ngModelChange)="setForm('isFavorite', $event)" name="recipeFavorite"> Favorite</label>
+          <label class="flex items-center gap-2 text-sm font-bold text-slate-700"><input type="checkbox" [ngModel]="form().isCanning" (ngModelChange)="setForm('isCanning', $event)" name="recipeCanning"> Canning</label>
+          <label class="flex items-center gap-2 text-sm font-bold text-slate-700"><input type="checkbox" [ngModel]="form().isActive" (ngModelChange)="setForm('isActive', $event)" name="recipeActive"> Active</label>
+        </div>
+        <label class="text-sm font-bold text-slate-700 xl:col-span-6">Source Detail
+          <input class="mt-1 w-full rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="form().sourceDetail" (ngModelChange)="setForm('sourceDetail', $event)" name="recipeSourceDetail" placeholder="Magazine issue, website note, family card, or cookbook note">
+        </label>
+        <label class="text-sm font-bold text-slate-700 xl:col-span-6">Description
+          <textarea rows="2" class="mt-1 w-full rounded border border-slate-300 px-3 py-2 text-sm text-slate-800" [ngModel]="form().description" (ngModelChange)="setForm('description', $event)" name="recipeDescription"></textarea>
+        </label>
+      </div>
+
+      <section class="mt-5">
+        <div class="flex items-center justify-between gap-3">
+          <h3 class="text-lg font-bold text-slate-950">Ingredients</h3>
+          <button type="button" class="rounded border border-emerald-200 px-3 py-1.5 text-xs font-bold text-emerald-800" (click)="addIngredient()">Add Ingredient</button>
+        </div>
+        <div class="mt-2 grid gap-2">
+          <div *ngFor="let ingredient of form().ingredients; let index = index" class="grid gap-2 rounded border border-slate-200 bg-slate-50 p-3 md:grid-cols-12">
+            <input class="rounded border border-slate-300 px-3 py-2 text-sm md:col-span-4" [ngModel]="ingredient.itemName" (ngModelChange)="setIngredient(index, 'itemName', $event)" [name]="'ingredientName' + index" placeholder="Ingredient">
+            <input type="number" min="0" step="0.01" class="rounded border border-slate-300 px-3 py-2 text-sm md:col-span-2" [ngModel]="ingredient.quantity" (ngModelChange)="setIngredient(index, 'quantity', $event === '' ? null : +$event)" [name]="'ingredientQuantity' + index" placeholder="Qty">
+            <input class="rounded border border-slate-300 px-3 py-2 text-sm md:col-span-2" [ngModel]="ingredient.unit" (ngModelChange)="setIngredient(index, 'unit', $event)" [name]="'ingredientUnit' + index" placeholder="Unit">
+            <input class="rounded border border-slate-300 px-3 py-2 text-sm md:col-span-2" [ngModel]="ingredient.shoppingCategory" (ngModelChange)="setIngredient(index, 'shoppingCategory', $event)" [name]="'ingredientCategory' + index" placeholder="Shopping category">
+            <button type="button" class="rounded border border-rose-200 px-3 py-2 text-xs font-bold text-rose-700 md:col-span-2" (click)="removeIngredient(index)">Remove</button>
+            <input class="rounded border border-slate-300 px-3 py-2 text-sm md:col-span-12" [ngModel]="ingredient.preparation" (ngModelChange)="setIngredient(index, 'preparation', $event)" [name]="'ingredientPrep' + index" placeholder="Prep note, optional">
+          </div>
+        </div>
+      </section>
+
+      <section class="mt-5">
+        <div class="flex items-center justify-between gap-3">
+          <h3 class="text-lg font-bold text-slate-950">Instructions</h3>
+          <button type="button" class="rounded border border-emerald-200 px-3 py-1.5 text-xs font-bold text-emerald-800" (click)="addInstruction()">Add Step</button>
+        </div>
+        <div class="mt-2 grid gap-2">
+          <div *ngFor="let instruction of form().instructions; let index = index" class="grid gap-2 rounded border border-slate-200 bg-slate-50 p-3 md:grid-cols-[4rem_minmax(0,1fr)_6rem]">
+            <span class="rounded border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-600">{{ index + 1 }}</span>
+            <textarea rows="2" class="rounded border border-slate-300 px-3 py-2 text-sm text-slate-800" [ngModel]="instruction.text" (ngModelChange)="setInstruction(index, $event)" [name]="'instruction' + index"></textarea>
+            <button type="button" class="rounded border border-rose-200 px-3 py-2 text-xs font-bold text-rose-700" (click)="removeInstruction(index)">Remove</button>
+          </div>
+        </div>
+      </section>
+
+      <label class="mt-5 block text-sm font-bold text-slate-700">Notes
+        <textarea rows="4" class="mt-1 w-full rounded border border-slate-300 px-3 py-2 text-sm text-slate-800" [ngModel]="form().notes" (ngModelChange)="setForm('notes', $event)" name="recipeNotes"></textarea>
+      </label>
+    </form>
+  </section>
+</main>

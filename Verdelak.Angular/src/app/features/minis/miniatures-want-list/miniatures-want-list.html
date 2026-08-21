@@ -1,0 +1,103 @@
+<main class="mx-auto grid w-full max-w-screen-2xl gap-4 px-4 py-5 sm:px-6 lg:px-8">
+  <header class="flex flex-col gap-3 border-b border-slate-200 pb-4 lg:flex-row lg:items-end lg:justify-between">
+    <div>
+      <p class="text-xs font-bold uppercase tracking-wide text-indigo-700">Gaming Inventory</p>
+      <h1 class="text-3xl font-bold text-slate-950">Miniatures Want List</h1>
+      <p class="mt-1 text-sm text-slate-600">Zero-owned and explicitly wanted miniatures, filtered by system, series, rarity, and collector number.</p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <a routerLink="/minis" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50">All minis</a>
+      <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="load()">Refresh</button>
+    </div>
+  </header>
+
+  <section class="grid gap-3 rounded-md border border-slate-200 bg-white p-4 shadow-sm xl:grid-cols-[repeat(5,minmax(9rem,1fr))_auto]">
+    <select class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="systemId()" (ngModelChange)="onSystemChange($event)">
+      <option [ngValue]="null">All systems</option>
+      <option *ngFor="let system of systems()" [ngValue]="system.id">{{ system.name }}</option>
+    </select>
+
+    <select class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="seriesId()" (ngModelChange)="onSeriesChange($event)">
+      <option [ngValue]="null">All series</option>
+      <option *ngFor="let set of series()" [ngValue]="set.id">{{ set.name }}</option>
+    </select>
+
+    <select class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="rarity()" (ngModelChange)="rarity.set($event); applyFilters()">
+      <option value="">All rarities</option>
+      <option *ngFor="let value of rarities()" [value]="value">{{ value }}</option>
+    </select>
+
+    <input type="search" class="rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" placeholder="Number contains" [ngModel]="number()" (ngModelChange)="number.set($event)">
+
+    <select class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="sort()" (ngModelChange)="sort.set($event); applyFilters()">
+      <option value="number">Number A-Z</option>
+      <option value="-number">Number Z-A</option>
+      <option value="name">Name A-Z</option>
+      <option value="-name">Name Z-A</option>
+      <option value="rarity">Rarity A-Z</option>
+      <option value="-rarity">Rarity Z-A</option>
+    </select>
+
+    <div class="flex gap-2">
+      <button type="button" class="rounded bg-indigo-900 px-3 py-2 text-sm font-bold text-white" (click)="applyFilters()">Apply</button>
+      <button type="button" class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700" (click)="clearFilters()">Clear</button>
+    </div>
+  </section>
+
+  <div *ngIf="error()" class="rounded border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-800">{{ error() }}</div>
+
+  <section class="overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm">
+    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3">
+      <h2 class="text-lg font-bold text-slate-950">{{ total() | number }} wanted miniatures</h2>
+      <div class="flex items-center gap-2 text-sm font-semibold text-slate-600">
+        <select class="rounded border border-slate-300 bg-white px-2 py-1.5 text-sm font-semibold" [ngModel]="pageSize()" (ngModelChange)="pageSize.set($event); applyFilters()">
+          <option [ngValue]="25">25/page</option>
+          <option [ngValue]="50">50/page</option>
+          <option [ngValue]="100">100/page</option>
+        </select>
+        <button type="button" class="rounded border border-slate-300 bg-white px-3 py-1.5 disabled:opacity-50" [disabled]="page() <= 1" (click)="load(page() - 1)">Previous</button>
+        <span>Page {{ page() }} / {{ totalPages() }}</span>
+        <button type="button" class="rounded border border-slate-300 bg-white px-3 py-1.5 disabled:opacity-50" [disabled]="page() >= totalPages()" (click)="load(page() + 1)">Next</button>
+      </div>
+    </div>
+
+    <div class="overflow-auto">
+      <table class="min-w-full divide-y divide-slate-200 text-sm">
+        <thead class="bg-slate-50 text-left text-xs font-bold uppercase text-slate-600">
+          <tr>
+            <th class="px-4 py-2">#</th>
+            <th class="px-4 py-2">Name</th>
+            <th class="px-4 py-2">System</th>
+            <th class="px-4 py-2">Series</th>
+            <th class="px-4 py-2">Subset</th>
+            <th class="px-4 py-2">Rarity</th>
+            <th class="px-4 py-2">Size</th>
+            <th class="px-4 py-2">Type</th>
+            <th class="px-4 py-2">Status</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 bg-white">
+          <tr *ngFor="let item of items()" class="align-top transition hover:bg-slate-50">
+            <td class="whitespace-nowrap px-4 py-3 font-mono text-xs font-bold text-slate-600">{{ item.number || '-' }}</td>
+            <td class="px-4 py-3">
+              <div class="font-bold text-slate-950">{{ item.name }}</div>
+              <div class="text-xs font-semibold text-slate-500">{{ item.company || '-' }}</div>
+            </td>
+            <td class="px-4 py-3 text-slate-700">{{ item.system || '-' }}</td>
+            <td class="px-4 py-3 text-slate-700">{{ item.series || '-' }}</td>
+            <td class="px-4 py-3 text-slate-700">{{ item.subset || '-' }}</td>
+            <td class="px-4 py-3 text-slate-700">{{ item.rarity || '-' }}</td>
+            <td class="px-4 py-3 text-slate-700">{{ item.size || '-' }}</td>
+            <td class="px-4 py-3 text-slate-700">{{ item.type || '-' }}</td>
+            <td class="px-4 py-3">
+              <span class="rounded bg-slate-100 px-2 py-1 text-xs font-bold text-slate-700">{{ statusLabel(item) }}</span>
+            </td>
+          </tr>
+          <tr *ngIf="!loading() && items().length === 0">
+            <td colspan="9" class="px-4 py-8 text-center text-sm text-slate-500">No wanted miniatures match the current filters.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>

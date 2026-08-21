@@ -1,0 +1,1044 @@
+<section class="grid gap-4">
+  <header class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+    <div class="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+      <div>
+        <p class="text-xs font-bold uppercase tracking-wider text-blue-600">Administration</p>
+        <h1 class="mt-1 text-2xl font-bold text-slate-950 sm:text-3xl">Goals and Plans</h1>
+      </div>
+
+      <details class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 xl:min-w-[34rem]">
+        <summary class="cursor-pointer text-sm font-bold text-slate-800">Project XML import</summary>
+        <form class="mt-3 grid gap-2 md:grid-cols-[8rem_minmax(16rem,1fr)_auto_auto]" (ngSubmit)="importFile()">
+          <input class="rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="number" name="importYear" [ngModel]="importYear()" (ngModelChange)="importYear.set($event)" min="1900" max="3000" aria-label="Plan year" />
+          <input class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm file:mr-3 file:rounded file:border-0 file:bg-slate-100 file:px-2 file:py-1 file:text-sm file:font-semibold file:text-slate-700" type="file" name="projectXml" accept=".xml,text/xml,application/xml" (change)="setFile($event)" aria-label="Project XML file" />
+          <label class="flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700">
+            <input class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" type="checkbox" name="replaceExisting" [ngModel]="replaceExisting()" (ngModelChange)="replaceExisting.set($event)" />
+            Replace year
+          </label>
+          <button type="submit" class="rounded-md bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60" [disabled]="importing() || importYearArchived()">Import XML</button>
+        </form>
+      </details>
+    </div>
+    <p *ngIf="importYearArchived()" class="mt-3 text-sm font-semibold text-amber-800">The import year is archived. Mark that year as draft or active before replacing it.</p>
+  </header>
+
+  <div *ngIf="error()" class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800">{{ error() }}</div>
+  <div *ngIf="message()" class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">{{ message() }}</div>
+  <div *ngIf="selectedPlanArchived()" class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900">
+    This annual plan is archived and read-only. Reports, outline browsing, notes, and dependencies can still be inspected.
+  </div>
+
+  <section class="grid gap-3 md:grid-cols-[minmax(14rem,20rem)_repeat(4,minmax(0,1fr))]" *ngIf="selectedPlan() as plan">
+    <label class="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
+      <span class="block text-xs font-bold uppercase tracking-wide text-slate-500">Working annual plan</span>
+      <select class="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="selectedPlan" [ngModel]="selectedPlanId()" (ngModelChange)="selectPlan($event)">
+        <option *ngIf="selectedPlanArchived()" [ngValue]="selectedPlanId()">Viewing archived plan</option>
+        <option *ngFor="let item of workingPlans()" [ngValue]="item.id">{{ item.year }} - {{ item.title }} ({{ item.status }})</option>
+      </select>
+    </label>
+    <div class="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
+      <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Items</p>
+      <p class="mt-2 text-2xl font-bold text-slate-950">{{ plan.itemCount | number }}</p>
+    </div>
+    <div class="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
+      <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Summaries</p>
+      <p class="mt-2 text-2xl font-bold text-slate-950">{{ plan.summaryCount | number }}</p>
+    </div>
+    <div class="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
+      <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Complete</p>
+      <p class="mt-2 text-2xl font-bold text-slate-950">{{ plan.completeCount | number }}</p>
+    </div>
+    <div class="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
+      <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Notes</p>
+      <p class="mt-2 text-2xl font-bold text-slate-950">{{ plan.noteCount | number }}</p>
+    </div>
+  </section>
+
+  <section class="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm md:grid-cols-[minmax(0,1fr)_auto]" *ngIf="selectedPlan() as plan">
+    <div>
+      <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Plan year status</p>
+      <div class="mt-2 flex flex-wrap items-center gap-2">
+        <p class="text-lg font-bold text-slate-950">{{ plan.year }} - {{ plan.title }}</p>
+        <span class="rounded px-2 py-1 text-xs font-bold uppercase tracking-wide"
+          [class.bg-emerald-100]="plan.status === 'Active'"
+          [class.text-emerald-800]="plan.status === 'Active'"
+          [class.bg-amber-100]="plan.status === 'Draft'"
+          [class.text-amber-800]="plan.status === 'Draft'"
+          [class.bg-slate-200]="plan.status === 'Archived'"
+          [class.text-slate-700]="plan.status === 'Archived'">{{ plan.status }}</span>
+      </div>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+      <button *ngFor="let status of annualPlanStatuses" type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="plan.status === status || planStatusSaving()" (click)="updateSelectedPlanStatus(status)">
+        Set {{ status }}
+      </button>
+    </div>
+  </section>
+
+  <details class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+    <summary class="cursor-pointer text-sm font-bold text-slate-900">Archive and new-year rollover</summary>
+  <section class="mt-3 grid gap-3 xl:grid-cols-[minmax(18rem,1fr)_minmax(22rem,1fr)]">
+    <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Archive</p>
+          <h2 class="mt-1 text-lg font-bold text-slate-950">Archived years</h2>
+        </div>
+        <span class="rounded bg-slate-100 px-2 py-1 text-xs font-bold text-slate-700">{{ archivedPlans().length | number }}</span>
+      </div>
+      <div *ngIf="archivedPlans().length; else noArchivedPlans" class="mt-3 grid gap-2">
+        <button *ngFor="let item of archivedPlans()" type="button" class="grid gap-1 rounded-md border px-3 py-2 text-left shadow-sm transition hover:bg-slate-50"
+          [class.border-blue-300]="selectedPlanId() === item.id"
+          [class.bg-blue-50]="selectedPlanId() === item.id"
+          [class.border-slate-200]="selectedPlanId() !== item.id"
+          [class.bg-white]="selectedPlanId() !== item.id"
+          (click)="selectPlan(item.id)">
+          <span class="text-sm font-bold text-slate-950">{{ item.year }} - {{ item.title }}</span>
+          <span class="text-xs font-semibold text-slate-600">{{ item.itemCount | number }} items / {{ item.completeCount | number }} complete / {{ item.noteCount | number }} notes</span>
+        </button>
+      </div>
+      <ng-template #noArchivedPlans>
+        <p class="mt-3 rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-600">No annual plans have been archived yet.</p>
+      </ng-template>
+    </article>
+
+    <form *ngIf="selectedPlan() as plan" class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm" (ngSubmit)="createRollover()">
+      <p class="text-xs font-bold uppercase tracking-wide text-slate-500">New year</p>
+      <h2 class="mt-1 text-lg font-bold text-slate-950">Roll over {{ plan.year }}</h2>
+      <p class="mt-1 text-sm text-slate-600">Creates a draft with unfinished items, the outline above them, and dependencies that still connect rolled items.</p>
+      <div class="mt-3 grid gap-2 md:grid-cols-[8rem_minmax(0,1fr)]">
+        <label class="grid gap-1 text-sm font-semibold text-slate-700">
+          Year
+          <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="number" name="rolloverYear" min="1900" max="3000" [ngModel]="rolloverYear()" (ngModelChange)="setRolloverYear($event)" />
+        </label>
+        <label class="grid gap-1 text-sm font-semibold text-slate-700">
+          Title
+          <input class="rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" name="rolloverTitle" maxlength="250" [ngModel]="rolloverTitle()" (ngModelChange)="setRolloverTitle($event)" placeholder="Goals and Plans {{ rolloverYear() || '' }}" />
+        </label>
+      </div>
+      <div class="mt-3 flex flex-wrap items-center gap-2">
+        <button type="button" class="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-bold text-blue-800 shadow-sm transition hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="rolloverPreviewing() || !rolloverYear() || rolloverYearExists()" (click)="previewRollover()">
+          {{ rolloverPreviewing() ? 'Previewing' : 'Preview rollover' }}
+        </button>
+        <button type="submit" class="rounded-md bg-blue-600 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="rolloverSaving() || !rolloverYear() || rolloverYearExists() || !rolloverPreviewCurrent()">
+          {{ rolloverSaving() ? 'Creating' : 'Create draft rollover' }}
+        </button>
+        <p *ngIf="rolloverYearExists()" class="text-sm font-semibold text-amber-800">{{ rolloverYear() }} already exists.</p>
+      </div>
+      <section *ngIf="rolloverPreviewCurrent() && rolloverPreview() as preview" class="mt-3 grid gap-2 rounded-md border border-slate-200 bg-slate-50 p-3">
+        <div class="flex flex-wrap items-start justify-between gap-2">
+          <div>
+            <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Rollover preview</p>
+            <p class="text-sm font-bold text-slate-950">{{ preview.sourceYear }} to {{ preview.targetYear }} / {{ preview.targetTitle }}</p>
+          </div>
+          <span class="rounded bg-white px-2 py-1 text-xs font-bold text-slate-700">{{ preview.rolledItemCount | number }} items</span>
+        </div>
+        <div class="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+          <div class="rounded border border-slate-200 bg-white px-2 py-1.5">
+            <p class="text-xs font-bold uppercase text-slate-500">Work rolling</p>
+            <p class="text-lg font-bold text-slate-950">{{ preview.rolledWorkItemCount | number }}</p>
+          </div>
+          <div class="rounded border border-slate-200 bg-white px-2 py-1.5">
+            <p class="text-xs font-bold uppercase text-slate-500">Outline kept</p>
+            <p class="text-lg font-bold text-slate-950">{{ preview.rolledStructureItemCount | number }}</p>
+          </div>
+          <div class="rounded border border-slate-200 bg-white px-2 py-1.5">
+            <p class="text-xs font-bold uppercase text-slate-500">Completed left</p>
+            <p class="text-lg font-bold text-slate-950">{{ preview.completedWorkItemCount | number }}</p>
+          </div>
+          <div class="rounded border border-slate-200 bg-white px-2 py-1.5">
+            <p class="text-xs font-bold uppercase text-slate-500">Dependencies kept</p>
+            <p class="text-lg font-bold text-slate-950">{{ preview.retainedDependencyCount | number }}</p>
+          </div>
+          <div class="rounded border border-slate-200 bg-white px-2 py-1.5">
+            <p class="text-xs font-bold uppercase text-slate-500">Dependencies left</p>
+            <p class="text-lg font-bold text-slate-950">{{ preview.droppedDependencyCount | number }}</p>
+          </div>
+          <div class="rounded border border-slate-200 bg-white px-2 py-1.5">
+            <p class="text-xs font-bold uppercase text-slate-500">Source size</p>
+            <p class="text-lg font-bold text-slate-950">{{ preview.sourceItemCount | number }}</p>
+          </div>
+        </div>
+        <div *ngIf="preview.sections.length" class="flex flex-wrap gap-1.5">
+          <span *ngFor="let item of preview.sections" class="rounded border border-slate-200 bg-white px-2 py-1 text-xs font-bold text-slate-700">{{ item.section }} {{ item.itemCount | number }}</span>
+        </div>
+        <div class="grid gap-2 md:grid-cols-2">
+          <div class="rounded border border-slate-200 bg-white px-2 py-1.5">
+            <p class="text-xs font-bold uppercase text-slate-500">Rollover efficiency</p>
+            <p class="text-lg font-bold text-slate-950">{{ preview.rolledItemCount | number }} / {{ preview.sourceItemCount | number }}</p>
+          </div>
+          <div class="rounded border border-slate-200 bg-white px-2 py-1.5">
+            <p class="text-xs font-bold uppercase text-slate-500">Dependency retention</p>
+            <p class="text-lg font-bold text-slate-950">{{ preview.retainedDependencyCount | number }} kept / {{ preview.droppedDependencyCount | number }} left</p>
+          </div>
+        </div>
+        <div class="overflow-x-auto rounded-md border border-slate-200 bg-white">
+          <table class="min-w-full divide-y divide-slate-200 text-left text-xs">
+            <thead class="bg-slate-50 uppercase tracking-wide text-slate-500">
+              <tr>
+                <th class="px-2 py-2 font-bold">Policy</th>
+                <th class="px-2 py-2 font-bold">Leaf work</th>
+                <th class="px-2 py-2 font-bold">Open</th>
+                <th class="px-2 py-2 font-bold">Complete</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr *ngFor="let item of rolloverPolicyReport()">
+                <td class="px-2 py-1.5 font-bold text-slate-900">{{ item.policy }}</td>
+                <td class="px-2 py-1.5 text-slate-700">{{ item.leafWorkCount | number }}</td>
+                <td class="px-2 py-1.5 text-slate-700">{{ item.openLeafWorkCount | number }}</td>
+                <td class="px-2 py-1.5 text-slate-700">{{ item.completedLeafWorkCount | number }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </form>
+
+    @defer (on viewport) {
+      <app-goals-archive-comparison-panel [vm]="viewModel"></app-goals-archive-comparison-panel>
+    } @placeholder {
+      <article class="rounded-lg border border-slate-200 bg-white p-4 text-sm font-semibold text-slate-600 shadow-sm xl:col-span-2">
+        Archived-year comparison will load when this section scrolls into view.
+      </article>
+    }
+  </section>
+  </details>
+
+  @defer (on viewport) {
+    <app-goals-staging-panel [vm]="viewModel" />
+  } @placeholder {
+    <section class="rounded-lg border border-slate-200 bg-white p-4 text-sm font-semibold text-slate-600 shadow-sm">
+      Bulk add staging tools will load when this section scrolls into view.
+    </section>
+  }
+  <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+    <section *ngIf="selectedPlan() as plan" class="grid gap-3 border-b border-slate-200 pb-4">
+      <div class="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p class="text-xs font-bold uppercase tracking-wide text-blue-600">Year dashboard</p>
+          <h2 class="mt-1 text-xl font-bold text-slate-950">{{ plan.year }} workbench</h2>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <p class="text-sm font-semibold text-slate-600">{{ plan.title }} / {{ plan.status }}</p>
+          <button type="button" class="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-bold text-blue-800 shadow-sm transition hover:bg-blue-100 disabled:cursor-wait disabled:opacity-60" [disabled]="exporting()" (click)="exportProjectXml()">
+            {{ exporting() ? 'Exporting' : 'Export Project XML' }}
+          </button>
+          <button type="button" class="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-bold text-emerald-800 shadow-sm transition hover:bg-emerald-100 disabled:cursor-wait disabled:opacity-60" [disabled]="validatingProjectXml()" (click)="validateProjectXmlRoundTrip()">
+            {{ validatingProjectXml() ? 'Validating' : 'Validate XML' }}
+          </button>
+        </div>
+      </div>
+      <section *ngIf="projectXmlValidation() as validation" class="grid gap-3 rounded-md border p-3"
+        [class.border-emerald-200]="validation.isValid"
+        [class.bg-emerald-50]="validation.isValid"
+        [class.border-red-200]="!validation.isValid"
+        [class.bg-red-50]="!validation.isValid">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <p class="text-sm font-bold" [class.text-emerald-950]="validation.isValid" [class.text-red-950]="!validation.isValid">
+            Project XML validation {{ validation.isValid ? 'passed' : 'needs review' }}
+          </p>
+          <span class="rounded bg-white px-2 py-1 text-xs font-bold" [class.text-emerald-800]="validation.isValid" [class.text-red-800]="!validation.isValid">
+            {{ validation.mismatches.length | number }} mismatches
+          </span>
+        </div>
+        <div class="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+          <div *ngFor="let item of validationCountEntries(validation)" class="rounded border border-white/80 bg-white px-2 py-1.5">
+            <p class="text-xs font-bold uppercase tracking-wide text-slate-500">{{ item.label }}</p>
+            <p class="mt-1 text-sm font-bold text-slate-950">{{ item.plan | number }} / {{ item.exported | number }}</p>
+          </div>
+        </div>
+        <div *ngIf="validation.mismatches.length" class="grid gap-1">
+          <p class="text-xs font-bold uppercase tracking-wide text-red-700">Mismatches</p>
+          <p *ngFor="let mismatch of validation.mismatches" class="text-sm font-semibold text-red-800">
+            {{ mismatch.field }} expected {{ mismatch.expected | number }}, exported {{ mismatch.actual | number }}
+          </p>
+        </div>
+      </section>
+      <div class="grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
+        <div class="rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
+          <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Open leaf work</p>
+          <p class="mt-1 text-2xl font-bold text-slate-950">{{ openLeafWorkItems().length | number }}</p>
+        </div>
+        <div class="rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
+          <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Active today</p>
+          <p class="mt-1 text-2xl font-bold text-slate-950">{{ activeItems().length | number }}</p>
+        </div>
+        <div class="rounded-md border border-rose-200 bg-rose-50 px-3 py-2">
+          <p class="text-xs font-bold uppercase tracking-wide text-rose-600">Overdue</p>
+          <p class="mt-1 text-2xl font-bold text-rose-950">{{ overdueItems().length | number }}</p>
+        </div>
+        <div class="rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
+          <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Sections</p>
+          <p class="mt-1 text-2xl font-bold text-slate-950">{{ sectionSummaries().length | number }}</p>
+        </div>
+        <div class="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2">
+          <p class="text-xs font-bold uppercase tracking-wide text-emerald-700">Leaf completion</p>
+          <p class="mt-1 text-2xl font-bold text-emerald-950">{{ dashboardCompletePercent() }}%</p>
+        </div>
+      </div>
+    </section>
+
+    <details class="mt-4 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+      <summary class="cursor-pointer text-sm font-bold text-slate-900">Reporting</summary>
+      <section *ngIf="yearProgressReport() as report" class="mt-3 grid gap-3">
+        <div class="flex flex-wrap items-center gap-2">
+          <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="downloadYearProgressReport()">Export year CSV</button>
+          <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="downloadSectionProgressReport()">Export sections CSV</button>
+          <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="downloadRolloverPolicyReport()">Export rollover CSV</button>
+        </div>
+        <div class="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+          <div *ngFor="let item of yearReportEntries(report)" class="rounded-md border border-slate-200 bg-white px-3 py-2">
+            <p class="text-xs font-bold uppercase tracking-wide text-slate-500">{{ item.label }}</p>
+            <p class="mt-1 text-2xl font-bold text-slate-950">{{ item.value | number }}{{ item.suffix || '' }}</p>
+          </div>
+        </div>
+
+        <div class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_22rem]">
+          <article class="rounded-md border border-slate-200 bg-white p-3">
+            <div class="flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <p class="text-xs font-bold uppercase tracking-wide text-blue-600">Year completion</p>
+                <h3 class="mt-1 text-base font-bold text-slate-950">{{ report.completedLeafWorkCount | number }} of {{ report.leafWorkCount | number }} leaf work items complete</h3>
+              </div>
+              <span class="rounded bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-800">{{ report.completionPercent }}%</span>
+            </div>
+            <div class="mt-3 h-3 overflow-hidden rounded-full bg-slate-200">
+              <div class="h-full rounded-full bg-emerald-500" [style.width.%]="report.completionPercent"></div>
+            </div>
+            <div class="mt-3 grid gap-2 text-sm font-semibold text-slate-700 sm:grid-cols-3">
+              <p>{{ report.notStartedCount | number }} not started</p>
+              <p>{{ report.inProgressCount | number }} in progress</p>
+              <p>{{ report.completedLeafWorkCount | number }} complete</p>
+            </div>
+          </article>
+
+          <article class="rounded-md border border-slate-200 bg-white p-3">
+            <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Schedule and archive signals</p>
+            <div class="mt-2 grid grid-cols-2 gap-2 text-sm">
+              <p class="rounded bg-blue-50 px-2 py-1 font-bold text-blue-800">{{ report.activeWeekCount | number }} active this week</p>
+              <p class="rounded bg-blue-50 px-2 py-1 font-bold text-blue-800">{{ report.activeMonthCount | number }} active this month</p>
+              <p class="rounded bg-slate-100 px-2 py-1 font-bold text-slate-700">{{ report.scheduledCount | number }} scheduled</p>
+              <p class="rounded bg-slate-100 px-2 py-1 font-bold text-slate-700">{{ report.notesCount | number }} notes</p>
+              <p class="rounded bg-slate-100 px-2 py-1 font-bold text-slate-700">{{ report.dependencyCount | number }} dependencies</p>
+              <p class="rounded bg-slate-100 px-2 py-1 font-bold text-slate-700">{{ report.totalCount | number }} outline items</p>
+            </div>
+          </article>
+        </div>
+
+        <div *ngIf="sectionSummaries().length" class="flex flex-wrap items-center gap-2">
+          <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Jump to section</p>
+          <button *ngFor="let summary of sectionSummaries()" type="button" class="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="jumpToSectionReport(summary.section)">
+            {{ summary.section }} {{ summary.completionPercent }}%
+          </button>
+        </div>
+
+        <div class="overflow-x-auto rounded-md border border-slate-200 bg-white">
+          <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
+            <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+              <tr>
+                <th class="px-3 py-3 font-bold">Section</th>
+                <th class="px-3 py-3 font-bold">Progress</th>
+                <th class="px-3 py-3 font-bold">Work</th>
+                <th class="px-3 py-3 font-bold">Schedule</th>
+                <th class="px-3 py-3 font-bold">Signals</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr *ngFor="let summary of sectionSummaries()" [attr.id]="sectionReportId(summary.section)" class="align-top">
+                <td class="min-w-56 px-3 py-3">
+                  <button type="button" class="text-left font-bold text-slate-950 hover:text-blue-700" (click)="focusSection(summary)">{{ summary.section }}</button>
+                  <p class="mt-1 text-xs font-semibold text-slate-500">{{ summary.totalCount | number }} outline items</p>
+                </td>
+                <td class="min-w-56 px-3 py-3">
+                  <div class="h-2 overflow-hidden rounded-full bg-slate-200" [style.background]="sectionProgressTrack(summary)"></div>
+                  <p class="mt-2 text-xs font-bold text-slate-700">{{ summary.completionPercent }}% complete / {{ summary.averagePercentComplete }}% average</p>
+                </td>
+                <td class="min-w-52 px-3 py-3 text-xs font-semibold text-slate-700">
+                  <p>{{ summary.leafWorkCount | number }} leaf / {{ summary.completedLeafWorkCount | number }} complete</p>
+                  <p>{{ summary.openLeafWorkCount | number }} open / {{ summary.inProgressCount | number }} in progress / {{ summary.notStartedCount | number }} not started</p>
+                </td>
+                <td class="min-w-52 px-3 py-3 text-xs font-semibold text-slate-700">
+                  <p>{{ summary.activeCount | number }} active today</p>
+                  <p>{{ summary.scheduledCount | number }} scheduled / {{ summary.unscheduledCount | number }} unscheduled</p>
+                  <p class="text-rose-700">{{ summary.overdueCount | number }} overdue</p>
+                </td>
+                <td class="min-w-52 px-3 py-3 text-xs font-semibold text-slate-700">
+                  <p class="text-amber-800">{{ summary.blockedCount | number }} blocked</p>
+                  <p>{{ summary.dependencyCount | number }} dependencies / {{ summary.notesCount | number }} notes</p>
+                  <p>{{ summary.queueCount | number }} queue / {{ summary.milestoneCount | number }} milestones</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </details>
+
+    <details class="mt-4 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+      <summary class="cursor-pointer text-sm font-bold text-slate-900">Section summaries</summary>
+      <div class="mt-3 grid gap-2 md:grid-cols-2 2xl:grid-cols-3">
+        <article *ngFor="let summary of sectionSummaries()" class="grid gap-2 rounded-md border border-slate-200 bg-white p-3">
+          <div class="flex items-start justify-between gap-2">
+            <button type="button" class="min-w-0 text-left text-sm font-bold text-slate-950 hover:text-blue-700" (click)="focusSection(summary)">{{ summary.section }}</button>
+            <span class="rounded bg-slate-100 px-2 py-1 text-xs font-bold text-slate-700">{{ summary.completionPercent }}%</span>
+          </div>
+          <div class="flex flex-wrap gap-1.5 text-xs font-bold">
+            <span class="rounded bg-slate-100 px-2 py-1 text-slate-700">{{ summary.openLeafWorkCount | number }} open</span>
+            <span class="rounded bg-blue-50 px-2 py-1 text-blue-700">{{ summary.activeCount | number }} active</span>
+            <span class="rounded bg-rose-50 px-2 py-1 text-rose-700">{{ summary.overdueCount | number }} overdue</span>
+            <span class="rounded bg-cyan-50 px-2 py-1 text-cyan-800">{{ summary.unscheduledCount | number }} unscheduled</span>
+            <span class="rounded bg-amber-50 px-2 py-1 text-amber-800">{{ summary.blockedCount | number }} blocked</span>
+            <span *ngIf="summary.queueCount" class="rounded bg-cyan-50 px-2 py-1 text-cyan-800">{{ summary.queueCount | number }} queue</span>
+          </div>
+          <div class="flex flex-wrap items-center justify-between gap-2 text-xs font-semibold text-slate-500">
+            <span>{{ summary.completedLeafWorkCount | number }} complete / {{ summary.leafWorkCount | number }} leaf work / {{ summary.totalCount | number }} outline items</span>
+            <button *ngIf="summary.queueCount || summary.openLeafWorkCount > gridItemLimit" type="button" class="rounded border border-cyan-200 bg-cyan-50 px-2 py-1 font-bold text-cyan-900 transition hover:bg-cyan-100" (click)="focusQueueSection(summary)">Focus queue</button>
+          </div>
+          <div class="h-2 overflow-hidden rounded-full bg-slate-200" [style.background]="sectionProgressTrack(summary)"></div>
+        </article>
+      </div>
+    </details>
+
+    @defer (on viewport) {
+      <app-goals-schedule-preview-panel [vm]="viewModel"></app-goals-schedule-preview-panel>
+    } @placeholder {
+      <details class="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+        <summary class="cursor-pointer text-sm font-bold text-slate-900">Master schedule preview</summary>
+        <p class="mt-3 text-sm font-semibold text-slate-600">Loading schedule preview panel.</p>
+      </details>
+    }
+
+    <div class="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_14rem_12rem_12rem_12rem_auto_auto_auto]">
+      <input class="rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="search" name="search" [ngModel]="search()" (ngModelChange)="search.set($event)" placeholder="Search title or notes" />
+      <select class="rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="section" [ngModel]="section()" (ngModelChange)="section.set($event)">
+        <option value="">All sections</option>
+        <option *ngFor="let item of sections()" [value]="item">{{ item }}</option>
+      </select>
+      <select class="rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="itemType" [ngModel]="itemType()" (ngModelChange)="itemType.set($event)">
+        <option value="">All types</option>
+        <option *ngFor="let item of itemTypes()" [value]="item">{{ item }}</option>
+      </select>
+      <select class="rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="planningWindow" [ngModel]="planningWindow()" (ngModelChange)="planningWindow.set($event)">
+        <option value="">All windows</option>
+        <option *ngFor="let item of planningWindowTypes" [value]="item">{{ item }}</option>
+      </select>
+      <select class="rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="scheduleMode" [ngModel]="scheduleMode()" (ngModelChange)="scheduleMode.set($event)">
+        <option value="">All schedule modes</option>
+        <option *ngFor="let mode of scheduleSurfaceModes" [value]="mode">{{ scheduleModeLabel(mode) }}</option>
+      </select>
+      <label class="flex items-center gap-2 rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700">
+        <input class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" type="checkbox" name="incompleteOnly" [ngModel]="incompleteOnly()" (ngModelChange)="incompleteOnly.set($event)" />
+        Incomplete
+      </label>
+      <label class="flex items-center gap-2 rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700">
+        <input class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" type="checkbox" name="leafWorkOnly" [ngModel]="leafWorkOnly()" (ngModelChange)="leafWorkOnly.set($event)" />
+        Leaf work
+      </label>
+      <p class="self-center text-sm font-semibold text-slate-600">
+        {{ (workView() === 'all' && browserView() === 'outline' ? visibleItems().length : filteredItems().length) | number }} shown
+      </p>
+    </div>
+    <div class="mt-3 flex flex-wrap items-center gap-2">
+      <div class="inline-flex rounded-md border border-slate-300 bg-white p-1 shadow-sm">
+        <button type="button" class="rounded px-3 py-1.5 text-sm font-bold transition" [class.bg-blue-600]="workView() === 'all'" [class.text-white]="workView() === 'all'" [class.text-slate-700]="workView() !== 'all'" (click)="setWorkView('all')">All</button>
+        <button type="button" class="rounded px-3 py-1.5 text-sm font-bold transition" [class.bg-blue-600]="workView() === 'active'" [class.text-white]="workView() === 'active'" [class.text-slate-700]="workView() !== 'active'" (click)="setWorkView('active')">Active {{ activeItems().length | number }}</button>
+        <button type="button" class="rounded px-3 py-1.5 text-sm font-bold transition" [class.bg-rose-600]="workView() === 'overdue'" [class.text-white]="workView() === 'overdue'" [class.text-slate-700]="workView() !== 'overdue'" (click)="setWorkView('overdue')">Overdue {{ overdueItems().length | number }}</button>
+        <button type="button" class="rounded px-3 py-1.5 text-sm font-bold transition" [class.bg-cyan-700]="workView() === 'unscheduled'" [class.text-white]="workView() === 'unscheduled'" [class.text-slate-700]="workView() !== 'unscheduled'" (click)="setWorkView('unscheduled')">Unscheduled {{ unscheduledItems().length | number }}</button>
+        <button type="button" class="rounded px-3 py-1.5 text-sm font-bold transition" [class.bg-amber-600]="workView() === 'blocked'" [class.text-white]="workView() === 'blocked'" [class.text-slate-700]="workView() !== 'blocked'" (click)="setWorkView('blocked')">Blocked {{ blockedItems().length | number }}</button>
+      </div>
+      <div class="inline-flex rounded-md border border-slate-300 bg-white p-1 shadow-sm">
+        <button type="button" class="rounded px-3 py-1.5 text-sm font-bold transition" [class.bg-slate-900]="browserView() === 'outline'" [class.text-white]="browserView() === 'outline'" [class.text-slate-700]="browserView() !== 'outline'" (click)="setBrowserView('outline')">Outline</button>
+        <button type="button" class="rounded px-3 py-1.5 text-sm font-bold transition" [class.bg-slate-900]="browserView() === 'grid'" [class.text-white]="browserView() === 'grid'" [class.text-slate-700]="browserView() !== 'grid'" (click)="setBrowserView('grid')">Grid</button>
+      </div>
+      <ng-container *ngIf="workView() === 'all' && browserView() === 'outline'">
+        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="expandAll()">Expand all</button>
+        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="collapseAll()">Collapse all</button>
+      </ng-container>
+    </div>
+
+    <section *ngIf="workView() !== 'all'" class="mt-4 grid gap-3">
+      <div class="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 class="text-base font-bold text-slate-950">{{ workView() === 'active' ? 'Active Tasks' : workView() === 'overdue' ? 'Overdue Tasks' : workView() === 'unscheduled' ? 'Unscheduled Work' : 'Blocked Work' }}</h2>
+          <p class="text-sm text-slate-600">{{ focusDescription() }}</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <p class="text-sm font-semibold text-slate-600">{{ focusedItems().length | number }} matching tasks</p>
+          <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="downloadFocusedTaskReport()">Export task CSV</button>
+        </div>
+      </div>
+      <div *ngIf="workView() === 'active'" class="flex flex-wrap items-center gap-2">
+        <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Scope</p>
+        <div class="inline-flex rounded-md border border-slate-300 bg-white p-1 shadow-sm">
+          <button type="button" class="rounded px-3 py-1.5 text-sm font-bold transition" [class.bg-slate-900]="activeScope() === 'today'" [class.text-white]="activeScope() === 'today'" [class.text-slate-700]="activeScope() !== 'today'" (click)="setActiveScope('today')">Today</button>
+          <button type="button" class="rounded px-3 py-1.5 text-sm font-bold transition" [class.bg-slate-900]="activeScope() === 'week'" [class.text-white]="activeScope() === 'week'" [class.text-slate-700]="activeScope() !== 'week'" (click)="setActiveScope('week')">This Week</button>
+          <button type="button" class="rounded px-3 py-1.5 text-sm font-bold transition" [class.bg-slate-900]="activeScope() === 'month'" [class.text-white]="activeScope() === 'month'" [class.text-slate-700]="activeScope() !== 'month'" (click)="setActiveScope('month')">This Month</button>
+        </div>
+      </div>
+      <div *ngIf="(workView() === 'overdue' || workView() === 'unscheduled' || workView() === 'blocked') && focusedReportGroups().length" class="flex flex-wrap items-center gap-2">
+        <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Sections</p>
+        <button *ngFor="let group of focusedReportGroups()" type="button" class="inline-flex items-center gap-1 rounded-full border bg-white px-3 py-1.5 text-sm font-bold shadow-sm transition"
+          [class.border-rose-200]="workView() === 'overdue'"
+          [class.text-rose-800]="workView() === 'overdue'"
+          [class.hover:bg-rose-50]="workView() === 'overdue'"
+          [class.border-cyan-200]="workView() === 'unscheduled'"
+          [class.text-cyan-900]="workView() === 'unscheduled'"
+          [class.hover:bg-cyan-50]="workView() === 'unscheduled'"
+          [class.border-amber-200]="workView() === 'blocked'"
+          [class.text-amber-900]="workView() === 'blocked'"
+          [class.hover:bg-amber-50]="workView() === 'blocked'"
+          [attr.aria-label]="'Jump to ' + group.section + ' report section'" (click)="jumpToOverdueGroup(group.section)">
+          {{ group.section }}
+          <span class="rounded-full px-1.5 py-0.5 text-xs"
+            [class.bg-rose-100]="workView() === 'overdue'"
+            [class.text-rose-700]="workView() === 'overdue'"
+            [class.bg-cyan-100]="workView() === 'unscheduled'"
+            [class.text-cyan-800]="workView() === 'unscheduled'"
+            [class.bg-amber-100]="workView() === 'blocked'"
+            [class.text-amber-800]="workView() === 'blocked'">{{ group.totalCount | number }}</span>
+        </button>
+      </div>
+      <p *ngIf="workView() === 'active' && focusedItems().length > focusedItemLimit" class="rounded-md bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800">
+        Showing the first {{ focusedItemLimit | number }} matching tasks. Narrow the filters to focus the report.
+      </p>
+      <p *ngIf="(workView() === 'overdue' || workView() === 'unscheduled' || workView() === 'blocked') && hasTruncatedFocusedGroups()" class="rounded-md bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800">
+        Showing up to {{ focusedSectionItemLimit | number }} tasks per section. Narrow the filters to focus a section.
+      </p>
+
+      <div class="overflow-x-auto rounded-lg border border-slate-200">
+        <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
+          <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+            <tr>
+              <th class="px-3 py-3 font-bold">Task</th>
+              <th class="px-3 py-3 font-bold">Progress</th>
+              <th class="px-3 py-3 font-bold">Target</th>
+              <th class="px-3 py-3 font-bold">Schedule</th>
+              <th class="px-3 py-3 font-bold">Imported</th>
+              <th class="px-3 py-3 font-bold"></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 bg-white">
+            <ng-container *ngFor="let group of focusedReportGroups()">
+              <tr *ngIf="workView() === 'overdue' || workView() === 'unscheduled' || workView() === 'blocked'" [class.bg-rose-50]="workView() === 'overdue'" [class.bg-cyan-50]="workView() === 'unscheduled'" [class.bg-amber-50]="workView() === 'blocked'" [attr.id]="overdueGroupId(group.section)">
+                <td colspan="6" class="px-3 py-2">
+                  <div class="flex flex-wrap items-center justify-between gap-2">
+                    <p class="font-bold" [class.text-rose-950]="workView() === 'overdue'" [class.text-cyan-950]="workView() === 'unscheduled'" [class.text-amber-950]="workView() === 'blocked'">{{ group.section }}</p>
+                    <p class="text-xs font-bold uppercase tracking-wide" [class.text-rose-700]="workView() === 'overdue'" [class.text-cyan-800]="workView() === 'unscheduled'" [class.text-amber-800]="workView() === 'blocked'">{{ group.items.length | number }} of {{ group.totalCount | number }} shown</p>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngFor="let item of group.items" class="align-top">
+                <td class="min-w-80 px-3 py-2">
+                  <p class="font-semibold text-slate-950">{{ item.title }}</p>
+                  <p class="mt-1 max-w-96 break-words text-xs text-slate-500">{{ outlinePathLabel(item) }}</p>
+                  <p *ngIf="item.notes" class="mt-1 max-w-96 break-words text-xs text-slate-600">{{ item.notes }}</p>
+                </td>
+                <td class="whitespace-nowrap px-3 py-2">
+                  <p class="font-bold text-slate-950">{{ item.percentComplete }}%</p>
+                  <p class="text-xs text-slate-500">{{ item.status }}</p>
+                </td>
+                <td class="whitespace-nowrap px-3 py-2 text-slate-600">
+                  <p class="font-semibold text-slate-800">{{ item.planningWindowType }}</p>
+                  <p>
+                    <span *ngIf="item.targetStartDate">{{ item.targetStartDate | date:'shortDate' }}</span>
+                    <span *ngIf="item.targetEndDate"> - {{ item.targetEndDate | date:'shortDate' }}</span>
+                  </p>
+                </td>
+                <td class="whitespace-nowrap px-3 py-2">
+                  <span class="rounded bg-slate-100 px-2 py-1 text-xs font-bold text-slate-700" [title]="scheduleModeTitle(item.scheduleSurfaceMode)">{{ scheduleModeLabel(item.scheduleSurfaceMode) }}</span>
+                  <p *ngIf="item.unfinishedPredecessorCount" class="mt-1 text-xs font-bold text-amber-700">{{ item.unfinishedPredecessorCount | number }} unfinished of {{ item.importedPredecessorCount | number }}</p>
+                </td>
+                <td class="whitespace-nowrap px-3 py-2 text-xs text-slate-600">
+                  <p *ngIf="item.importedStart || item.importedFinish">{{ item.importedStart | date:'shortDate' }} - {{ item.importedFinish | date:'shortDate' }}</p>
+                  <p>{{ item.importedDuration || '' }}</p>
+                </td>
+                <td class="whitespace-nowrap px-3 py-2">
+                  <div class="flex gap-2">
+                    <button *ngIf="workView() === 'unscheduled'" type="button" class="rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm font-bold text-blue-800 shadow-sm transition hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="isSaving(item) || selectedPlanArchived()" (click)="quickScheduleMode(item, 'DuringTargetWindow')">Use window</button>
+                    <button type="button" class="rounded-md bg-emerald-600 px-3 py-1.5 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="isSaving(item) || selectedPlanArchived()" (click)="quickProgress(item, 100)">{{ isSaving(item) ? 'Saving' : 'Done' }}</button>
+                    <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="inspectFocusedItem(item)">Open outline</button>
+                  </div>
+                </td>
+              </tr>
+            </ng-container>
+            <tr *ngIf="focusedReportItems().length === 0 && !loading()">
+              <td colspan="6" class="px-3 py-8 text-center text-sm text-slate-500">No matching tasks found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <form *ngIf="workView() === 'all' && browserView() === 'outline' && outlineCreate() as form" class="mt-4 grid gap-3 rounded-lg border border-blue-200 bg-blue-50 p-3" (ngSubmit)="addOutlineChild()">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <p class="text-sm font-bold text-slate-950">Add child under {{ outlineCreateParent()?.title }}</p>
+        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="closeOutlineCreate()">Close</button>
+      </div>
+      <div class="grid gap-3 md:grid-cols-[minmax(14rem,1fr)_10rem_8rem_12rem_10rem_10rem_14rem]">
+        <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">Title
+          <input class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="outlineCreateTitle" type="text" required [ngModel]="form.title" (ngModelChange)="updateOutlineCreate({ title: $event })" />
+        </label>
+        <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">Type
+          <select class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="outlineCreateType" [ngModel]="form.itemType" (ngModelChange)="updateOutlineCreate({ itemType: $event })">
+            <option *ngFor="let type of editableItemTypes" [value]="type">{{ type }}</option>
+          </select>
+        </label>
+        <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">Complete
+          <input class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="outlineCreatePercent" type="number" min="0" max="100" [ngModel]="form.percentComplete" (ngModelChange)="updateOutlineCreatePercent($event)" />
+        </label>
+        <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">Window
+          <select class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="outlineCreateWindow" [ngModel]="form.planningWindowType" (ngModelChange)="updateOutlineCreate({ planningWindowType: $event })">
+            <option *ngFor="let type of planningWindowTypes" [value]="type">{{ type }}</option>
+          </select>
+        </label>
+        <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">Start
+          <input class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm font-normal normal-case text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="outlineCreateStart" type="date" [ngModel]="form.targetStartDate" (ngModelChange)="updateOutlineCreate({ targetStartDate: $event })" />
+        </label>
+        <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">End
+          <input class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm font-normal normal-case text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="outlineCreateEnd" type="date" [ngModel]="form.targetEndDate" (ngModelChange)="updateOutlineCreate({ targetEndDate: $event })" />
+        </label>
+        <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">Schedule
+          <select class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="outlineCreateSchedule" [ngModel]="form.scheduleSurfaceMode" (ngModelChange)="updateOutlineCreate({ scheduleSurfaceMode: $event })">
+            <option *ngFor="let mode of scheduleSurfaceModes" [value]="mode">{{ scheduleModeLabel(mode) }}</option>
+          </select>
+        </label>
+        <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">Rollover
+          <select class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="outlineCreateRollover" [ngModel]="form.rolloverPolicy" (ngModelChange)="updateOutlineCreate({ rolloverPolicy: $event })">
+            <option *ngFor="let policy of rolloverPolicies" [value]="policy">{{ policy }}</option>
+          </select>
+        </label>
+      </div>
+      <div class="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+        <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">Notes
+          <textarea class="min-h-16 rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm font-normal normal-case text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="outlineCreateNotes" [ngModel]="form.notes" (ngModelChange)="updateOutlineCreate({ notes: $event })"></textarea>
+        </label>
+        <button type="submit" class="rounded-md bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60" [disabled]="outlineSaving()">Add child</button>
+      </div>
+    </form>
+
+    <div *ngIf="workView() === 'all' && browserView() === 'outline'" class="mt-4 grid gap-3 xl:grid-cols-[minmax(0,1fr)_22rem]">
+      <div class="overflow-x-auto rounded-lg border border-slate-200">
+      <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
+        <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+          <tr>
+            <th class="px-3 py-3 font-bold">Plan item</th>
+            <th class="px-3 py-3 font-bold">Type</th>
+            <th class="px-3 py-3 font-bold">Progress</th>
+            <th class="px-3 py-3 font-bold">Native planning</th>
+            <th class="px-3 py-3 font-bold">Imported window</th>
+            <th class="px-3 py-3 font-bold">Duration</th>
+            <th class="px-3 py-3 font-bold">Links</th>
+            <th class="px-3 py-3 font-bold">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 bg-white">
+          <tr *ngFor="let item of visibleItems()" [class.bg-blue-50]="isSelectedOutlineItem(item)" [class.bg-slate-50]="item.isSummary && !isSelectedOutlineItem(item)">
+            <td class="min-w-80 px-3 py-2">
+              <div class="flex items-center gap-2" [style.padding-left.px]="item.outlineLevel * 18">
+                <button *ngIf="hasChildren(item); else leafMarker" type="button" class="grid h-5 w-5 shrink-0 place-items-center rounded border border-slate-300 bg-white text-sm font-bold leading-none text-slate-700 shadow-sm transition hover:bg-slate-100" (click)="toggleBranch(item)" [attr.aria-label]="(isCollapsed(item) ? 'Expand ' : 'Collapse ') + item.title" [attr.aria-expanded]="!isCollapsed(item)">
+                  {{ isCollapsed(item) ? '+' : '-' }}
+                </button>
+                <ng-template #leafMarker>
+                  <span class="grid h-5 w-5 shrink-0 place-items-center"><span class="inline-block h-2 w-2 rounded-full bg-slate-300"></span></span>
+                </ng-template>
+                <button type="button" class="text-left font-semibold text-slate-950 hover:text-blue-700" [class.font-bold]="item.isSummary" (click)="selectOutlineItem(item)">{{ item.title }}</button>
+                <span *ngIf="item.notes" class="rounded bg-amber-50 px-1.5 py-0.5 text-xs font-bold text-amber-700" [title]="item.notes">Notes</span>
+              </div>
+              <p class="mt-1 text-xs text-slate-500" [style.padding-left.px]="item.outlineLevel * 18 + 16">{{ item.topLevelSection || 'Plan root' }}</p>
+            </td>
+            <td class="whitespace-nowrap px-3 py-2"><span class="rounded bg-slate-100 px-2 py-1 text-xs font-bold text-slate-700">{{ item.itemType }}</span></td>
+            <td class="whitespace-nowrap px-3 py-2">
+              <span class="font-bold text-slate-950">{{ item.percentComplete }}%</span>
+              <span class="ml-2 text-xs text-slate-500">{{ item.status }}</span>
+            </td>
+            <td class="whitespace-nowrap px-3 py-2 text-slate-600">
+              <span class="font-semibold text-slate-800">{{ item.planningWindowType }}</span>
+              <span *ngIf="item.targetStartDate" class="ml-2">{{ item.targetStartDate | date:'shortDate' }}</span>
+              <span *ngIf="item.targetEndDate"> - {{ item.targetEndDate | date:'shortDate' }}</span>
+              <span class="ml-2 rounded bg-slate-100 px-1.5 py-0.5 text-xs font-bold text-slate-600" [title]="scheduleModeTitle(item.scheduleSurfaceMode)">{{ scheduleModeLabel(item.scheduleSurfaceMode) }}</span>
+            </td>
+            <td class="whitespace-nowrap px-3 py-2 text-slate-600">
+              <span *ngIf="item.importedStart">{{ item.importedStart | date:'shortDate' }}</span>
+              <span *ngIf="item.importedFinish"> - {{ item.importedFinish | date:'shortDate' }}</span>
+            </td>
+            <td class="whitespace-nowrap px-3 py-2 text-slate-600">
+              {{ item.importedDuration || '' }}
+              <span *ngIf="item.sourceManualSchedule" class="ml-2 rounded bg-cyan-50 px-1.5 py-0.5 text-xs font-bold text-cyan-700">Manual</span>
+            </td>
+            <td class="whitespace-nowrap px-3 py-2 text-slate-600">{{ item.importedPredecessorCount || '' }}</td>
+            <td class="whitespace-nowrap px-3 py-2">
+              <button type="button" class="rounded-md border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="selectOutlineItem(item)">Select</button>
+            </td>
+          </tr>
+          <tr *ngIf="visibleItems().length === 0 && !loading()">
+            <td colspan="8" class="px-3 py-8 text-center text-sm text-slate-500">No plan items found.</td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+
+      <aside class="grid content-start gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3" *ngIf="selectedOutlineItem() as selectedItem">
+        <div class="min-w-0">
+          <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Selected</p>
+          <h3 class="mt-1 break-words text-base font-bold text-slate-950">{{ selectedItem.title }}</h3>
+          <p class="mt-1 break-words text-xs text-slate-600">{{ outlinePathLabel(selectedItem) }}</p>
+        </div>
+
+        <dl class="grid grid-cols-2 gap-2 text-sm">
+          <div class="rounded-md border border-slate-200 bg-white px-2 py-1.5">
+            <dt class="text-xs font-bold uppercase text-slate-500">Type</dt>
+            <dd class="font-semibold text-slate-900">{{ selectedItem.itemType }}</dd>
+          </div>
+          <div class="rounded-md border border-slate-200 bg-white px-2 py-1.5">
+            <dt class="text-xs font-bold uppercase text-slate-500">Complete</dt>
+            <dd class="font-semibold text-slate-900">{{ selectedItem.percentComplete }}%</dd>
+          </div>
+          <div class="rounded-md border border-slate-200 bg-white px-2 py-1.5">
+            <dt class="text-xs font-bold uppercase text-slate-500">Level</dt>
+            <dd class="font-semibold text-slate-900">{{ selectedItem.outlineLevel }}</dd>
+          </div>
+          <div class="rounded-md border border-slate-200 bg-white px-2 py-1.5">
+            <dt class="text-xs font-bold uppercase text-slate-500">Children</dt>
+            <dd class="font-semibold text-slate-900">{{ descendantCount(selectedItem) }}</dd>
+          </div>
+          <div class="rounded-md border border-slate-200 bg-white px-2 py-1.5">
+            <dt class="text-xs font-bold uppercase text-slate-500">Rollover</dt>
+            <dd class="font-semibold text-slate-900">{{ selectedItem.rolloverPolicy }}</dd>
+          </div>
+        </dl>
+
+        <p class="break-words text-xs text-slate-600">
+          Parent: <span class="font-semibold text-slate-800">{{ outlineParent(selectedItem)?.title || 'Plan root' }}</span>
+        </p>
+
+        <section *ngIf="canQuickProgress(selectedItem)" class="grid gap-2 rounded-md border border-emerald-200 bg-emerald-50 p-2">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <p class="text-sm font-bold text-emerald-950">Quick progress</p>
+            <span class="text-xs font-bold uppercase text-emerald-700">{{ selectedItem.percentComplete }}%</span>
+          </div>
+          <div class="grid grid-cols-5 gap-1">
+            <button *ngFor="let percent of quickProgressValues" type="button" class="rounded border px-1.5 py-1 text-xs font-bold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50"
+              [class.border-emerald-600]="selectedItem.percentComplete === percent"
+              [class.bg-emerald-600]="selectedItem.percentComplete === percent"
+              [class.text-white]="selectedItem.percentComplete === percent"
+              [class.border-emerald-200]="selectedItem.percentComplete !== percent"
+              [class.bg-white]="selectedItem.percentComplete !== percent"
+              [class.text-emerald-800]="selectedItem.percentComplete !== percent"
+              [disabled]="isSaving(selectedItem)"
+              (click)="quickProgress(selectedItem, percent)">{{ percent === 100 ? 'Done' : percent + '%' }}</button>
+          </div>
+          <p *ngIf="rowError(selectedItem)" class="text-xs font-bold text-red-700">{{ rowError(selectedItem) }}</p>
+        </section>
+
+        <section *ngIf="canQuickProgress(selectedItem)" class="grid gap-2 rounded-md border border-blue-200 bg-blue-50 p-2">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <p class="text-sm font-bold text-blue-950">Schedule feed</p>
+            <span class="rounded bg-white px-2 py-0.5 text-xs font-bold text-blue-800" [title]="scheduleModeTitle(selectedItem.scheduleSurfaceMode)">{{ scheduleModeLabel(selectedItem.scheduleSurfaceMode) }}</span>
+          </div>
+          <div class="grid grid-cols-2 gap-1">
+            <button *ngFor="let mode of scheduleSurfaceModes" type="button" class="rounded border px-2 py-1 text-xs font-bold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50"
+              [class.border-blue-600]="selectedItem.scheduleSurfaceMode === mode"
+              [class.bg-blue-600]="selectedItem.scheduleSurfaceMode === mode"
+              [class.text-white]="selectedItem.scheduleSurfaceMode === mode"
+              [class.border-blue-200]="selectedItem.scheduleSurfaceMode !== mode"
+              [class.bg-white]="selectedItem.scheduleSurfaceMode !== mode"
+              [class.text-blue-800]="selectedItem.scheduleSurfaceMode !== mode"
+              [title]="scheduleModeTitle(mode)"
+              [disabled]="isSaving(selectedItem)"
+              (click)="quickScheduleMode(selectedItem, mode)">{{ scheduleModeLabel(mode) }}</button>
+          </div>
+        </section>
+
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40" title="Move earlier among siblings" [disabled]="selectedPlanArchived() || !previousSibling(selectedItem) || outlineMoving()" (click)="moveOutlineUp(selectedItem)">Up</button>
+          <button type="button" class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40" title="Move later among siblings" [disabled]="selectedPlanArchived() || !nextSibling(selectedItem) || outlineMoving()" (click)="moveOutlineDown(selectedItem)">Down</button>
+          <button type="button" class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40" [disabled]="selectedPlanArchived() || selectedItem.outlineLevel === 0" (click)="openOutlineMove(selectedItem)">Move</button>
+          <button type="button" class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40" [disabled]="selectedPlanArchived()" (click)="openOutlineCreate(selectedItem)">Add child</button>
+          <button type="button" class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40" [disabled]="selectedPlanArchived()" (click)="openOutlineEdit(selectedItem)">Edit</button>
+          <button type="button" class="rounded-md border border-red-200 bg-white px-2 py-1.5 text-sm font-bold text-red-700 shadow-sm transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40" [disabled]="selectedPlanArchived() || selectedItem.outlineLevel === 0" (click)="deleteOutlineItem(selectedItem)">Delete</button>
+        </div>
+
+        <section class="grid gap-2 rounded-md border border-slate-200 bg-white p-2">
+          <div class="flex items-center justify-between gap-2">
+            <p class="text-sm font-bold text-slate-950">Dependencies</p>
+            <span class="text-xs font-bold uppercase text-slate-500" *ngIf="dependencyLoading()">Loading</span>
+          </div>
+
+          <form class="grid gap-2 rounded-md bg-slate-50 p-2" (ngSubmit)="addDependency(selectedItem)">
+            <input class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="search" name="dependencySearch" [ngModel]="dependencySearch()" (ngModelChange)="dependencySearch.set($event)" placeholder="Filter predecessor items" [disabled]="selectedPlanArchived()" />
+            <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">
+              Add predecessor
+              <select class="min-w-0 rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="dependencyCandidate" [ngModel]="dependencyCandidateId()" (ngModelChange)="setDependencyCandidate($event)" [disabled]="selectedPlanArchived()">
+                <option [ngValue]="null">Choose item</option>
+                <option *ngFor="let candidate of dependencyCandidates()" [ngValue]="candidate.id">{{ outlinePathLabel(candidate) }}</option>
+              </select>
+            </label>
+            <div class="grid grid-cols-[minmax(0,1fr)_7rem] gap-2">
+              <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">
+                Type
+                <select class="w-full min-w-0 rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="dependencyCreateType" [ngModel]="dependencyCreateType()" (ngModelChange)="dependencyCreateType.set($event)" [disabled]="selectedPlanArchived()">
+                  <option *ngFor="let type of dependencyTypes" [value]="type">{{ type }}</option>
+                </select>
+              </label>
+              <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">
+                Lag min
+                <input class="w-full min-w-0 rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="dependencyCreateLagMinutes" type="number" [ngModel]="dependencyCreateLagMinutes()" (ngModelChange)="updateDependencyCreateLag($event)" [disabled]="selectedPlanArchived()" />
+              </label>
+            </div>
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-xs font-semibold text-slate-600">{{ dependencyCandidates().length | number }} matches</span>
+              <button type="submit" class="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="selectedPlanArchived() || !dependencyCandidateId() || dependencySaving()">Add</button>
+            </div>
+          </form>
+
+          <div class="grid gap-1">
+            <p class="text-xs font-bold uppercase text-slate-500">Predecessors</p>
+            <div *ngFor="let dependency of dependencies()?.predecessors" class="grid gap-1 rounded-md border border-slate-200 px-2 py-1.5">
+              <div class="flex items-start justify-between gap-2">
+                <p class="min-w-0 break-words text-sm font-semibold text-slate-900">{{ dependencyLabel(dependency) }}</p>
+                <button type="button" class="rounded border border-red-200 bg-white px-1.5 py-0.5 text-xs font-bold text-red-700 transition hover:bg-red-50 disabled:opacity-40" [disabled]="selectedPlanArchived() || dependencySaving()" (click)="deleteDependency(selectedItem, dependency)">Remove</button>
+              </div>
+              <p class="text-xs text-slate-500">
+                {{ dependency.itemType || 'Imported' }}
+                <span *ngIf="dependency.importedLinkType"> / Project link {{ dependency.importedLinkType }}</span>
+              </p>
+              <div class="grid grid-cols-[minmax(0,1fr)_7rem_auto] gap-1">
+                <select class="min-w-0 rounded border border-slate-300 bg-white px-1.5 py-1 text-xs font-bold text-slate-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="dependencyEditFor(dependency).dependencyType" (ngModelChange)="updateDependencyEdit(dependency, { dependencyType: $event })" [ngModelOptions]="{standalone: true}" aria-label="Dependency type" [disabled]="selectedPlanArchived()">
+                  <option *ngFor="let type of dependencyTypes" [value]="type">{{ type }}</option>
+                </select>
+                <input class="min-w-0 rounded border border-slate-300 bg-white px-1.5 py-1 text-xs font-semibold text-slate-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="number" [ngModel]="dependencyEditFor(dependency).lagMinutes" (ngModelChange)="updateDependencyLag(dependency, $event)" [ngModelOptions]="{standalone: true}" aria-label="Dependency lag minutes" [disabled]="selectedPlanArchived()" />
+                <button type="button" class="rounded bg-blue-600 px-2 py-1 text-xs font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:opacity-40" [disabled]="selectedPlanArchived() || !isDependencyDirty(dependency) || dependencySaving()" (click)="saveDependency(selectedItem, dependency)">Save</button>
+              </div>
+            </div>
+            <p *ngIf="!dependencies()?.predecessors?.length && !dependencyLoading()" class="rounded-md bg-slate-50 px-2 py-1.5 text-sm text-slate-600">No predecessors.</p>
+          </div>
+
+          <div class="grid gap-1">
+            <p class="text-xs font-bold uppercase text-slate-500">Successors</p>
+            <div *ngFor="let dependency of dependencies()?.successors" class="grid gap-1 rounded-md border border-slate-200 px-2 py-1.5">
+              <div class="flex items-start justify-between gap-2">
+                <p class="min-w-0 break-words text-sm font-semibold text-slate-900">{{ successorLabel(dependency) }}</p>
+                <button type="button" class="rounded border border-red-200 bg-white px-1.5 py-0.5 text-xs font-bold text-red-700 transition hover:bg-red-50 disabled:opacity-40" [disabled]="selectedPlanArchived() || dependencySaving()" (click)="deleteSuccessorDependency(dependency)">Remove</button>
+              </div>
+              <p class="text-xs text-slate-500">{{ dependency.itemType || 'Plan item' }} / {{ dependency.dependencyType }} / {{ dependency.lagMinutes }} min</p>
+            </div>
+            <p *ngIf="!dependencies()?.successors?.length && !dependencyLoading()" class="rounded-md bg-slate-50 px-2 py-1.5 text-sm text-slate-600">No successors.</p>
+          </div>
+        </section>
+
+        <form *ngIf="movingOutlineItem() as item" class="grid gap-2 rounded-md border border-cyan-200 bg-cyan-50 p-2" (ngSubmit)="moveOutlineUnder()">
+          <div class="flex items-start justify-between gap-2">
+            <p class="text-sm font-bold text-slate-950">Move parent</p>
+            <button type="button" class="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="closeOutlineMove()">Close</button>
+          </div>
+          <input class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="search" name="outlineMoveSearch" [ngModel]="outlineMoveSearch()" (ngModelChange)="outlineMoveSearch.set($event)" placeholder="Filter parents" />
+          <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">
+            Destination
+            <select class="min-w-0 rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="outlineMoveParent" [ngModel]="outlineMoveParentId()" (ngModelChange)="outlineMoveParentId.set($event)">
+              <option [ngValue]="null">Choose parent</option>
+              <option *ngFor="let parent of moveParentsFor(item)" [ngValue]="parent.id">{{ outlinePathLabel(parent) }}</option>
+            </select>
+          </label>
+          <p class="text-xs font-semibold text-slate-600">{{ moveParentsFor(item).length | number }} available</p>
+          <button type="submit" class="rounded-md bg-blue-600 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="!outlineMoveParentId() || outlineMoving()">Move</button>
+        </form>
+
+        <form *ngIf="editingOutlineItem() as item" class="grid gap-2 rounded-md border border-slate-200 bg-white p-2" (ngSubmit)="saveItem(item)">
+          <div class="flex items-start justify-between gap-2">
+            <p class="text-sm font-bold text-slate-950">Edit item</p>
+            <button type="button" class="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="closeOutlineEdit()">Close</button>
+          </div>
+          <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">Title
+            <input class="rounded-md border border-slate-300 px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="outlineEditTitle" type="text" required [ngModel]="editFor(item).title" (ngModelChange)="updateEdit(item, { title: $event })" />
+          </label>
+          <div class="grid grid-cols-2 gap-2">
+            <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">Type
+              <select class="rounded-md border border-slate-300 px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="outlineEditType" [ngModel]="editFor(item).itemType" (ngModelChange)="updateEdit(item, { itemType: $event })">
+                <option *ngFor="let type of editableItemTypes" [value]="type">{{ type }}</option>
+              </select>
+            </label>
+            <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">Complete
+              <input class="rounded-md border border-slate-300 px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="outlineEditPercent" type="number" min="0" max="100" [ngModel]="editFor(item).percentComplete" (ngModelChange)="updatePercent(item, $event)" />
+            </label>
+          </div>
+          <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">Window
+            <select class="rounded-md border border-slate-300 px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="outlineEditWindow" [ngModel]="editFor(item).planningWindowType" (ngModelChange)="updateEdit(item, { planningWindowType: $event })">
+              <option *ngFor="let type of planningWindowTypes" [value]="type">{{ type }}</option>
+            </select>
+          </label>
+          <div class="grid grid-cols-2 gap-2">
+            <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">Start
+              <input class="rounded-md border border-slate-300 px-2 py-1.5 text-sm font-normal normal-case text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="outlineEditStart" type="date" [ngModel]="editFor(item).targetStartDate" (ngModelChange)="updateEdit(item, { targetStartDate: $event })" />
+            </label>
+            <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">End
+              <input class="rounded-md border border-slate-300 px-2 py-1.5 text-sm font-normal normal-case text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="outlineEditEnd" type="date" [ngModel]="editFor(item).targetEndDate" (ngModelChange)="updateEdit(item, { targetEndDate: $event })" />
+            </label>
+          </div>
+          <div class="flex flex-wrap items-center gap-1">
+            <span class="mr-1 text-xs font-bold uppercase text-slate-500">Nudge window</span>
+            <button type="button" class="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="nudgeEditWindow(item, -7)">-1 week</button>
+            <button type="button" class="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="nudgeEditWindow(item, 7)">+1 week</button>
+            <button type="button" class="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="nudgeEditWindow(item, 28)">+4 weeks</button>
+          </div>
+          <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">Schedule
+            <select class="rounded-md border border-slate-300 px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="outlineEditSchedule" [ngModel]="editFor(item).scheduleSurfaceMode" (ngModelChange)="updateEdit(item, { scheduleSurfaceMode: $event })">
+              <option *ngFor="let mode of scheduleSurfaceModes" [value]="mode">{{ scheduleModeLabel(mode) }}</option>
+            </select>
+          </label>
+          <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">Rollover
+            <select class="rounded-md border border-slate-300 px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="outlineEditRollover" [ngModel]="editFor(item).rolloverPolicy" (ngModelChange)="updateEdit(item, { rolloverPolicy: $event })">
+              <option *ngFor="let policy of rolloverPolicies" [value]="policy">{{ policy }}</option>
+            </select>
+          </label>
+          <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">Notes
+            <textarea class="min-h-16 rounded-md border border-slate-300 px-2 py-1.5 text-sm font-normal normal-case text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="outlineEditNotes" [ngModel]="editFor(item).notes" (ngModelChange)="updateEdit(item, { notes: $event })"></textarea>
+          </label>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="submit" class="rounded-md bg-blue-600 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="!isDirty(item) || isSaving(item)">{{ isSaving(item) ? 'Saving' : 'Save' }}</button>
+            <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50" [disabled]="!isDirty(item) || isSaving(item)" (click)="discardEdit(item)">Reset</button>
+          </div>
+          <p *ngIf="rowError(item)" class="text-sm font-bold text-red-700">{{ rowError(item) }}</p>
+        </form>
+      </aside>
+    </div>
+
+    <div *ngIf="workView() === 'all' && browserView() === 'grid'" class="mt-4 grid gap-3">
+      <p *ngIf="filteredItems().length > gridItemLimit" class="rounded-md bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800">
+        Showing the first {{ gridItemLimit | number }} matching rows. Narrow the filters to edit a smaller batch.
+      </p>
+
+      <section class="grid gap-3 rounded-lg border border-cyan-200 bg-cyan-50 p-3">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h3 class="text-base font-bold text-cyan-950">Queue Mass Edit</h3>
+            <p class="text-sm font-semibold text-cyan-800">{{ massSelectionLabel() }}</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" class="rounded-md border border-cyan-300 bg-white px-3 py-1.5 text-sm font-bold text-cyan-900 shadow-sm transition hover:bg-cyan-100 disabled:opacity-50" [disabled]="massVisibleQueueItems().length === 0 || massEditing() || selectedPlanArchived()" (click)="selectVisibleQueueRows()">Select visible queue</button>
+            <button type="button" class="rounded-md border border-cyan-300 bg-white px-3 py-1.5 text-sm font-bold text-cyan-900 shadow-sm transition hover:bg-cyan-100 disabled:opacity-50" [disabled]="massEditableQueueItems().length === 0 || massEditing() || selectedPlanArchived()" (click)="selectFilteredQueueRows()">Select filtered queue</button>
+            <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50" [disabled]="massSelectedCount() === 0 || massEditing()" (click)="clearMassSelection()">Clear selection</button>
+          </div>
+        </div>
+
+        <div class="grid gap-2 md:grid-cols-3 xl:grid-cols-6">
+          <label class="grid gap-1 text-xs font-bold uppercase text-cyan-900">Complete
+            <input class="rounded-md border border-cyan-200 bg-white px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100" type="number" min="0" max="100" [ngModel]="massPercent()" (ngModelChange)="massPercent.set($event === '' ? null : $event)" [ngModelOptions]="{standalone: true}" />
+          </label>
+          <label class="grid gap-1 text-xs font-bold uppercase text-cyan-900">Window
+            <select class="rounded-md border border-cyan-200 bg-white px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100" [ngModel]="massPlanningWindow()" (ngModelChange)="massPlanningWindow.set($event)" [ngModelOptions]="{standalone: true}">
+              <option value="">No change</option>
+              <option *ngFor="let type of planningWindowTypes" [value]="type">{{ type }}</option>
+            </select>
+          </label>
+          <label class="grid gap-1 text-xs font-bold uppercase text-cyan-900">Start
+            <input class="rounded-md border border-cyan-200 bg-white px-2 py-1.5 text-sm font-normal normal-case text-slate-900 outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100" type="date" [ngModel]="massStartDate()" (ngModelChange)="massStartDate.set($event)" [ngModelOptions]="{standalone: true}" />
+          </label>
+          <label class="grid gap-1 text-xs font-bold uppercase text-cyan-900">End
+            <input class="rounded-md border border-cyan-200 bg-white px-2 py-1.5 text-sm font-normal normal-case text-slate-900 outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100" type="date" [ngModel]="massEndDate()" (ngModelChange)="massEndDate.set($event)" [ngModelOptions]="{standalone: true}" />
+          </label>
+          <label class="grid gap-1 text-xs font-bold uppercase text-cyan-900">Schedule
+            <select class="rounded-md border border-cyan-200 bg-white px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100" [ngModel]="massScheduleMode()" (ngModelChange)="massScheduleMode.set($event)" [ngModelOptions]="{standalone: true}">
+              <option value="">No change</option>
+              <option *ngFor="let mode of scheduleSurfaceModes" [value]="mode">{{ scheduleModeLabel(mode) }}</option>
+            </select>
+          </label>
+          <label class="grid gap-1 text-xs font-bold uppercase text-cyan-900">Rollover
+            <select class="rounded-md border border-cyan-200 bg-white px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100" [ngModel]="massRolloverPolicy()" (ngModelChange)="massRolloverPolicy.set($event)" [ngModelOptions]="{standalone: true}">
+              <option value="">No change</option>
+              <option *ngFor="let policy of rolloverPolicies" [value]="policy">{{ policy }}</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="flex flex-wrap gap-2">
+          <button type="button" class="rounded-md bg-cyan-900 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-cyan-800 disabled:opacity-50" [disabled]="massSelectedCount() === 0 || massEditing() || selectedPlanArchived()" (click)="applyMassEdit()">{{ massEditing() ? 'Applying' : 'Apply mass edit' }}</button>
+          <button type="button" class="rounded-md border border-emerald-300 bg-white px-3 py-2 text-sm font-bold text-emerald-800 shadow-sm transition hover:bg-emerald-50 disabled:opacity-50" [disabled]="massSelectedCount() === 0 || massEditing() || selectedPlanArchived()" (click)="markSelectedQueueDone()">Mark done</button>
+          <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50" [disabled]="massSelectedCount() === 0 || massEditing() || selectedPlanArchived()" (click)="applySelectedQueueDefaults()">Queue defaults</button>
+          <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50" [disabled]="massSelectedCount() === 0 || massEditing() || selectedPlanArchived()" (click)="clearSelectedQueueDates()">Clear dates</button>
+        </div>
+      </section>
+
+      <fieldset class="contents" [disabled]="selectedPlanArchived()">
+      <div class="overflow-x-auto rounded-lg border border-slate-200">
+        <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
+          <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+            <tr>
+              <th class="px-3 py-3 font-bold">Select</th>
+              <th class="px-3 py-3 font-bold">Plan item</th>
+              <th class="px-3 py-3 font-bold">Type</th>
+              <th class="px-3 py-3 font-bold">Complete</th>
+              <th class="px-3 py-3 font-bold">Window</th>
+              <th class="px-3 py-3 font-bold">Start</th>
+              <th class="px-3 py-3 font-bold">End</th>
+              <th class="px-3 py-3 font-bold">Schedule</th>
+              <th class="px-3 py-3 font-bold">Rollover</th>
+              <th class="px-3 py-3 font-bold">Notes</th>
+              <th class="px-3 py-3 font-bold">Imported</th>
+              <th class="px-3 py-3 font-bold"></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 bg-white">
+            <tr *ngFor="let item of gridItems()" class="align-top" [class.bg-slate-50]="item.isSummary">
+              <td class="px-3 py-2">
+                <input type="checkbox" class="h-4 w-4 rounded border-slate-300 text-cyan-700 focus:ring-cyan-500" [disabled]="item.itemType !== 'QueueItem' || item.outlineLevel <= 0 || item.isSummary || isSaving(item)" [checked]="isMassSelected(item)" (change)="toggleMassSelection(item, $any($event.target).checked)" aria-label="Select queue row for mass edit" />
+              </td>
+              <td class="min-w-72 px-3 py-2">
+                <p class="font-semibold text-slate-950">{{ item.title }}</p>
+                <p class="mt-1 text-xs text-slate-500">{{ item.topLevelSection || 'Plan root' }} / level {{ item.outlineLevel }}</p>
+                <p *ngIf="rowError(item)" class="mt-2 max-w-72 text-xs font-bold text-red-700">{{ rowError(item) }}</p>
+              </td>
+              <td class="min-w-36 px-3 py-2">
+                <select class="w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm font-semibold text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="editFor(item).itemType" (ngModelChange)="updateEdit(item, { itemType: $event })" [ngModelOptions]="{standalone: true}">
+                  <option *ngFor="let type of editableItemTypes" [value]="type">{{ type }}</option>
+                </select>
+              </td>
+              <td class="min-w-28 px-3 py-2">
+                <input class="w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm font-semibold text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="number" min="0" max="100" [ngModel]="editFor(item).percentComplete" (ngModelChange)="updatePercent(item, $event)" [ngModelOptions]="{standalone: true}" aria-label="Percent complete" />
+                <p class="mt-1 text-xs text-slate-500">{{ item.status }}</p>
+              </td>
+              <td class="min-w-40 px-3 py-2">
+                <select class="w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm font-semibold text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="editFor(item).planningWindowType" (ngModelChange)="updateEdit(item, { planningWindowType: $event })" [ngModelOptions]="{standalone: true}">
+                  <option *ngFor="let type of planningWindowTypes" [value]="type">{{ type }}</option>
+                </select>
+              </td>
+              <td class="min-w-40 px-3 py-2">
+                <input class="w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="date" [ngModel]="editFor(item).targetStartDate" (ngModelChange)="updateEdit(item, { targetStartDate: $event })" [ngModelOptions]="{standalone: true}" aria-label="Target start date" />
+              </td>
+              <td class="min-w-40 px-3 py-2">
+                <input class="w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="date" [ngModel]="editFor(item).targetEndDate" (ngModelChange)="updateEdit(item, { targetEndDate: $event })" [ngModelOptions]="{standalone: true}" aria-label="Target end date" />
+              </td>
+              <td class="min-w-48 px-3 py-2">
+                <select class="w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm font-semibold text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="editFor(item).scheduleSurfaceMode" (ngModelChange)="updateEdit(item, { scheduleSurfaceMode: $event })" [ngModelOptions]="{standalone: true}">
+                  <option *ngFor="let mode of scheduleSurfaceModes" [value]="mode">{{ scheduleModeLabel(mode) }}</option>
+                </select>
+              </td>
+              <td class="min-w-44 px-3 py-2">
+                <select class="w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm font-semibold text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="editFor(item).rolloverPolicy" (ngModelChange)="updateEdit(item, { rolloverPolicy: $event })" [ngModelOptions]="{standalone: true}" aria-label="Rollover policy">
+                  <option *ngFor="let policy of rolloverPolicies" [value]="policy">{{ policy }}</option>
+                </select>
+              </td>
+              <td class="min-w-72 px-3 py-2">
+                <textarea class="min-h-20 w-full resize-y rounded-md border border-slate-300 px-2 py-1.5 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="editFor(item).notes" (ngModelChange)="updateEdit(item, { notes: $event })" [ngModelOptions]="{standalone: true}" aria-label="Plan item notes"></textarea>
+              </td>
+              <td class="min-w-40 whitespace-nowrap px-3 py-2 text-xs text-slate-600">
+                <p *ngIf="item.importedStart || item.importedFinish">{{ item.importedStart | date:'shortDate' }} - {{ item.importedFinish | date:'shortDate' }}</p>
+                <p>{{ item.importedDuration || '' }}</p>
+              </td>
+              <td class="whitespace-nowrap px-3 py-2">
+                <div class="flex gap-2">
+                  <button type="button" class="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="!isDirty(item) || isSaving(item)" (click)="saveItem(item)">{{ isSaving(item) ? 'Saving' : 'Save' }}</button>
+                  <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="!isDirty(item) || isSaving(item)" (click)="discardEdit(item)">Reset</button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="gridItems().length === 0 && !loading()">
+              <td colspan="12" class="px-3 py-8 text-center text-sm text-slate-500">No plan items found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      </fieldset>
+    </div>
+  </section>
+</section>

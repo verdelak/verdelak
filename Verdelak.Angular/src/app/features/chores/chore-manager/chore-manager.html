@@ -1,0 +1,469 @@
+<section class="grid gap-4">
+  <header class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+    <div class="flex flex-wrap items-start justify-between gap-3">
+      <div>
+        <p class="text-xs font-bold uppercase tracking-wider text-orange-600">Chores</p>
+        <h1 class="mt-1 text-2xl font-bold text-slate-950 sm:text-3xl">Chore Schedule Setup</h1>
+      </div>
+      <a class="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-bold text-blue-800 shadow-sm transition hover:bg-blue-100" routerLink="/tasks">Master Schedule</a>
+    </div>
+  </header>
+
+  <div *ngIf="message()" class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">{{ message() }}</div>
+  <div *ngIf="error()" class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">{{ error() }}</div>
+
+  <section class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+    <article *ngFor="let card of choreSummaryCards()" class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <p class="text-xs font-bold uppercase tracking-wide text-slate-500">{{ card.label }}</p>
+      <p class="mt-2 text-2xl font-bold text-slate-950">{{ card.value | number }}</p>
+      <p class="mt-1 text-sm font-semibold text-slate-600">{{ card.detail }}</p>
+    </article>
+  </section>
+
+  <section class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(20rem,0.8fr)]">
+    <article class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+      <div class="flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3">
+        <div>
+          <h2 class="text-lg font-bold text-slate-950">Chore Reports</h2>
+          <p class="text-sm text-slate-600">Configured chores and generated rows for the {{ scheduleRangeLabel().toLocaleLowerCase() }}.</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="exportChoreReportCsv()">Export report</button>
+          <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="exportChoreScheduleCsv()">Export schedule</button>
+        </div>
+      </div>
+      <div class="grid gap-3 p-4 lg:grid-cols-3">
+        <section class="overflow-hidden rounded-md border border-slate-200">
+          <div class="bg-slate-50 px-3 py-2 text-sm font-bold text-slate-950">By Category</div>
+          <div class="divide-y divide-slate-100">
+            <div *ngFor="let row of categoryReport()" class="grid grid-cols-[minmax(0,1fr)_auto] gap-3 px-3 py-2 text-sm">
+              <span class="font-semibold text-slate-800">{{ row.label }}</span>
+              <span class="text-right font-bold text-slate-950">{{ row.count | number }}</span>
+              <span class="col-span-2 text-xs font-semibold text-slate-500">{{ row.activeCount | number }} active / {{ row.next30Count | number }} {{ scheduleRangeLabel().toLocaleLowerCase() }}</span>
+            </div>
+          </div>
+        </section>
+        <section class="overflow-hidden rounded-md border border-slate-200">
+          <div class="bg-slate-50 px-3 py-2 text-sm font-bold text-slate-950">By Frequency</div>
+          <div class="divide-y divide-slate-100">
+            <div *ngFor="let row of frequencyReport()" class="grid grid-cols-[minmax(0,1fr)_auto] gap-3 px-3 py-2 text-sm">
+              <span class="font-semibold text-slate-800">{{ row.label }}</span>
+              <span class="text-right font-bold text-slate-950">{{ row.count | number }}</span>
+              <span class="col-span-2 text-xs font-semibold text-slate-500">{{ row.activeCount | number }} active / {{ row.next30Count | number }} {{ scheduleRangeLabel().toLocaleLowerCase() }}</span>
+            </div>
+          </div>
+        </section>
+        <section class="overflow-hidden rounded-md border border-slate-200">
+          <div class="bg-slate-50 px-3 py-2 text-sm font-bold text-slate-950">Generated Status</div>
+          <div class="divide-y divide-slate-100">
+            <div *ngFor="let row of scheduleStatusReport()" class="grid grid-cols-[minmax(0,1fr)_auto] gap-3 px-3 py-2 text-sm">
+              <span class="font-semibold text-slate-800">{{ row.label }}</span>
+              <span class="text-right font-bold text-slate-950">{{ row.count | number }}</span>
+              <span class="col-span-2 text-xs font-semibold text-slate-500">{{ row.next30Count | number }} generated rows</span>
+            </div>
+            <p *ngIf="scheduleStatusReport().length === 0" class="px-3 py-4 text-sm font-semibold text-slate-500">No generated Chore rows in the preview window.</p>
+          </div>
+        </section>
+      </div>
+    </article>
+
+    <article class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+      <div class="border-b border-slate-200 bg-slate-50 px-4 py-3">
+        <h2 class="text-lg font-bold text-slate-950">Attention</h2>
+          <p class="text-sm text-slate-600">Active chores without generated rows in the selected window and missed preview items.</p>
+      </div>
+      <div class="divide-y divide-slate-100">
+        <div *ngFor="let item of attentionItems()" class="px-4 py-3">
+          <p class="font-bold" [class.text-rose-800]="item.tone === 'rose'" [class.text-amber-800]="item.tone === 'amber'">{{ item.title }}</p>
+          <p class="mt-1 text-sm font-semibold text-slate-600">{{ item.detail }}</p>
+        </div>
+        <p *ngIf="attentionItems().length === 0" class="px-4 py-6 text-sm font-semibold text-slate-500">No chore attention items in the current report.</p>
+      </div>
+    </article>
+  </section>
+
+  <section class="grid gap-4 xl:grid-cols-[minmax(21rem,26rem)_minmax(0,1fr)]">
+    <form class="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm" (ngSubmit)="save()">
+      <div class="flex items-center justify-between gap-3">
+        <h2 class="text-lg font-bold text-slate-950">{{ form().taskID ? 'Edit Chore' : 'New Chore' }}</h2>
+        <button *ngIf="form().taskID" type="button" class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700" (click)="resetForm()">New</button>
+      </div>
+
+      <label class="grid gap-1 text-sm font-bold text-slate-700">
+        Title
+        <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="form().title" (ngModelChange)="setForm('title', $event)" name="title" required />
+      </label>
+
+      <label class="grid gap-1 text-sm font-bold text-slate-700">
+        Notes
+        <textarea class="min-h-24 rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="form().description" (ngModelChange)="setForm('description', $event)" name="description"></textarea>
+      </label>
+
+      <label class="grid gap-1 text-sm font-bold text-slate-700">
+        Category
+        <select class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="form().category" (ngModelChange)="setForm('category', $event)" name="category">
+          <option *ngFor="let category of categories" [value]="category">{{ category }}</option>
+        </select>
+      </label>
+
+      <div class="grid gap-3 sm:grid-cols-2">
+        <label class="grid gap-1 text-sm font-bold text-slate-700">
+          Schedule
+          <select class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="form().scheduleType" (ngModelChange)="setForm('scheduleType', $event)" name="scheduleType">
+            <option value="OneTime">One time</option>
+            <option value="Daily">Daily</option>
+            <option value="Weekly">Weekly</option>
+            <option value="Monthly">Monthly</option>
+          </select>
+        </label>
+
+        <label class="flex items-end gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-bold text-slate-700">
+          <input type="checkbox" class="h-4 w-4 rounded border-slate-300 text-blue-600" [ngModel]="form().isActive" (ngModelChange)="setForm('isActive', $event)" name="isActive" />
+          Active
+        </label>
+      </div>
+
+      <section class="grid gap-2 rounded-md border border-slate-200 bg-slate-50 p-3">
+        <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Quick Templates</p>
+        <div class="flex flex-wrap gap-2">
+          <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-100" (click)="applyDailyTemplate()">Daily</button>
+          <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-100" (click)="applyWeekdayTemplate()">Weekdays</button>
+          <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-100" (click)="applyMonthlyTemplate()">Monthly</button>
+        </div>
+        <div class="grid gap-2">
+          <p class="text-xs font-bold text-slate-600">Weekly on</p>
+          <div class="grid grid-cols-4 gap-2 sm:grid-cols-7">
+            <button *ngFor="let day of dayKeys" type="button" class="rounded-md border px-2 py-1.5 text-xs font-bold shadow-sm transition"
+              [ngClass]="form().scheduleType === 'Weekly' && form().weeklyDays[day] ? 'border-blue-600 bg-blue-600 text-white' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-100'"
+              (click)="applyWeeklyDayTemplate(day)">
+              {{ day }}
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <div class="grid gap-3 sm:grid-cols-2">
+        <label class="grid gap-1 text-sm font-bold text-slate-700">
+          Start
+          <input type="date" class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="form().startDate" (ngModelChange)="setForm('startDate', $event)" name="startDate" required />
+        </label>
+        <label class="grid gap-1 text-sm font-bold text-slate-700">
+          End
+          <input type="date" class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="form().endDate" (ngModelChange)="setForm('endDate', $event)" name="endDate" />
+        </label>
+      </div>
+
+      <label *ngIf="form().scheduleType === 'OneTime'" class="grid gap-1 text-sm font-bold text-slate-700">
+        Occurs on
+        <input type="date" class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="form().oneTimeDate" (ngModelChange)="setForm('oneTimeDate', $event)" name="oneTimeDate" />
+      </label>
+
+      <div *ngIf="form().scheduleType === 'Weekly'" class="grid gap-2">
+        <p class="text-sm font-bold text-slate-700">Days</p>
+        <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <label *ngFor="let day of dayKeys" class="flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-bold text-slate-700">
+            <input type="checkbox" class="h-4 w-4 rounded border-slate-300 text-blue-600" [ngModel]="form().weeklyDays[day]" (ngModelChange)="setWeeklyDay(day, $event)" [name]="'day-' + day" />
+            {{ day }}
+          </label>
+        </div>
+      </div>
+
+      <div *ngIf="form().scheduleType === 'Monthly'" class="grid gap-3 sm:grid-cols-2">
+        <label class="grid gap-1 text-sm font-bold text-slate-700">
+          Day of month
+          <input type="number" min="1" max="31" class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="form().monthlyDay" (ngModelChange)="setForm('monthlyDay', $event)" name="monthlyDay" />
+        </label>
+        <label class="grid gap-1 text-sm font-bold text-slate-700">
+          Every N months
+          <input type="number" min="1" max="24" class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="form().monthlyInterval" (ngModelChange)="setForm('monthlyInterval', $event)" name="monthlyInterval" />
+        </label>
+      </div>
+
+      <section class="grid gap-2 rounded-md border border-blue-100 bg-blue-50 p-3">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <p class="text-xs font-bold uppercase tracking-wide text-blue-700">Occurrence Preview</p>
+          <select class="rounded border border-blue-200 bg-white px-2 py-1 text-xs font-bold text-blue-800" [ngModel]="previewDays()" (ngModelChange)="previewDays.set($event)" name="previewDays">
+            <option *ngFor="let days of previewWindowDays" [ngValue]="days">{{ days }} days</option>
+          </select>
+        </div>
+        <div *ngIf="formPreview().length > 0" class="flex flex-wrap gap-1.5">
+          <span *ngFor="let date of formPreview().slice(0, 24)" class="rounded bg-white px-2 py-1 text-xs font-bold text-blue-800 shadow-sm">{{ date | date:'MMM d' }}</span>
+          <span *ngIf="formPreview().length > 24" class="rounded bg-blue-100 px-2 py-1 text-xs font-bold text-blue-800">+{{ formPreview().length - 24 | number }} more</span>
+        </div>
+        <p *ngIf="formPreview().length === 0" class="text-sm font-semibold text-blue-800">No occurrences in this preview window.</p>
+      </section>
+
+      <button type="submit" class="rounded-md bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:opacity-50" [disabled]="saving()">
+        {{ saving() ? 'Saving.' : 'Save Chore' }}
+      </button>
+
+      <section class="grid gap-3 rounded-md border border-slate-200 bg-white p-3">
+        <div>
+          <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Bulk Add</p>
+          <p class="mt-1 text-sm text-slate-600">Paste one title per line, or CSV/TSV columns: title, category, schedule, days, monthly day, notes.</p>
+        </div>
+        <textarea class="min-h-32 rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="bulkText()" (ngModelChange)="bulkText.set($event)" name="bulkText" placeholder="Take trash out, Household, Weekly, Mon, , Curb by 7 AM&#10;Refill pill organizer, Medical, Weekly, Sun"></textarea>
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <p class="text-sm font-semibold text-slate-700">{{ bulkPreview().length | number }} chore{{ bulkPreview().length === 1 ? '' : 's' }} ready</p>
+          <button type="button" class="rounded-md bg-emerald-600 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-700 disabled:opacity-50" [disabled]="importing() || bulkPreview().length === 0" (click)="importBulk()">
+            {{ importing() ? 'Importing.' : 'Import Chores' }}
+          </button>
+        </div>
+        <div *ngIf="bulkPreview().length > 0" class="max-h-64 overflow-auto rounded-md border border-slate-200">
+          <table class="min-w-full divide-y divide-slate-200 text-xs">
+            <thead class="bg-slate-50 text-left font-bold uppercase tracking-wide text-slate-500">
+              <tr>
+                <th class="px-2 py-1.5">Title</th>
+                <th class="px-2 py-1.5">Category</th>
+                <th class="px-2 py-1.5">Schedule</th>
+                <th class="px-2 py-1.5">Notes</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr *ngFor="let row of bulkPreview().slice(0, 25)">
+                <td class="px-2 py-1.5 font-bold text-slate-900">{{ row.title }}</td>
+                <td class="px-2 py-1.5 text-slate-700">{{ row.category }}</td>
+                <td class="px-2 py-1.5 text-slate-700">{{ row.scheduleType }}</td>
+                <td class="px-2 py-1.5 text-slate-600">{{ row.notes }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <p *ngIf="bulkPreview().length > 25" class="border-t border-slate-200 bg-slate-50 px-2 py-1.5 text-xs font-bold text-slate-600">Showing first 25 rows.</p>
+        </div>
+      </section>
+    </form>
+
+    <section class="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 class="text-lg font-bold text-slate-950">Recurring Chores</h2>
+          <p class="text-sm text-slate-600">{{ visibleChores().length | number }} shown</p>
+        </div>
+        <label class="flex items-center gap-2 text-sm font-bold text-slate-700">
+          <input type="checkbox" class="h-4 w-4 rounded border-slate-300 text-blue-600" [ngModel]="showInactive()" (ngModelChange)="showInactive.set($event)" name="showInactive" />
+          Show inactive
+        </label>
+      </div>
+
+      <section class="grid gap-2 rounded-md border border-slate-200 bg-slate-50 p-3">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Bulk Generate</p>
+            <p class="text-sm font-semibold text-slate-700">{{ activeChoreCount() | number }} active chore{{ activeChoreCount() === 1 ? '' : 's' }}</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button *ngFor="let days of previewWindowDays" type="button" class="rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-bold text-blue-800 shadow-sm transition hover:bg-blue-100 disabled:opacity-50" [disabled]="generating()" (click)="generateAll(days)">
+              Generate {{ days }} days
+            </button>
+          </div>
+        </div>
+        <p class="text-xs font-semibold text-slate-500">Generation only creates missing occurrences, so rerunning a window will not duplicate existing schedule dates.</p>
+      </section>
+
+      <section class="grid gap-3 rounded-md border border-emerald-100 bg-emerald-50 p-3">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <p class="text-xs font-bold uppercase tracking-wide text-emerald-700">Recurring Rule Management</p>
+            <p class="text-sm font-semibold text-emerald-900">Long-term rule health, ending windows, and generated coverage.</p>
+          </div>
+          <button type="button" class="rounded-md border border-emerald-200 bg-white px-3 py-1.5 text-xs font-bold text-emerald-800 shadow-sm transition hover:bg-emerald-100" (click)="exportRecurringRulesCsv()">Export rules</button>
+        </div>
+        <div class="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+          <article *ngFor="let card of recurringRuleCards()" class="rounded-md border border-emerald-100 bg-white px-3 py-2">
+            <p class="text-xs font-bold uppercase tracking-wide text-emerald-700">{{ card.label }}</p>
+            <p class="mt-1 text-xl font-bold text-slate-950">{{ card.value | number }}</p>
+            <p class="text-xs font-semibold text-slate-500">{{ card.detail }}</p>
+          </article>
+        </div>
+        <div class="grid gap-2 xl:grid-cols-2">
+          <article *ngFor="let row of recurringRuleRows().slice(0, 10)" class="rounded-md border border-emerald-100 bg-white px-3 py-2">
+            <div class="flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <p class="text-sm font-bold text-slate-950">{{ row.chore.title }}</p>
+                <p class="text-xs font-semibold text-slate-500">{{ row.category }} / {{ row.recurrence }}</p>
+              </div>
+              <span class="rounded-full border px-2 py-1 text-xs font-bold" [ngClass]="row.statusTone">{{ row.status }}</span>
+            </div>
+            <p class="mt-1 text-xs font-semibold text-slate-600">{{ row.detail }}</p>
+            <div class="mt-2 flex flex-wrap gap-1">
+              <span *ngFor="let date of row.nextDates.slice(0, 8)" class="rounded bg-emerald-50 px-1.5 py-0.5 text-[0.7rem] font-bold text-emerald-800">{{ date | date:'MMM d' }}</span>
+              <span *ngIf="row.nextDates.length > 8" class="rounded bg-emerald-100 px-1.5 py-0.5 text-[0.7rem] font-bold text-emerald-800">+{{ row.nextDates.length - 8 | number }}</span>
+              <span *ngIf="row.nextDates.length === 0" class="rounded bg-slate-100 px-1.5 py-0.5 text-[0.7rem] font-bold text-slate-600">No preview dates</span>
+            </div>
+          </article>
+          <p *ngIf="recurringRuleRows().length === 0" class="text-sm font-semibold text-emerald-900">No recurring Chore rules configured.</p>
+        </div>
+        <p *ngIf="recurringRuleRows().length > 10" class="text-xs font-semibold text-emerald-800">Showing first 10 of {{ recurringRuleRows().length | number }} rules. Export rules for the full list.</p>
+      </section>
+
+      <section class="grid gap-3 rounded-md border border-blue-100 bg-blue-50 p-3">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <p class="text-xs font-bold uppercase tracking-wide text-blue-700">Master Schedule Preview</p>
+            <p class="text-sm font-semibold text-blue-900">{{ scheduleRangeLabel() }} of generated Chore occurrences.</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button *ngFor="let days of previewWindowDays" type="button" class="rounded-md border px-3 py-1.5 text-xs font-bold shadow-sm transition disabled:opacity-50" [ngClass]="schedulePreviewDays() === days ? 'border-blue-700 bg-blue-700 text-white' : 'border-blue-200 bg-white text-blue-800 hover:bg-blue-100'" [disabled]="scheduleLoading()" (click)="loadSchedule(days)">
+              {{ days }} days
+            </button>
+            <button type="button" class="rounded-md border border-blue-200 bg-white px-3 py-1.5 text-xs font-bold text-blue-800 disabled:opacity-50" (click)="exportMasterScheduleReflectionCsv()">Export reflection</button>
+            <button type="button" class="rounded-md border border-blue-200 bg-white px-3 py-1.5 text-xs font-bold text-blue-800 disabled:opacity-50" [disabled]="scheduleLoading()" (click)="loadSchedule()">
+              {{ scheduleLoading() ? 'Refreshing.' : 'Refresh' }}
+            </button>
+          </div>
+        </div>
+        <div class="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+          <article *ngFor="let card of masterScheduleReflection()" class="rounded-md border border-blue-100 bg-white px-3 py-2">
+            <p class="text-xs font-bold uppercase tracking-wide text-blue-700">{{ card.label }}</p>
+            <p class="mt-1 text-xl font-bold text-slate-950">{{ card.value | number }}</p>
+            <p class="text-xs font-semibold text-slate-500">{{ card.detail }}</p>
+          </article>
+        </div>
+        <div class="grid gap-3 xl:grid-cols-2">
+          <section class="rounded-md border border-blue-100 bg-white p-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <p class="text-sm font-bold text-slate-950">Reflected Actions</p>
+              <button type="button" class="rounded border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-bold text-slate-700 disabled:opacity-50" [disabled]="activityLoading()" (click)="loadActivity()">Refresh activity</button>
+            </div>
+            <div class="mt-2 grid gap-2">
+              <article *ngFor="let item of reflectedActions()" class="rounded border border-slate-100 bg-slate-50 px-2 py-1.5">
+                <div class="flex flex-wrap items-start justify-between gap-2">
+                  <div>
+                    <p class="text-sm font-bold text-slate-950">{{ item.taskTitle }}</p>
+                    <p class="text-xs font-semibold text-slate-500">{{ activityCategory(item) }} / due {{ item.scheduledDate | date:'mediumDate' }}</p>
+                  </div>
+                  <span class="rounded-full border px-2 py-1 text-xs font-bold" [ngClass]="activityStatusTone(item.status)">{{ item.status }}</span>
+                </div>
+                <p *ngIf="item.notes" class="mt-1 text-xs font-semibold text-slate-600">{{ item.notes }}</p>
+              </article>
+              <p *ngIf="reflectedActions().length === 0" class="text-sm font-semibold text-slate-500">No reflected Chore actions in the activity window.</p>
+            </div>
+          </section>
+          <section class="rounded-md border border-blue-100 bg-white p-3">
+            <p class="text-sm font-bold text-slate-950">Upcoming Source Rows</p>
+            <div class="mt-2 grid gap-2">
+              <article *ngFor="let item of reflectedUpcomingRows()" class="rounded border border-slate-100 bg-slate-50 px-2 py-1.5">
+                <div class="flex flex-wrap items-start justify-between gap-2">
+                  <div>
+                    <p class="text-sm font-bold text-slate-950">{{ item.title }}</p>
+                    <p class="text-xs font-semibold text-slate-500">{{ scheduleCategory(item) }} / {{ item.sourceType }} / due {{ item.scheduledDate | date:'mediumDate' }}</p>
+                  </div>
+                  <span class="rounded-full border px-2 py-1 text-xs font-bold" [ngClass]="activityStatusTone(item.status)">{{ item.status }}</span>
+                </div>
+              </article>
+              <p *ngIf="reflectedUpcomingRows().length === 0" class="text-sm font-semibold text-slate-500">No scheduled Chore rows reflected from Master Schedule.</p>
+            </div>
+          </section>
+        </div>
+        <div class="grid gap-2">
+          <article *ngFor="let item of choreSchedule().slice(0, 10)" class="rounded-md border border-blue-100 bg-white px-3 py-2">
+            <div class="flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <p class="text-sm font-bold text-slate-950">{{ item.title }}</p>
+                <p class="text-xs font-semibold text-slate-500">{{ item.sourceType }} / due {{ item.scheduledDate | date:'mediumDate' }}</p>
+              </div>
+              <span class="rounded-full border px-2 py-1 text-xs font-bold" [ngClass]="activityStatusTone(item.status)">{{ item.status }}</span>
+            </div>
+            <app-schedule-actions
+              [capabilities]="scheduleCapabilities(item)"
+              [actionDisabled]="isChoreScheduleAction(item)"
+              [moving]="isMovingChoreOccurrence(item)"
+              [moveDate]="scheduleMoveDate()"
+              [showActionNotes]="true"
+              [actionNote]="scheduleActionNote()"
+              moveButtonClass="rounded bg-blue-700 px-3 py-1.5 text-xs font-bold text-white disabled:opacity-50"
+              (complete)="completeChoreOccurrence(item, $event)"
+              (startMove)="startMoveChoreOccurrence(item)"
+              (skip)="skipChoreOccurrence(item, $event)"
+              (reopen)="reopenChoreOccurrence(item, $event)"
+              (moveDateChange)="scheduleMoveDate.set($event)"
+              (actionNoteChange)="scheduleActionNote.set($event)"
+              (move)="moveChoreOccurrence(item, $event)"
+              (cancelMove)="cancelMoveChoreOccurrence()" />
+          </article>
+          <p *ngIf="!scheduleLoading() && choreSchedule().length === 0" class="text-sm text-blue-900">No Chore occurrences generated for the {{ scheduleRangeLabel().toLocaleLowerCase() }}.</p>
+          <p *ngIf="!scheduleLoading() && choreSchedule().length > 10" class="text-xs font-semibold text-blue-800">Showing first 10 of {{ choreSchedule().length }} Chore rows. Open Master Schedule for the full range.</p>
+        </div>
+      </section>
+      <section class="grid gap-3 rounded-md border border-slate-200 bg-white p-3">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Schedule Activity</p>
+            <p class="text-sm font-semibold text-slate-700">Completion, skip, move, and reopen notes reflected from Master Schedule.</p>
+          </div>
+          <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 disabled:opacity-50" [disabled]="activityLoading()" (click)="loadActivity()">
+            {{ activityLoading() ? 'Refreshing.' : 'Refresh' }}
+          </button>
+        </div>
+
+        <div class="grid gap-2">
+          <article *ngFor="let item of activity().slice(0, 8)" class="rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
+            <div class="flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <p class="text-sm font-bold text-slate-950">{{ item.taskTitle }}</p>
+                <p class="text-xs font-semibold text-slate-500">{{ activityCategory(item) }} / due {{ item.scheduledDate | date:'mediumDate' }}</p>
+              </div>
+              <span class="rounded-full border px-2 py-1 text-xs font-bold" [ngClass]="activityStatusTone(item.status)">{{ item.status }}</span>
+            </div>
+            <p class="mt-1 text-xs font-semibold text-slate-500">{{ activityWhen(item) | date:'medium' }}</p>
+            <p *ngIf="item.notes" class="mt-1 text-sm text-slate-700">{{ item.notes }}</p>
+          </article>
+          <p *ngIf="!activityLoading() && activity().length === 0" class="text-sm text-slate-500">No recent chore schedule activity.</p>
+        </div>
+      </section>
+
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-slate-200 text-sm">
+          <thead class="bg-slate-50 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
+            <tr>
+              <th class="px-3 py-2">Chore</th>
+              <th class="px-3 py-2">Category</th>
+              <th class="px-3 py-2">Recurrence</th>
+              <th class="px-3 py-2">Dates</th>
+              <th class="px-3 py-2">Status</th>
+              <th class="px-3 py-2 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <tr *ngFor="let chore of visibleChores()" class="align-top">
+              <td class="px-3 py-3">
+                <p class="font-bold text-slate-950">{{ chore.title }}</p>
+                <p *ngIf="chore.description" class="mt-1 max-w-md text-slate-600">{{ chore.description }}</p>
+              </td>
+              <td class="px-3 py-3">
+                <span class="rounded-full border px-2 py-1 text-xs font-bold" [ngClass]="categoryTone(category(chore))">{{ category(chore) }}</span>
+              </td>
+              <td class="px-3 py-3 font-semibold text-slate-700">{{ recurrenceLabel(chore) }}</td>
+              <td class="px-3 py-3 text-slate-600">
+                {{ chore.startDate | date:'shortDate' }}
+                <span *ngIf="chore.endDate"> - {{ chore.endDate | date:'shortDate' }}</span>
+                <div class="mt-2 flex max-w-md flex-wrap gap-1">
+                  <span *ngFor="let date of previewTaskOccurrences(chore, 30).slice(0, 6)" class="rounded bg-slate-100 px-1.5 py-0.5 text-[0.7rem] font-bold text-slate-700">{{ date | date:'MMM d' }}</span>
+                  <span *ngIf="previewTaskOccurrences(chore, 30).length > 6" class="rounded bg-slate-100 px-1.5 py-0.5 text-[0.7rem] font-bold text-slate-700">+{{ previewTaskOccurrences(chore, 30).length - 6 | number }}</span>
+                </div>
+              </td>
+              <td class="px-3 py-3">
+                <span class="rounded-full px-2 py-1 text-xs font-bold" [ngClass]="chore.isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'">
+                  {{ chore.isActive ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+              <td class="px-3 py-3">
+                <div class="flex flex-wrap justify-end gap-2">
+                  <button type="button" class="rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-bold text-blue-800" (click)="generate(chore)">Generate</button>
+                  <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700" (click)="edit(chore)">Edit</button>
+                  <button type="button" class="rounded-md border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-bold text-red-700" (click)="delete(chore)">Delete</button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="!loading() && visibleChores().length === 0">
+              <td colspan="6" class="px-3 py-8 text-center text-sm text-slate-500">No chores found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </section>
+</section>
+
+
+

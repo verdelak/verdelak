@@ -1,0 +1,646 @@
+<main class="shopping-page mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8" [class.shopping-mode]="shoppingMode()">
+  <section class="shopping-header flex flex-col gap-3 border-b border-slate-200 pb-4 lg:flex-row lg:items-end lg:justify-between">
+    <div>
+      <p class="text-sm font-bold uppercase tracking-wide text-teal-700">Personal</p>
+      <h1 class="text-3xl font-bold text-slate-950">Shopping List</h1>
+      <p class="mt-1 text-sm text-slate-600">Shopping items grouped by category.</p>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+      <span class="rounded border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700">{{ totalItems() }} shown</span>
+      <span class="print-meta hidden text-sm font-semibold text-slate-600">Printed {{ shoppingPrintDate() }}</span>
+      <button type="button" class="rounded border border-teal-200 px-4 py-2 text-sm font-bold text-teal-800" (click)="toggleShoppingMode()">
+        {{ shoppingMode() ? 'Manage Mode' : 'Shopping Mode' }}
+      </button>
+      <button type="button" class="rounded border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700" (click)="printShoppingList()">Print</button>
+      <button type="button" class="rounded bg-teal-900 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" [disabled]="loading()" (click)="load()">
+        {{ loading() ? 'Refreshing.' : 'Refresh' }}
+      </button>
+    </div>
+  </section>
+
+  <section *ngIf="!shoppingMode()" class="manage-panel rounded border border-slate-200 bg-white p-4 shadow-sm">
+    <form id="shopping-list-form" class="grid gap-3 border-b border-slate-200 pb-4 lg:grid-cols-12" (ngSubmit)="saveItem()">
+      <div class="lg:col-span-12">
+        <h2 class="text-lg font-bold text-slate-950">{{ form().id ? 'Edit Shopping Item' : 'Add Shopping Item' }}</h2>
+      </div>
+
+      <label class="text-sm font-bold text-slate-700 lg:col-span-4">
+        Item
+        <input class="mt-1 w-full rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="form().itemName" (ngModelChange)="setForm('itemName', $event)" name="shoppingItemName" required>
+      </label>
+
+      <label class="text-sm font-bold text-slate-700 lg:col-span-2">
+        Category
+        <input class="mt-1 w-full rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" list="shopping-categories" [ngModel]="form().category" (ngModelChange)="setForm('category', $event)" name="shoppingCategory" required>
+        <datalist id="shopping-categories">
+          <option *ngFor="let category of categories()" [value]="category"></option>
+        </datalist>
+      </label>
+
+      <label class="text-sm font-bold text-slate-700 lg:col-span-2">
+        Quantity
+        <input type="number" min="0" step="0.01" class="mt-1 w-full rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="form().quantity" (ngModelChange)="setForm('quantity', $event === '' ? null : +$event)" name="shoppingQuantity">
+      </label>
+
+      <label class="text-sm font-bold text-slate-700 lg:col-span-2">
+        Unit
+        <input class="mt-1 w-full rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="form().unit" (ngModelChange)="setForm('unit', $event)" name="shoppingUnit" placeholder="each, lb, bottle">
+      </label>
+
+      <label class="text-sm font-bold text-slate-700 lg:col-span-2">
+        Store
+        <input class="mt-1 w-full rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="form().store" (ngModelChange)="setForm('store', $event)" name="shoppingStore" placeholder="Meijer">
+      </label>
+
+      <label class="text-sm font-bold text-slate-700 lg:col-span-2">
+        Aisle
+        <input class="mt-1 w-full rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="form().aisle" (ngModelChange)="setForm('aisle', $event)" name="shoppingAisle" placeholder="Produce, 12">
+      </label>
+
+      <label class="text-sm font-bold text-slate-700 lg:col-span-2">
+        Sort
+        <input type="number" min="0" step="1" class="mt-1 w-full rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="form().sortOrder" (ngModelChange)="setForm('sortOrder', $event === '' ? null : +$event)" name="shoppingSortOrder" placeholder="10">
+      </label>
+
+      <div class="flex items-end gap-2 lg:col-span-4">
+        <button type="submit" class="w-full rounded bg-teal-900 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" [disabled]="saving()">
+          {{ saving() ? 'Saving.' : (form().id ? 'Save Item' : 'Add Item') }}
+        </button>
+        <button type="button" class="rounded border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700" [disabled]="saving()" (click)="resetForm()">Clear</button>
+      </div>
+
+      <label class="text-sm font-bold text-slate-700 lg:col-span-12">
+        Notes
+        <textarea rows="2" class="mt-1 w-full rounded border border-slate-300 px-3 py-2 text-sm text-slate-800" [ngModel]="form().notes" (ngModelChange)="setForm('notes', $event)" name="shoppingNotes"></textarea>
+      </label>
+    </form>
+
+    <section *ngIf="frequentDefaults().length" class="border-b border-slate-200 py-4">
+      <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <h2 class="text-lg font-bold text-slate-950">Frequent Items</h2>
+        <span class="text-sm font-semibold text-slate-600">{{ frequentDefaults().length }} saved</span>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button *ngFor="let item of frequentDefaults()" type="button" class="rounded border border-teal-200 bg-teal-50 px-3 py-2 text-sm font-bold text-teal-900 disabled:opacity-50" [disabled]="updatingId() === item.id" (click)="quickAddDefault(item)">
+          {{ item.itemName }}{{ item.quantity !== null ? ' - ' + item.quantity + (item.unit ? ' ' + item.unit : '') : '' }}
+        </button>
+      </div>
+    </section>
+
+    <section class="border-b border-slate-200 py-4">
+      <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 class="text-lg font-bold text-slate-950">Pantry Coverage</h2>
+          <p class="text-sm font-semibold text-slate-600">On-hand matches, out-of-stock rows, and expiring items connected to the shopping list.</p>
+        </div>
+        <span class="rounded border border-teal-200 bg-teal-50 px-3 py-1.5 text-xs font-bold text-teal-900">{{ pantryItems().length }} pantry rows</span>
+      </div>
+      <div class="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+        <article *ngFor="let card of pantrySummaryCards()" class="rounded border border-slate-200 bg-slate-50 px-3 py-2">
+          <p class="text-xs font-bold uppercase text-slate-500">{{ card.label }}</p>
+          <p class="mt-1 text-xl font-bold text-slate-950">{{ card.value }}</p>
+          <p class="text-xs font-semibold text-slate-600">{{ card.detail }}</p>
+        </article>
+      </div>
+      <div *ngIf="pantryAttentionRows().length" class="mt-3 grid gap-2 lg:grid-cols-2">
+        <article *ngFor="let row of pantryAttentionRows()" class="rounded border border-slate-200 bg-white px-3 py-2">
+          <div class="flex flex-wrap items-start justify-between gap-2">
+            <div>
+              <p class="text-sm font-bold text-slate-950">{{ row.item.itemName }}</p>
+              <p class="text-xs font-semibold text-slate-500">{{ row.detail }}</p>
+            </div>
+            <span class="rounded border px-2 py-1 text-xs font-bold" [ngClass]="row.tone">{{ row.status }}</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="border-b border-slate-200 py-4">
+      <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 class="text-lg font-bold text-slate-950">Store Route Planning</h2>
+          <p class="text-sm font-semibold text-slate-600">Store, aisle, and sort coverage for current needed items.</p>
+          <p class="mt-1 text-xs font-bold uppercase text-slate-500">Scope: {{ routeScopeLabel() }}</p>
+        </div>
+        <button type="button" class="rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700" (click)="exportStoreRouteCsv()">Export routes</button>
+      </div>
+      <div class="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+        <article *ngFor="let card of storeRouteCards()" class="rounded border border-slate-200 bg-slate-50 px-3 py-2">
+          <p class="text-xs font-bold uppercase text-slate-500">{{ card.label }}</p>
+          <p class="mt-1 text-xl font-bold text-slate-950">{{ card.value }}</p>
+          <p class="text-xs font-semibold text-slate-600">{{ card.detail }}</p>
+        </article>
+      </div>
+      <div class="mt-3 grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <section class="rounded border border-slate-200 bg-white">
+          <div class="border-b border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold uppercase text-slate-500">By Store</div>
+          <div class="divide-y divide-slate-100">
+            <article *ngFor="let row of storeRouteRows()" class="px-3 py-2">
+              <div class="flex flex-wrap items-start justify-between gap-2">
+                <div>
+                  <p class="text-sm font-bold text-slate-950">{{ row.store }}</p>
+                  <p class="text-xs font-semibold text-slate-500">{{ row.routeLabel }}</p>
+                </div>
+                <span class="rounded border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-bold text-slate-700">{{ row.itemCount }} item{{ row.itemCount === 1 ? '' : 's' }}</span>
+              </div>
+              <p class="mt-1 text-xs font-semibold text-slate-600">{{ row.aisleCount }} aisle{{ row.aisleCount === 1 ? '' : 's' }} / {{ row.missingAisleCount }} missing aisle / {{ row.missingSortCount }} missing sort</p>
+            </article>
+            <p *ngIf="storeRouteRows().length === 0" class="px-3 py-4 text-sm text-slate-500">No needed items to route.</p>
+          </div>
+        </section>
+        <section class="rounded border border-slate-200 bg-white">
+          <div class="border-b border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold uppercase text-slate-500">Needs Route</div>
+          <div class="divide-y divide-slate-100">
+            <article *ngFor="let item of missingRouteItems()" class="px-3 py-2">
+              <div class="flex flex-wrap items-start justify-between gap-2">
+                <div>
+                  <p class="text-sm font-bold text-slate-950">{{ item.itemName }}</p>
+                  <p class="text-xs font-semibold text-slate-500">{{ storeLabel(item) }} / sort {{ item.sortOrder ?? '-' }}</p>
+                </div>
+                <span class="rounded border px-2 py-1 text-xs font-bold" [ngClass]="routeStatusTone(item)">{{ routeStatusLabel(item) }}</span>
+              </div>
+              <button *ngIf="routingDefaultForItem(item)" type="button" class="mt-2 rounded border border-sky-200 px-2 py-1 text-xs font-bold text-sky-800 disabled:opacity-50" [disabled]="updatingId() === item.id" (click)="applyDefaultRouting(item)">
+                Apply default: {{ routingDefaultForItem(item)!.store || '-' }} / {{ routingDefaultForItem(item)!.aisle || '-' }} / {{ routingDefaultForItem(item)!.sortOrder ?? '-' }}
+              </button>
+            </article>
+            <p *ngIf="missingRouteItems().length === 0" class="px-3 py-4 text-sm text-slate-500">All needed items have store, aisle, and sort values.</p>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <details class="border-b border-slate-200 py-4">
+      <summary class="cursor-pointer text-sm font-bold text-slate-900">
+        Saved defaults {{ defaults().length ? '(' + defaults().length + ')' : '' }}
+      </summary>
+      <div class="mt-3 grid gap-4 xl:grid-cols-[22rem_minmax(0,1fr)]">
+        <form class="grid gap-3 rounded border border-slate-200 bg-slate-50 p-3" (ngSubmit)="saveDefault()">
+          <h3 class="text-sm font-bold uppercase text-slate-500">{{ defaultForm().id ? 'Edit default' : 'New default' }}</h3>
+          <input class="rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" placeholder="Item" [ngModel]="defaultForm().itemName" (ngModelChange)="setDefaultForm('itemName', $event)" name="defaultItemName" required>
+          <div class="grid gap-2 sm:grid-cols-2">
+            <input class="rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" list="shopping-categories" placeholder="Category" [ngModel]="defaultForm().category" (ngModelChange)="setDefaultForm('category', $event)" name="defaultCategory">
+            <input type="number" min="0" step="0.01" class="rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" placeholder="Qty" [ngModel]="defaultForm().quantity" (ngModelChange)="setDefaultForm('quantity', $event === '' ? null : +$event)" name="defaultQuantity">
+            <input class="rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" placeholder="Unit" [ngModel]="defaultForm().unit" (ngModelChange)="setDefaultForm('unit', $event)" name="defaultUnit">
+            <input class="rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" placeholder="Store" [ngModel]="defaultForm().store" (ngModelChange)="setDefaultForm('store', $event)" name="defaultStore">
+            <input class="rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" placeholder="Aisle" [ngModel]="defaultForm().aisle" (ngModelChange)="setDefaultForm('aisle', $event)" name="defaultAisle">
+            <input type="number" min="0" step="1" class="rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" placeholder="Sort" [ngModel]="defaultForm().sortOrder" (ngModelChange)="setDefaultForm('sortOrder', $event === '' ? null : +$event)" name="defaultSortOrder">
+          </div>
+          <label class="flex items-center gap-2 text-sm font-bold text-slate-700">
+            <input type="checkbox" [ngModel]="defaultForm().isFrequent" (ngModelChange)="setDefaultForm('isFrequent', $event)" name="defaultFrequent">
+            Frequent quick-add
+          </label>
+          <textarea rows="2" class="rounded border border-slate-300 px-3 py-2 text-sm text-slate-800" placeholder="Notes" [ngModel]="defaultForm().notes" (ngModelChange)="setDefaultForm('notes', $event)" name="defaultNotes"></textarea>
+          <div class="flex gap-2">
+            <button type="submit" class="rounded bg-teal-900 px-3 py-2 text-sm font-bold text-white disabled:opacity-50" [disabled]="saving()">Save Default</button>
+            <button type="button" class="rounded border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700" (click)="resetDefaultForm()">Clear</button>
+          </div>
+        </form>
+
+        <div class="max-h-96 overflow-auto rounded border border-slate-200">
+          <table class="min-w-full divide-y divide-slate-200 text-sm">
+            <thead class="bg-slate-50 text-left text-xs font-bold uppercase text-slate-500">
+              <tr><th class="px-3 py-2">Item</th><th class="px-3 py-2">Where</th><th class="px-3 py-2">Quick</th><th class="px-3 py-2 text-right">Actions</th></tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr *ngFor="let item of defaults()" class="align-top">
+                <td class="px-3 py-2"><div class="font-semibold text-slate-950">{{ item.itemName }}</div><div class="text-xs text-slate-500">{{ item.category }}{{ item.quantity !== null ? ' / ' + item.quantity + (item.unit ? ' ' + item.unit : '') : '' }}</div></td>
+                <td class="px-3 py-2 text-slate-700">{{ item.store || '-' }} / {{ item.aisle || '-' }}<div class="text-xs text-slate-500">Sort {{ item.sortOrder ?? '-' }}</div></td>
+                <td class="px-3 py-2"><span class="rounded border px-2 py-1 text-xs font-bold" [ngClass]="item.isFrequent ? 'border-teal-200 bg-teal-50 text-teal-800' : 'border-slate-200 bg-slate-50 text-slate-600'">{{ item.isFrequent ? 'Yes' : 'No' }}</span></td>
+                <td class="px-3 py-2 text-right">
+                  <button type="button" class="rounded border border-teal-200 px-2 py-1 text-xs font-bold text-teal-800" (click)="quickAddDefault(item)">Add</button>
+                  <button type="button" class="ml-2 rounded border border-sky-200 px-2 py-1 text-xs font-bold text-sky-800" (click)="editDefault(item)">Edit</button>
+                  <button type="button" class="ml-2 rounded border border-rose-200 px-2 py-1 text-xs font-bold text-rose-700" (click)="deleteDefault(item)">Delete</button>
+                </td>
+              </tr>
+              <tr *ngIf="defaults().length === 0"><td colspan="4" class="px-3 py-4 text-sm text-slate-500">No saved defaults yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </details>
+
+    <details class="border-b border-slate-200 py-4">
+      <summary class="cursor-pointer text-sm font-bold text-slate-900">
+        Pantry / on hand {{ pantryItems().length ? '(' + pantryItems().length + ')' : '' }}
+      </summary>
+      <div class="mt-3 grid gap-4 xl:grid-cols-[22rem_minmax(0,1fr)]">
+        <form class="grid gap-3 rounded border border-slate-200 bg-slate-50 p-3" (ngSubmit)="savePantryItem()">
+          <h3 class="text-sm font-bold uppercase text-slate-500">{{ pantryForm().id ? 'Edit pantry item' : 'New pantry item' }}</h3>
+          <input class="rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" placeholder="Item" [ngModel]="pantryForm().itemName" (ngModelChange)="setPantryForm('itemName', $event)" name="pantryItemName" required>
+          <div class="grid gap-2 sm:grid-cols-2">
+            <input class="rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" list="shopping-categories" placeholder="Category" [ngModel]="pantryForm().category" (ngModelChange)="setPantryForm('category', $event)" name="pantryCategory">
+            <input type="number" min="0" step="0.01" class="rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" placeholder="Qty" [ngModel]="pantryForm().quantity" (ngModelChange)="setPantryForm('quantity', $event === '' ? null : +$event)" name="pantryQuantity">
+            <input class="rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" placeholder="Unit" [ngModel]="pantryForm().unit" (ngModelChange)="setPantryForm('unit', $event)" name="pantryUnit">
+            <input class="rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" placeholder="Location" [ngModel]="pantryForm().location" (ngModelChange)="setPantryForm('location', $event)" name="pantryLocation">
+            <input type="date" class="rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="pantryForm().expirationDate" (ngModelChange)="setPantryForm('expirationDate', $event)" name="pantryExpiration">
+          </div>
+          <label class="flex items-center gap-2 text-sm font-bold text-slate-700">
+            <input type="checkbox" [ngModel]="pantryForm().isInStock" (ngModelChange)="setPantryForm('isInStock', $event)" name="pantryInStock">
+            In stock
+          </label>
+          <textarea rows="2" class="rounded border border-slate-300 px-3 py-2 text-sm text-slate-800" placeholder="Notes" [ngModel]="pantryForm().notes" (ngModelChange)="setPantryForm('notes', $event)" name="pantryNotes"></textarea>
+          <div class="flex gap-2">
+            <button type="submit" class="rounded bg-teal-900 px-3 py-2 text-sm font-bold text-white disabled:opacity-50" [disabled]="saving()">Save Pantry</button>
+            <button type="button" class="rounded border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700" (click)="resetPantryForm()">Clear</button>
+          </div>
+        </form>
+
+        <div class="max-h-96 overflow-auto rounded border border-slate-200">
+          <table class="min-w-full divide-y divide-slate-200 text-sm">
+            <thead class="bg-slate-50 text-left text-xs font-bold uppercase text-slate-500">
+              <tr><th class="px-3 py-2">Item</th><th class="px-3 py-2">Location</th><th class="px-3 py-2">Status</th><th class="px-3 py-2 text-right">Actions</th></tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr *ngFor="let item of pantryItems()" class="align-top">
+                <td class="px-3 py-2"><div class="font-semibold text-slate-950">{{ item.itemName }}</div><div class="text-xs text-slate-500">{{ item.category }}{{ item.quantity !== null ? ' / ' + item.quantity + (item.unit ? ' ' + item.unit : '') : '' }}</div></td>
+                <td class="px-3 py-2 text-slate-700">{{ item.location || '-' }}<div class="text-xs text-slate-500">Expires {{ item.expirationDate ? (item.expirationDate | date:'shortDate') : '-' }}</div></td>
+                <td class="px-3 py-2"><span class="rounded border px-2 py-1 text-xs font-bold" [ngClass]="item.isInStock ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-slate-200 bg-slate-50 text-slate-600'">{{ item.isInStock ? 'In stock' : 'Out' }}</span></td>
+                <td class="px-3 py-2 text-right">
+                  <button type="button" class="rounded border border-sky-200 px-2 py-1 text-xs font-bold text-sky-800" (click)="editPantryItem(item)">Edit</button>
+                  <button type="button" class="ml-2 rounded border border-rose-200 px-2 py-1 text-xs font-bold text-rose-700" (click)="deletePantryItem(item)">Delete</button>
+                </td>
+              </tr>
+              <tr *ngIf="pantryItems().length === 0"><td colspan="4" class="px-3 py-4 text-sm text-slate-500">No pantry items yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </details>
+
+    <details class="border-b border-slate-200 py-4">
+      <summary class="cursor-pointer text-sm font-bold text-slate-900">
+        Bulk add / paste {{ importPreview().length ? '(' + validImportRows().length + ' ready)' : '' }}
+      </summary>
+      <div class="mt-3 grid gap-3">
+        <textarea rows="6" class="w-full rounded border border-slate-300 px-3 py-2 text-sm text-slate-800" [ngModel]="importText()" (ngModelChange)="importText.set($event)" placeholder="item, category, quantity, unit, store, aisle, sort order, notes&#10;milk, Grocery, 1, gallon, Meijer, Dairy, 20&#10;Prime, Pet, 1, bottle, PetSmart, Fish, 10"></textarea>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <button type="button" class="rounded bg-teal-900 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" [disabled]="importing() || validImportRows().length === 0" (click)="importRows()">
+            {{ importing() ? 'Importing.' : 'Import Valid Rows' }}
+          </button>
+          <button type="button" class="rounded border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700" [disabled]="importing() || importText().length === 0" (click)="clearImport()">Clear</button>
+          <span class="text-sm font-semibold text-slate-600">{{ validImportRows().length }} valid / {{ importPreview().length }} parsed</span>
+        </div>
+
+        <div *ngIf="importPreview().length" class="max-h-72 overflow-auto rounded border border-slate-200">
+          <table class="min-w-full divide-y divide-slate-200 text-sm">
+            <thead class="bg-slate-50 text-left text-xs font-bold uppercase text-slate-500">
+              <tr>
+                <th class="px-3 py-2">Item</th>
+                <th class="px-3 py-2">Category</th>
+                <th class="px-3 py-2">Qty</th>
+                <th class="px-3 py-2">Unit</th>
+                <th class="px-3 py-2">Store</th>
+                <th class="px-3 py-2">Aisle</th>
+                <th class="px-3 py-2">Sort</th>
+                <th class="px-3 py-2">Notes</th>
+                <th class="px-3 py-2">Warnings</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr *ngFor="let row of importPreview()" class="align-top">
+                <td class="px-3 py-2 font-semibold text-slate-950">{{ row.itemName || '-' }}</td>
+                <td class="px-3 py-2 text-slate-700">{{ row.category }}</td>
+                <td class="px-3 py-2 text-slate-700">{{ row.quantity ?? '-' }}</td>
+                <td class="px-3 py-2 text-slate-700">{{ row.unit || '-' }}</td>
+                <td class="px-3 py-2 text-slate-700">{{ row.store || '-' }}</td>
+                <td class="px-3 py-2 text-slate-700">{{ row.aisle || '-' }}</td>
+                <td class="px-3 py-2 text-slate-700">{{ row.sortOrder ?? '-' }}</td>
+                <td class="px-3 py-2 text-slate-600">{{ row.notes || '-' }}</td>
+                <td class="px-3 py-2">
+                  <span class="rounded border px-2 py-1 text-xs font-bold" [ngClass]="row.warnings.length ? 'border-amber-200 bg-amber-50 text-amber-800' : 'border-emerald-200 bg-emerald-50 text-emerald-800'">
+                    {{ row.warnings.length ? row.warnings.join(' ') : 'Ready' }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </details>
+
+    <details class="border-b border-slate-200 py-4">
+      <summary class="cursor-pointer text-sm font-bold text-slate-900">
+        Duplicate consolidation {{ duplicateGroups().length ? '(' + duplicateGroups().length + ' groups found)' : '' }}
+      </summary>
+      <div class="mt-3 grid gap-3">
+        <div class="flex flex-wrap items-center gap-2">
+          <button type="button" class="rounded border border-teal-200 px-4 py-2 text-sm font-bold text-teal-800 disabled:opacity-50" [disabled]="loadingDuplicates()" (click)="loadDuplicates()">
+            {{ loadingDuplicates() ? 'Scanning.' : 'Scan Needed Items' }}
+          </button>
+          <button type="button" class="rounded bg-teal-900 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" [disabled]="mergingDuplicates() || duplicateGroups().length === 0" (click)="mergeDuplicates()">
+            {{ mergingDuplicates() ? 'Merging.' : 'Merge All Duplicate Groups' }}
+          </button>
+          <span class="text-sm font-semibold text-slate-600">Matches by item, category, unit, store, and aisle.</span>
+        </div>
+
+        <div *ngIf="duplicateGroups().length" class="grid gap-2">
+          <article *ngFor="let group of duplicateGroups()" class="rounded border border-amber-200 bg-amber-50 p-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h3 class="font-bold text-slate-950">{{ group.itemName }}</h3>
+                <p class="text-xs font-semibold text-slate-600">
+                  {{ group.category }} · {{ group.store || 'Store not set' }} / {{ group.aisle || 'Aisle not set' }}
+                </p>
+              </div>
+              <span class="rounded border border-amber-300 bg-white px-2 py-1 text-xs font-bold text-amber-800">
+                {{ group.count }} items{{ group.totalQuantity !== null ? ' · ' + group.totalQuantity + (group.unit ? ' ' + group.unit : '') : '' }}
+              </span>
+            </div>
+            <div class="mt-2 grid gap-1 text-xs text-slate-700">
+              <div *ngFor="let item of group.items" class="flex flex-wrap justify-between gap-2 border-t border-amber-100 pt-1">
+                <span>{{ quantityLabel(item) }} · {{ item.reason || sourceLabel(item) }}</span>
+                <span>{{ formatDate(item.createdAt) }}</span>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </details>
+
+    <details class="border-b border-slate-200 py-4">
+      <summary class="cursor-pointer text-sm font-bold text-slate-900">
+        History & exports
+      </summary>
+      <div class="mt-3 grid gap-4">
+        <div class="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+          <article *ngFor="let card of historyCards()" class="rounded border border-slate-200 bg-slate-50 px-3 py-2">
+            <p class="text-xs font-bold uppercase text-slate-500">{{ card.label }}</p>
+            <p class="mt-1 truncate text-xl font-bold text-slate-950">{{ card.value }}</p>
+            <p class="text-xs font-semibold text-slate-600">{{ card.detail }}</p>
+          </article>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="text-xs font-bold uppercase text-slate-500">Presets</span>
+          <button type="button" class="rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 disabled:opacity-50" [disabled]="loadingHistory()" (click)="applyHistoryPreset(30)">Last 30</button>
+          <button type="button" class="rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 disabled:opacity-50" [disabled]="loadingHistory()" (click)="applyHistoryPreset(90)">Last 90</button>
+          <button type="button" class="rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 disabled:opacity-50" [disabled]="loadingHistory()" (click)="applyHistoryPreset('ytd')">YTD</button>
+          <button type="button" class="rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 disabled:opacity-50" [disabled]="loadingHistory()" (click)="applyHistoryPreset('all')">All time</button>
+          <button type="button" class="rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700" (click)="clearHistoryRange()">Clear</button>
+        </div>
+        <div class="grid gap-3 md:grid-cols-[repeat(2,minmax(0,12rem))_auto]">
+          <label class="text-sm font-bold text-slate-700">
+            From
+            <input type="date" class="mt-1 w-full rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="historyFrom()" (ngModelChange)="historyFrom.set($event)">
+          </label>
+          <label class="text-sm font-bold text-slate-700">
+            To
+            <input type="date" class="mt-1 w-full rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="historyTo()" (ngModelChange)="historyTo.set($event)">
+          </label>
+          <div class="flex flex-wrap items-end gap-2">
+            <button type="button" class="rounded border border-teal-200 px-4 py-2 text-sm font-bold text-teal-800 disabled:opacity-50" [disabled]="loadingHistory()" (click)="loadHistorySummary()">
+              {{ loadingHistory() ? 'Loading.' : 'Load Summary' }}
+            </button>
+            <button type="button" class="rounded border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 disabled:opacity-50" [disabled]="exportingHistory()" (click)="exportHistory('csv')">Export CSV</button>
+            <button type="button" class="rounded bg-teal-900 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" [disabled]="exportingHistory()" (click)="exportHistory('xlsx')">Export XLSX</button>
+          </div>
+        </div>
+        <p class="text-xs font-semibold text-slate-500">Exports use the selected range: {{ historyRangeLabel() }}.</p>
+
+        <div *ngIf="historySummary() as history" class="grid gap-3 xl:grid-cols-3">
+          <div class="rounded border border-slate-200 bg-slate-50 p-3">
+            <h3 class="text-sm font-bold uppercase text-slate-500">By Month</h3>
+            <div class="mt-2 max-h-64 overflow-auto">
+              <div *ngFor="let row of history.months" class="flex items-center justify-between gap-3 border-t border-slate-200 py-2 text-sm">
+                <span class="font-semibold text-slate-900">{{ monthLabel(row.month) }}</span>
+                <span class="text-slate-600">{{ row.purchasedCount }} bought / {{ row.skippedCount }} skipped</span>
+              </div>
+              <p *ngIf="history.months.length === 0" class="py-3 text-sm text-slate-500">No completed shopping items in this range.</p>
+            </div>
+          </div>
+
+          <div class="rounded border border-slate-200 bg-slate-50 p-3">
+            <h3 class="text-sm font-bold uppercase text-slate-500">By Source</h3>
+            <div class="mt-2 max-h-64 overflow-auto">
+              <div *ngFor="let row of history.bySource" class="flex items-center justify-between gap-3 border-t border-slate-200 py-2 text-sm">
+                <span class="font-semibold text-slate-900">{{ row.name }}</span>
+                <span class="text-slate-600">{{ row.purchasedCount }} / {{ row.skippedCount }}</span>
+              </div>
+              <p *ngIf="history.bySource.length === 0" class="py-3 text-sm text-slate-500">No source history yet.</p>
+            </div>
+          </div>
+
+          <div class="rounded border border-slate-200 bg-slate-50 p-3">
+            <h3 class="text-sm font-bold uppercase text-slate-500">By Category</h3>
+            <div class="mt-2 max-h-64 overflow-auto">
+              <div *ngFor="let row of history.byCategory" class="flex items-center justify-between gap-3 border-t border-slate-200 py-2 text-sm">
+                <span class="font-semibold text-slate-900">{{ row.name }}</span>
+                <span class="text-slate-600">{{ row.purchasedCount }} / {{ row.skippedCount }}</span>
+              </div>
+              <p *ngIf="history.byCategory.length === 0" class="py-3 text-sm text-slate-500">No category history yet.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <div class="grid gap-3 pt-4 md:grid-cols-4">
+      <label class="text-sm font-bold text-slate-700">
+        Category
+        <select class="mt-1 w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="categoryFilter()" (ngModelChange)="setCategoryFilter($event)">
+          <option value="All">All categories</option>
+          <option *ngFor="let category of categories()" [value]="category">{{ category }}</option>
+        </select>
+      </label>
+
+      <label class="text-sm font-bold text-slate-700">
+        Store
+        <select class="mt-1 w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="storeFilter()" (ngModelChange)="setStoreFilter($event)">
+          <option value="All">All stores</option>
+          <option *ngFor="let store of stores()" [value]="store">{{ store }}</option>
+        </select>
+      </label>
+
+      <label class="text-sm font-bold text-slate-700">
+        Source
+        <select class="mt-1 w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="sourceFilter()" (ngModelChange)="setSourceFilter($event)">
+          <option value="All">All sources</option>
+          <option *ngFor="let source of sources()" [value]="source">{{ source }}</option>
+        </select>
+      </label>
+
+      <label class="text-sm font-bold text-slate-700">
+        Status
+        <select class="mt-1 w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="statusFilter()" (ngModelChange)="setStatusFilter($event)">
+          <option *ngFor="let status of statuses" [value]="status">{{ status === 'All' ? 'All statuses' : status }}</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="mt-4 flex flex-wrap items-end gap-2 border-t border-slate-200 pt-4">
+      <label class="text-sm font-bold text-slate-700">
+        Clear completed older than
+        <input type="number" min="0" step="1" class="mt-1 w-36 rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="clearOlderThanDays()" (ngModelChange)="clearOlderThanDays.set($event === '' ? 0 : +$event)">
+      </label>
+      <span class="pb-2 text-sm font-semibold text-slate-600">days</span>
+      <button type="button" class="rounded border border-rose-200 px-4 py-2 text-sm font-bold text-rose-700 disabled:opacity-50" [disabled]="clearingCompleted()" (click)="clearCompleted()">
+        {{ clearingCompleted() ? 'Clearing.' : 'Clear Purchased/Skipped' }}
+      </button>
+    </div>
+  </section>
+
+  <section *ngIf="shoppingMode()" class="shopping-controls rounded border border-slate-200 bg-white p-4 shadow-sm">
+    <div class="mb-4 grid gap-2 sm:grid-cols-3">
+      <div class="rounded border border-emerald-200 bg-emerald-50 px-3 py-2">
+        <div class="text-xs font-bold uppercase text-emerald-700">Needed</div>
+        <div class="text-xl font-bold text-emerald-950">{{ neededItems().length }}</div>
+      </div>
+      <div class="rounded border border-slate-200 bg-slate-50 px-3 py-2">
+        <div class="text-xs font-bold uppercase text-slate-600">Purchased</div>
+        <div class="text-xl font-bold text-slate-950">{{ purchasedItems().length }}</div>
+      </div>
+      <div class="rounded border border-amber-200 bg-amber-50 px-3 py-2">
+        <div class="text-xs font-bold uppercase text-amber-700">Skipped</div>
+        <div class="text-xl font-bold text-amber-950">{{ skippedItems().length }}</div>
+      </div>
+    </div>
+
+    <div class="grid gap-3 md:grid-cols-4">
+      <label class="text-sm font-bold text-slate-700">
+        Category
+        <select class="mt-1 w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="categoryFilter()" (ngModelChange)="setCategoryFilter($event)">
+          <option value="All">All categories</option>
+          <option *ngFor="let category of categories()" [value]="category">{{ category }}</option>
+        </select>
+      </label>
+
+      <label class="text-sm font-bold text-slate-700">
+        Store
+        <select class="mt-1 w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="storeFilter()" (ngModelChange)="setStoreFilter($event)">
+          <option value="All">All stores</option>
+          <option *ngFor="let store of stores()" [value]="store">{{ store }}</option>
+        </select>
+      </label>
+
+      <label class="text-sm font-bold text-slate-700">
+        Source
+        <select class="mt-1 w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="sourceFilter()" (ngModelChange)="setSourceFilter($event)">
+          <option value="All">All sources</option>
+          <option *ngFor="let source of sources()" [value]="source">{{ source }}</option>
+        </select>
+      </label>
+
+      <label class="text-sm font-bold text-slate-700">
+        Status
+        <select class="mt-1 w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="statusFilter()" (ngModelChange)="setStatusFilter($event)">
+          <option *ngFor="let status of statuses" [value]="status">{{ status === 'All' ? 'All statuses' : status }}</option>
+        </select>
+      </label>
+    </div>
+
+    <label class="mt-4 flex items-center gap-3 text-sm font-bold text-slate-700">
+      <input type="checkbox" class="h-5 w-5" [ngModel]="collapsePurchasedInShoppingMode()" (ngModelChange)="collapsePurchasedInShoppingMode.set($event)">
+      Collapse purchased items while shopping
+    </label>
+  </section>
+
+  <div *ngIf="error()" class="rounded border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-800">
+    {{ error() }}
+  </div>
+
+  <div *ngIf="message()" class="rounded border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
+    {{ message() }}
+  </div>
+
+  <section *ngIf="!loading() && groups().length === 0" class="rounded border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-500">
+    Nothing matches the current shopping-list filters.
+  </section>
+
+  <section *ngIf="loading()" class="rounded border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
+    Loading shopping list.
+  </section>
+
+  <section *ngFor="let group of groups()" class="shopping-group overflow-hidden rounded border border-slate-200 bg-white shadow-sm">
+    <div class="shopping-group-header flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3">
+      <h2 class="text-lg font-bold text-slate-950">{{ group.category }}</h2>
+      <span class="rounded border border-slate-200 bg-white px-2 py-1 text-xs font-bold text-slate-600">{{ group.items.length }} item{{ group.items.length === 1 ? '' : 's' }}</span>
+    </div>
+
+    <div *ngIf="shoppingMode()" class="divide-y divide-slate-100">
+      <div *ngFor="let item of group.items" class="shopping-item flex gap-3 px-4 py-3" [class.shopping-item-completed]="item.status === 'Purchased'">
+        <button type="button" class="shopping-check mt-0.5 flex h-12 w-20 shrink-0 items-center justify-center rounded border border-emerald-300 text-sm font-bold text-emerald-800 disabled:opacity-50" [disabled]="item.status !== 'Needed' || updatingId() === item.id" (click)="markPurchased(item)">Done</button>
+        <div class="min-w-0 flex-1">
+          <div class="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+            <span class="text-base font-bold text-slate-950">{{ item.itemName }}</span>
+            <span class="text-sm font-semibold text-slate-600">{{ quantityLabel(item) }}</span>
+            <span class="text-xs font-bold uppercase text-slate-500">{{ item.category }}</span>
+            <span class="rounded border px-2 py-0.5 text-xs font-bold" [ngClass]="statusTone(item)">{{ item.status }}</span>
+            <span class="rounded border px-2 py-0.5 text-xs font-bold" [ngClass]="pantryStatusTone(item)">{{ pantryStatusLabel(item) }}</span>
+            <span class="rounded border px-2 py-0.5 text-xs font-bold" [ngClass]="routeStatusTone(item)">{{ routeStatusLabel(item) }}</span>
+          </div>
+          <div class="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-sm text-slate-600">
+            <span>{{ item.notes || item.reason || sourceLabel(item) }}</span>
+            <span class="font-semibold text-slate-500">{{ storeLabel(item) }}</span>
+            <span class="font-semibold text-slate-500">{{ pantryStatusDetail(item) }}</span>
+          </div>
+          <div class="shopping-item-actions mt-2 flex flex-wrap gap-2">
+            <button type="button" class="rounded border border-teal-200 px-3 py-1.5 text-xs font-bold text-teal-800 disabled:opacity-50" [disabled]="item.status === 'Skipped' || updatingId() === item.id" (click)="stockPantryFromItem(item)">Stock Pantry</button>
+            <button *ngIf="routingDefaultForItem(item)" type="button" class="rounded border border-sky-200 px-3 py-1.5 text-xs font-bold text-sky-800 disabled:opacity-50" [disabled]="updatingId() === item.id" (click)="applyDefaultRouting(item)">Apply Route</button>
+            <button type="button" class="rounded border border-slate-300 px-3 py-1.5 text-xs font-bold text-slate-700 disabled:opacity-50" [disabled]="item.status !== 'Needed' || updatingId() === item.id" (click)="skipItem(item)">Skip</button>
+            <button type="button" class="rounded border border-amber-200 px-3 py-1.5 text-xs font-bold text-amber-800 disabled:opacity-50" [disabled]="item.status === 'Needed' || updatingId() === item.id" (click)="reopenItem(item)">Reopen</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="!shoppingMode()" class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-slate-200 text-sm">
+        <thead class="bg-white text-left text-xs font-bold uppercase text-slate-500">
+          <tr>
+            <th class="px-4 py-2">Item</th>
+            <th class="px-4 py-2">Qty</th>
+            <th class="px-4 py-2">Store / Aisle</th>
+            <th class="px-4 py-2">Pantry</th>
+            <th class="px-4 py-2">Route</th>
+            <th class="px-4 py-2">Source</th>
+            <th class="px-4 py-2">Status</th>
+            <th class="px-4 py-2">Reason</th>
+            <th class="px-4 py-2">Added</th>
+            <th class="px-4 py-2 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <tr *ngFor="let item of group.items" class="align-top">
+            <td class="px-4 py-3">
+              <div class="font-semibold text-slate-950">{{ item.itemName }}</div>
+              <div class="text-xs text-slate-500">{{ item.notes || '-' }}</div>
+            </td>
+            <td class="whitespace-nowrap px-4 py-3 text-slate-700">{{ quantityLabel(item) }}</td>
+            <td class="whitespace-nowrap px-4 py-3 text-slate-700">
+              <div>{{ storeLabel(item) }}</div>
+              <div class="text-xs text-slate-500">Sort {{ item.sortOrder ?? '-' }}</div>
+            </td>
+            <td class="px-4 py-3 text-slate-700">
+              <span class="rounded border px-2 py-1 text-xs font-bold" [ngClass]="pantryStatusTone(item)">{{ pantryStatusLabel(item) }}</span>
+              <div class="mt-1 text-xs text-slate-500">{{ pantryStatusDetail(item) }}</div>
+            </td>
+            <td class="px-4 py-3 text-slate-700">
+              <span class="rounded border px-2 py-1 text-xs font-bold" [ngClass]="routeStatusTone(item)">{{ routeStatusLabel(item) }}</span>
+              <div *ngIf="routingDefaultForItem(item)" class="mt-1 text-xs text-slate-500">
+                Default {{ routingDefaultForItem(item)!.store || '-' }} / {{ routingDefaultForItem(item)!.aisle || '-' }} / {{ routingDefaultForItem(item)!.sortOrder ?? '-' }}
+              </div>
+            </td>
+            <td class="whitespace-nowrap px-4 py-3 text-slate-700">{{ sourceLabel(item) }}</td>
+            <td class="whitespace-nowrap px-4 py-3">
+              <span class="rounded border px-2 py-1 text-xs font-bold" [ngClass]="statusTone(item)">{{ item.status }}</span>
+            </td>
+            <td class="px-4 py-3 text-slate-700">{{ item.reason || '-' }}</td>
+            <td class="whitespace-nowrap px-4 py-3 text-slate-500">{{ formatDate(item.createdAt) }}</td>
+            <td class="px-4 py-3">
+              <div class="flex flex-wrap justify-end gap-2">
+                <button type="button" class="rounded border border-sky-200 px-3 py-1.5 text-xs font-bold text-sky-800 disabled:opacity-50" [disabled]="updatingId() === item.id" (click)="editItem(item)">Edit</button>
+                <button type="button" class="rounded border border-teal-200 px-3 py-1.5 text-xs font-bold text-teal-800 disabled:opacity-50" [disabled]="updatingId() === item.id" (click)="saveDefaultFromItem(item)">Save Default</button>
+                <button *ngIf="routingDefaultForItem(item)" type="button" class="rounded border border-sky-200 px-3 py-1.5 text-xs font-bold text-sky-800 disabled:opacity-50" [disabled]="updatingId() === item.id" (click)="applyDefaultRouting(item)">Apply Route</button>
+                <button type="button" class="rounded border border-emerald-200 px-3 py-1.5 text-xs font-bold text-emerald-800 disabled:opacity-50" [disabled]="item.status === 'Skipped' || updatingId() === item.id" (click)="stockPantryFromItem(item)">Stock Pantry</button>
+                <button type="button" class="rounded border border-emerald-200 px-3 py-1.5 text-xs font-bold text-emerald-800 disabled:opacity-50" [disabled]="item.status !== 'Needed' || updatingId() === item.id" (click)="markPurchased(item)">Purchased</button>
+                <button type="button" class="rounded border border-slate-300 px-3 py-1.5 text-xs font-bold text-slate-700 disabled:opacity-50" [disabled]="item.status !== 'Needed' || updatingId() === item.id" (click)="skipItem(item)">Skip</button>
+                <button type="button" class="rounded border border-amber-200 px-3 py-1.5 text-xs font-bold text-amber-800 disabled:opacity-50" [disabled]="item.status === 'Needed' || updatingId() === item.id" (click)="reopenItem(item)">Reopen</button>
+                <button type="button" class="rounded border border-rose-200 px-3 py-1.5 text-xs font-bold text-rose-700 disabled:opacity-50" [disabled]="updatingId() === item.id" (click)="deleteItem(item)">Delete</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>

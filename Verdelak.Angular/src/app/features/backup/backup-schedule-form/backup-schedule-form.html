@@ -1,0 +1,71 @@
+<h2>Schedule Backup Job</h2>
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <fieldset>
+    <label>Title <input type="text" formControlName="title" /></label>
+    <label>Description <input type="text" formControlName="description" /></label>
+  </fieldset>
+
+  <fieldset>
+    <label>Source
+      <select formControlName="sourceID">
+        <option [ngValue]="null">-- choose --</option>
+        <option *ngFor="let s of sources()" [ngValue]="s.sourceID">{{s.name}} ({{s.pathOrURI}})</option>
+      </select>
+    </label>
+
+    <label>Destination
+      <select formControlName="destinationID">
+        <option [ngValue]="null">-- choose --</option>
+        <option *ngFor="let d of destinations()" [ngValue]="d.destinationID">{{d.name}} ({{d.pathOrURI}})</option>
+      </select>
+    </label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Options</legend>
+    <label><input type="checkbox" formControlName="compressionEnabled"/> Compression</label>
+    <label><input type="checkbox" formControlName="encryptionEnabled"/> Encryption</label>
+    <label><input type="checkbox" formControlName="verifyAfterCopy"/> Verify After Copy</label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Schedule</legend>
+    <label>Type
+      <select formControlName="scheduleType">
+        <option value="Monthly">Monthly</option>
+        <option value="Weekly">Weekly</option>
+        <option value="Daily">Daily</option>
+        <option value="OneTime">OneTime</option>
+        <option value="Cron">Cron</option>
+      </select>
+    </label>
+
+    <div *ngIf="form.value.scheduleType==='Monthly'" class="row">
+      <label>Day of month <input type="number" min="1" max="31" formControlName="monthlyDay"/></label>
+      <label>Every N months <input type="number" min="1" max="12" formControlName="monthlyInterval"/></label>
+    </div>
+
+    <div *ngIf="form.value.scheduleType==='Weekly'" class="row">
+      <label *ngFor="let d of ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']">
+        <input type="checkbox" [formControlName]="d" /> {{ d }}
+      </label>
+    </div>
+
+    <div *ngIf="form.value.scheduleType==='OneTime'" class="row">
+      <label>Date <input type="date" formControlName="oneTimeDate"/></label>
+    </div>
+
+    <div *ngIf="form.value.scheduleType==='Cron'" class="row">
+      <label>Cron <input type="text" placeholder="0 22 1 */3 *" formControlName="cronExpr"/></label>
+    </div>
+
+    <div class="row">
+      <label>Start <input type="date" formControlName="startDate"/></label>
+      <label>End <input type="date" formControlName="endDate"/></label>
+    </div>
+  </fieldset>
+
+  <button type="submit" [disabled]="saving()">Create</button>
+</form>
+
+<p class="message" *ngIf="message()">{{message()}}</p>

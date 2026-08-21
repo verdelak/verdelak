@@ -1,0 +1,1033 @@
+<section class="mx-auto grid w-full max-w-7xl gap-4 px-4 py-4">
+  <header class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+    <div class="flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <p class="text-xs font-bold uppercase tracking-wider text-blue-600">Personal</p>
+        <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">Finance Tracker</h1>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <button class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold hover:bg-slate-50" type="button" (click)="changeMonth(-1)">Prev</button>
+        <select class="rounded-md border border-slate-300 px-3 py-2 text-sm" [ngModel]="selectedMonth()" (ngModelChange)="setSelectedMonth(+$event)">
+          <option *ngFor="let month of [1,2,3,4,5,6,7,8,9,10,11,12]" [ngValue]="month">{{ month }}</option>
+        </select>
+        <input class="w-24 rounded-md border border-slate-300 px-3 py-2 text-sm" type="number" [ngModel]="selectedYear()" (ngModelChange)="selectedYear.set(+$event); load()">
+        <button class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold hover:bg-slate-50" type="button" (click)="changeMonth(1)">Next</button>
+        <button class="rounded-md border border-blue-300 px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50" type="button" (click)="useFinancialYearReportRange()">FY Range</button>
+        <button class="rounded-md bg-slate-900 px-3 py-2 text-sm font-semibold text-white" type="button" (click)="load()">Refresh</button>
+      </div>
+    </div>
+  </header>
+
+  <div *ngIf="error()" class="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">{{ error() }}</div>
+  <div *ngIf="message()" class="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">{{ message() }}</div>
+
+  <datalist id="finance-account-categories">
+    <option *ngFor="let category of accountCategorySuggestions()" [value]="category"></option>
+  </datalist>
+  <datalist id="finance-bill-categories">
+    <option *ngFor="let category of billCategorySuggestions()" [value]="category"></option>
+  </datalist>
+  <datalist id="finance-donation-methods">
+    <option *ngFor="let method of donationMethodSuggestions()" [value]="method"></option>
+  </datalist>
+
+  <section class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+    <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <p class="text-xs font-semibold uppercase text-slate-500">Total Debt</p>
+      <p class="mt-1 text-2xl font-bold text-rose-700">{{ money(totalDebt()) }}</p>
+      <p class="mt-1 text-xs font-semibold" [class.text-emerald-700]="(previousMonthComparison().debtChange ?? 0) < 0" [class.text-rose-700]="(previousMonthComparison().debtChange ?? 0) > 0" [class.text-slate-500]="previousMonthComparison().debtChange === null">vs prior update {{ signedMoney(previousMonthComparison().debtChange) }}</p>
+    </div>
+    <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <p class="text-xs font-semibold uppercase text-slate-500">Total Savings</p>
+      <p class="mt-1 text-2xl font-bold text-sky-700">{{ money(totalSavings()) }}</p>
+      <p class="mt-1 text-xs font-semibold" [class.text-emerald-700]="(previousMonthComparison().savingsChange ?? 0) > 0" [class.text-rose-700]="(previousMonthComparison().savingsChange ?? 0) < 0" [class.text-slate-500]="previousMonthComparison().savingsChange === null">vs prior update {{ signedMoney(previousMonthComparison().savingsChange) }}</p>
+    </div>
+    <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <p class="text-xs font-semibold uppercase text-slate-500">Difference</p>
+      <p class="mt-1 text-2xl font-bold text-emerald-700">{{ money(netWorth()) }}</p>
+      <p class="mt-1 text-xs font-semibold" [class.text-emerald-700]="(previousMonthComparison().netWorthChange ?? 0) > 0" [class.text-rose-700]="(previousMonthComparison().netWorthChange ?? 0) < 0" [class.text-slate-500]="previousMonthComparison().netWorthChange === null">vs prior update {{ signedMoney(previousMonthComparison().netWorthChange) }}</p>
+    </div>
+    <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <p class="text-xs font-semibold uppercase text-slate-500">Financial Year</p>
+      <p class="mt-1 text-lg font-bold text-slate-900">{{ financialYearStartDate() | date:'M/d/yyyy' }}</p>
+      <p class="mt-1 text-xs font-semibold text-slate-500">{{ financialYearLabel() }}</p>
+    </div>
+  </section>
+
+  <section class="grid gap-3 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
+    <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 class="text-sm font-bold uppercase text-slate-600">Balance Trend</h2>
+          <p class="mt-1 text-xs font-semibold text-slate-500">Debt, savings, and net worth from dated balance updates.</p>
+        </div>
+        <span class="text-xs font-bold text-slate-500">{{ dashboardHistoryChartRows().length }} points</span>
+      </div>
+      <div *ngIf="dashboardHistoryChartRows().length; else noDashboardHistory" class="finance-balance-chart mt-4">
+        <div *ngFor="let row of dashboardHistoryChartRows()" class="finance-balance-chart__column" [title]="(row.asOfDate | date:'M/d/yyyy') + ' debt ' + money(row.totalDebt) + ', savings ' + money(row.totalSavings) + ', net ' + money(row.netWorth)">
+          <div class="finance-balance-chart__bars">
+            <span class="finance-balance-chart__bar finance-balance-chart__bar--debt" [style.height.%]="row.debtHeight"></span>
+            <span class="finance-balance-chart__bar finance-balance-chart__bar--savings" [style.height.%]="row.savingsHeight"></span>
+          </div>
+          <span class="finance-balance-chart__point" [style.top.%]="row.netWorthTop"></span>
+          <span class="finance-balance-chart__label">{{ row.asOfDate | date:'M/yy' }}</span>
+        </div>
+      </div>
+      <ng-template #noDashboardHistory>
+        <p class="mt-4 rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-600">No balance history yet. Saving account balances with dates will build this chart.</p>
+      </ng-template>
+      <div class="mt-3 flex flex-wrap gap-3 text-xs font-bold uppercase text-slate-500">
+        <span class="inline-flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-rose-500"></span>Debt</span>
+        <span class="inline-flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-sky-500"></span>Savings</span>
+        <span class="inline-flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-emerald-600"></span>Net worth</span>
+      </div>
+    </article>
+
+    <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <h2 class="text-sm font-bold uppercase text-slate-600">Current Composition</h2>
+      <div class="mt-3 grid gap-3">
+        <div *ngFor="let row of accountCompositionRows()" class="grid gap-1">
+          <div class="flex items-center justify-between gap-2 text-sm">
+            <span class="font-bold text-slate-800">{{ row.category }}</span>
+            <span class="font-bold" [class.text-rose-700]="row.isDebt" [class.text-sky-700]="!row.isDebt">{{ money(row.total) }}</span>
+          </div>
+          <div class="h-3 overflow-hidden rounded-full bg-slate-100">
+            <div class="h-full rounded-full" [class.bg-rose-500]="row.isDebt" [class.bg-sky-500]="!row.isDebt" [style.width.%]="row.width"></div>
+          </div>
+        </div>
+        <p *ngIf="!accountCompositionRows().length" class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-600">No active account balances yet.</p>
+      </div>
+    </article>
+  </section>
+
+  <section class="grid gap-3 lg:grid-cols-3">
+    <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <p class="text-xs font-bold uppercase text-slate-500">Latest Frozen Difference</p>
+      <p class="mt-1 text-2xl font-bold text-emerald-700">{{ money(latestSnapshotDifference()) }}</p>
+      <p class="mt-1 text-xs font-semibold" [class.text-emerald-700]="(latestSnapshotComparison().differenceChange ?? 0) > 0" [class.text-rose-700]="(latestSnapshotComparison().differenceChange ?? 0) < 0" [class.text-slate-500]="latestSnapshotComparison().differenceChange === null">vs prior year {{ signedMoney(latestSnapshotComparison().differenceChange) }}</p>
+    </article>
+    <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <p class="text-xs font-bold uppercase text-slate-500">Latest Frozen Savings</p>
+      <p class="mt-1 text-2xl font-bold text-sky-700">{{ money(latestSnapshotSavings()) }}</p>
+      <p class="mt-1 text-xs font-semibold" [class.text-emerald-700]="(latestSnapshotComparison().savingsChange ?? 0) > 0" [class.text-rose-700]="(latestSnapshotComparison().savingsChange ?? 0) < 0" [class.text-slate-500]="latestSnapshotComparison().savingsChange === null">vs prior year {{ signedMoney(latestSnapshotComparison().savingsChange) }}</p>
+    </article>
+    <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <p class="text-xs font-bold uppercase text-slate-500">Latest Frozen Debt</p>
+      <p class="mt-1 text-2xl font-bold text-rose-700">{{ money(latestSnapshotDebt()) }}</p>
+      <p class="mt-1 text-xs font-semibold" [class.text-emerald-700]="(latestSnapshotComparison().debtChange ?? 0) < 0" [class.text-rose-700]="(latestSnapshotComparison().debtChange ?? 0) > 0" [class.text-slate-500]="latestSnapshotComparison().debtChange === null">vs prior year {{ signedMoney(latestSnapshotComparison().debtChange) }}</p>
+    </article>
+  </section>
+
+  <section class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_280px]">
+    <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="flex items-center justify-between gap-3">
+        <h2 class="text-sm font-bold uppercase text-slate-600">Assets</h2>
+        <span class="text-sm font-bold text-sky-700">{{ money(totalSavings()) }}</span>
+      </div>
+      <div class="mt-3 grid gap-2">
+        <div *ngFor="let group of assetGroups()" class="grid grid-cols-[1fr_auto] rounded-md bg-sky-50 px-3 py-2 text-sm">
+          <span class="font-semibold text-slate-800">{{ group.category }}</span>
+          <span class="font-bold text-sky-800">{{ money(group.total) }}</span>
+        </div>
+        <p *ngIf="!assetGroups().length" class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-600">No active asset balances yet.</p>
+      </div>
+    </article>
+
+    <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="flex items-center justify-between gap-3">
+        <h2 class="text-sm font-bold uppercase text-slate-600">Debt</h2>
+        <span class="text-sm font-bold text-rose-700">{{ money(totalDebt()) }}</span>
+      </div>
+      <div class="mt-3 grid gap-2">
+        <div *ngFor="let group of debtGroups()" class="grid grid-cols-[1fr_auto] rounded-md bg-rose-50 px-3 py-2 text-sm">
+          <span class="font-semibold text-slate-800">{{ group.category }}</span>
+          <span class="font-bold text-rose-800">{{ money(group.total) }}</span>
+        </div>
+        <p *ngIf="!debtGroups().length" class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-600">No active debt balances yet.</p>
+      </div>
+    </article>
+
+    <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <h2 class="text-sm font-bold uppercase text-slate-600">Latest Frozen Year</h2>
+      <ng-container *ngIf="latestSnapshot() as snapshot; else noSnapshot">
+        <p class="mt-2 text-lg font-bold text-slate-950">{{ snapshot.snapshotDate | date:'M/d/yyyy' }}</p>
+        <p class="text-sm font-semibold text-slate-600">Debt {{ money(snapshot.totalDebt) }}</p>
+        <p class="text-sm font-semibold text-slate-600">Savings {{ money(snapshot.totalSavings) }}</p>
+        <p class="text-sm font-bold text-emerald-700">Diff {{ money(snapshot.difference) }}</p>
+      </ng-container>
+      <ng-template #noSnapshot>
+        <p class="mt-2 text-sm text-slate-600">No yearly snapshots yet.</p>
+      </ng-template>
+      <button class="mt-3 w-full rounded-md border border-emerald-300 px-3 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50" type="button" (click)="saveCurrentSnapshot()">Save Current Year Close</button>
+    </article>
+  </section>
+
+  <section class="grid gap-3 xl:grid-cols-[minmax(0,1fr)_360px]">
+    <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 class="text-sm font-bold uppercase text-slate-600">{{ selectedMonthName() }} Bills</h2>
+          <p class="mt-1 text-2xl font-bold text-slate-950">{{ paidBills() }} / {{ activeBills().length }} paid</p>
+        </div>
+        <div class="text-right">
+          <p class="text-xs font-bold uppercase text-slate-500">Remaining</p>
+          <p class="text-xl font-bold text-rose-700">{{ money(monthlyRemainingTotal()) }}</p>
+        </div>
+      </div>
+      <div class="mt-4 h-3 overflow-hidden rounded-full bg-slate-100">
+        <div class="h-full rounded-full bg-emerald-500" [style.width.%]="billProgressPercent()"></div>
+      </div>
+      <div class="mt-3 grid gap-2 sm:grid-cols-3">
+        <div class="rounded-md bg-slate-50 px-3 py-2">
+          <p class="text-xs font-bold uppercase text-slate-500">Expected</p>
+          <p class="text-sm font-bold text-slate-900">{{ money(monthlyExpectedTotal()) }}</p>
+        </div>
+        <div class="rounded-md bg-emerald-50 px-3 py-2">
+          <p class="text-xs font-bold uppercase text-emerald-700">Paid</p>
+          <p class="text-sm font-bold text-emerald-800">{{ money(monthlyPaidTotal()) }}</p>
+        </div>
+        <div class="rounded-md bg-rose-50 px-3 py-2">
+          <p class="text-xs font-bold uppercase text-rose-700">Open</p>
+          <p class="text-sm font-bold text-rose-800">{{ unpaidBills() }} bills</p>
+        </div>
+      </div>
+    </article>
+
+    <aside class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <h2 class="text-sm font-bold uppercase text-slate-600">Next Unpaid</h2>
+      <div class="mt-3 grid gap-2">
+        <button *ngFor="let bill of upcomingBills()" class="grid grid-cols-[auto_1fr_auto] items-center gap-3 rounded-md border border-slate-200 px-3 py-2 text-left hover:bg-slate-50" type="button" (click)="selectBill(bill); setTab('bills')">
+          <span class="flex h-9 w-9 items-center justify-center rounded-md bg-slate-100 text-sm font-bold text-slate-700">{{ bill.dueDay }}</span>
+          <span>
+            <span class="block text-sm font-bold text-slate-900">{{ bill.name }}</span>
+            <span class="block text-xs font-semibold text-slate-500">{{ bill.category }}</span>
+          </span>
+          <span class="text-sm font-bold text-slate-800">{{ bill.expectedAmount === null ? '' : money(bill.expectedAmount) }}</span>
+        </button>
+        <p *ngIf="!upcomingBills().length" class="rounded-md bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700">All active bills are paid for this month.</p>
+      </div>
+    </aside>
+  </section>
+
+  <section class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_360px]">
+    <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <h2 class="text-sm font-bold uppercase text-slate-600">Bill Categories</h2>
+        <span class="text-xs font-bold text-slate-500">{{ selectedMonthName() }}</span>
+      </div>
+      <div class="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+        <div *ngFor="let summary of billCategorySummaries()" class="rounded-md border border-slate-200 px-3 py-2">
+          <div class="flex items-center justify-between gap-2">
+            <p class="text-sm font-bold text-slate-900">{{ summary.category }}</p>
+            <p class="text-xs font-bold text-slate-500">{{ summary.paid }}/{{ summary.total }}</p>
+          </div>
+          <div class="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
+            <div class="h-full rounded-full bg-emerald-500" [style.width.%]="summary.total ? (summary.paid / summary.total) * 100 : 0"></div>
+          </div>
+          <p class="mt-2 text-xs font-semibold text-slate-500">Remaining {{ money(summary.remainingTotal) }}</p>
+        </div>
+        <p *ngIf="!billCategorySummaries().length" class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-600">No active bills yet.</p>
+      </div>
+    </article>
+
+    <aside class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <h2 class="text-sm font-bold uppercase text-slate-600">Month Close</h2>
+      <div class="mt-3 grid gap-2">
+        <div *ngFor="let item of monthCloseChecklist()" class="grid grid-cols-[auto_1fr] gap-3 rounded-md border border-slate-200 px-3 py-2">
+          <span class="mt-0.5 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold" [class.bg-emerald-100]="item.complete" [class.text-emerald-700]="item.complete" [class.bg-amber-100]="!item.complete" [class.text-amber-800]="!item.complete">{{ item.complete ? 'OK' : '!' }}</span>
+          <span>
+            <span class="block text-sm font-bold text-slate-900">{{ item.label }}</span>
+            <span class="block text-xs font-semibold text-slate-500">{{ item.detail }}</span>
+          </span>
+        </div>
+      </div>
+    </aside>
+  </section>
+
+  <nav class="flex flex-wrap gap-2 rounded-lg border border-slate-200 bg-white p-2 shadow-sm">
+    <button class="rounded-md px-3 py-2 text-sm font-semibold" [class.bg-slate-900]="activeTab() === 'balances'" [class.text-white]="activeTab() === 'balances'" type="button" (click)="setTab('balances')">Balances</button>
+    <button class="rounded-md px-3 py-2 text-sm font-semibold" [class.bg-slate-900]="activeTab() === 'bills'" [class.text-white]="activeTab() === 'bills'" type="button" (click)="setTab('bills')">Bills</button>
+    <button class="rounded-md px-3 py-2 text-sm font-semibold" [class.bg-slate-900]="activeTab() === 'snapshots'" [class.text-white]="activeTab() === 'snapshots'" type="button" (click)="setTab('snapshots')">Year Totals</button>
+    <button class="rounded-md px-3 py-2 text-sm font-semibold" [class.bg-slate-900]="activeTab() === 'donations'" [class.text-white]="activeTab() === 'donations'" type="button" (click)="setTab('donations')">Donations</button>
+  </nav>
+
+  @defer (on viewport) {
+    <app-finance-reports-export-panel [vm]="viewModel"></app-finance-reports-export-panel>
+  } @placeholder {
+    <section class="rounded-lg border border-slate-200 bg-white p-4 text-sm font-semibold text-slate-600 shadow-sm">
+      Loading reports and exports.
+    </section>
+  }
+
+  <section *ngIf="activeTab() === 'balances'" class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+    <div class="grid gap-4">
+    <div class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+      <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-100 px-3 py-2">
+        <h2 class="text-sm font-bold uppercase text-slate-600">Account Balances</h2>
+        <button class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50" type="button" (click)="exportBalancesCsv()">Export CSV</button>
+      </div>
+      <div class="grid grid-cols-[1fr_140px] bg-slate-100 px-3 py-2 text-xs font-bold uppercase text-slate-600">
+        <span>Account</span>
+        <span class="text-right">Balance</span>
+      </div>
+      <div *ngFor="let group of groupedAccounts()" class="border-t border-slate-200">
+        <div class="grid grid-cols-[1fr_140px] px-3 py-2 text-sm font-bold" [class.bg-rose-100]="group.isDebt" [class.bg-sky-100]="!group.isDebt">
+          <span>{{ group.category }}</span>
+          <span class="text-right">{{ money(group.total) }}</span>
+        </div>
+        <button *ngFor="let account of group.accounts" class="grid w-full grid-cols-[1fr_140px] px-3 py-2 text-left text-sm hover:bg-slate-50" type="button" (click)="selectAccount(account)">
+          <span>
+            <span class="font-semibold">{{ account.name }}</span>
+            <span class="block text-xs text-slate-500">as of {{ account.asOfDate | date:'M/d/yyyy' }}</span>
+          </span>
+          <span class="self-center text-right font-semibold">{{ money(account.balance) }}</span>
+        </button>
+      </div>
+    </div>
+
+    <section class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+      <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-100 px-3 py-2">
+        <div>
+          <h2 class="text-sm font-bold uppercase text-slate-600">Net Worth History</h2>
+          <p class="mt-0.5 text-xs font-semibold text-slate-500">Built from dated account balance updates.</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button *ngIf="netWorthHistory().length" class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50" type="button" (click)="printNetWorthHistoryReport()">Print</button>
+          <button *ngIf="netWorthHistory().length" class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50" type="button" (click)="exportNetWorthHistoryCsv()">Export CSV</button>
+        </div>
+      </div>
+      <div class="grid gap-2 p-3 sm:grid-cols-3">
+        <div class="rounded-md bg-emerald-50 px-3 py-2">
+          <p class="text-xs font-bold uppercase text-emerald-700">Latest Net Worth</p>
+          <p class="text-sm font-bold text-emerald-800">{{ money(latestNetWorthHistory() ? latestNetWorthHistory()!.netWorth : null) }}</p>
+        </div>
+        <div class="rounded-md bg-slate-50 px-3 py-2">
+          <p class="text-xs font-bold uppercase text-slate-500">History Change</p>
+          <p class="text-sm font-bold" [class.text-emerald-700]="(netWorthHistoryChange() ?? 0) > 0" [class.text-rose-700]="(netWorthHistoryChange() ?? 0) < 0">{{ signedMoney(netWorthHistoryChange()) }}</p>
+        </div>
+        <div class="rounded-md bg-slate-50 px-3 py-2">
+          <p class="text-xs font-bold uppercase text-slate-500">Tracked Dates</p>
+          <p class="text-sm font-bold text-slate-900">{{ netWorthHistory().length }}</p>
+        </div>
+      </div>
+      <div *ngIf="netWorthChartRows().length" class="mx-3 mb-3 rounded-md border border-slate-200 bg-white p-3">
+        <div class="mb-2 flex items-center justify-between text-xs font-bold uppercase text-slate-500">
+          <span>Net worth trend</span>
+          <span>{{ netWorthChartRows().length }} points</span>
+        </div>
+        <div class="finance-line-chart">
+          <div *ngFor="let row of netWorthChartRows()" class="finance-line-chart__point" [style.left.%]="netWorthChartRows().length > 1 ? (netWorthChartRows().indexOf(row) / (netWorthChartRows().length - 1)) * 100 : 50" [style.top.%]="row.chartTop" [title]="(row.asOfDate | date:'M/d/yyyy') + ' ' + money(row.netWorth)"></div>
+        </div>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-[760px] text-sm">
+          <thead class="bg-slate-100 text-xs uppercase text-slate-600">
+            <tr>
+              <th class="px-3 py-2 text-left">Date</th>
+              <th class="px-3 py-2 text-right">Debt</th>
+              <th class="px-3 py-2 text-right">Savings</th>
+              <th class="px-3 py-2 text-right">Net Worth</th>
+              <th class="px-3 py-2 text-right">Change</th>
+              <th class="px-3 py-2 text-right">Updates</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of netWorthHistoryRows()" class="border-t border-slate-200 hover:bg-slate-50">
+              <td class="px-3 py-2 font-semibold text-slate-900">{{ row.asOfDate | date:'M/d/yyyy' }}</td>
+              <td class="px-3 py-2 text-right">{{ money(row.totalDebt) }}</td>
+              <td class="px-3 py-2 text-right">{{ money(row.totalSavings) }}</td>
+              <td class="px-3 py-2 text-right font-bold text-slate-900">{{ money(row.netWorth) }}</td>
+              <td class="px-3 py-2 text-right font-bold" [class.text-emerald-700]="(row.netWorthChange ?? 0) > 0" [class.text-rose-700]="(row.netWorthChange ?? 0) < 0">{{ signedMoney(row.netWorthChange) }}</td>
+              <td class="px-3 py-2 text-right">{{ row.accountUpdates }}</td>
+            </tr>
+            <tr *ngIf="!netWorthHistory().length">
+              <td class="px-3 py-4 text-sm text-slate-600" colspan="6">No net worth history yet. Saving account balances with dates will build this trend.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+    </div>
+
+    <form class="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm" (ngSubmit)="saveAccount()">
+      <h2 class="text-lg font-bold text-slate-950">{{ accountForm().id ? 'Edit Balance' : 'Add Balance' }}</h2>
+      <input class="rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="Account name" [ngModel]="accountForm().name" (ngModelChange)="setAccountField('name', $event)" name="accountName">
+      <input class="rounded-md border border-slate-300 px-3 py-2 text-sm" list="finance-account-categories" placeholder="Category" [ngModel]="accountForm().category" (ngModelChange)="setAccountField('category', $event)" name="accountCategory">
+      <input class="rounded-md border border-slate-300 px-3 py-2 text-sm" type="number" step="0.01" [ngModel]="accountForm().balance" (ngModelChange)="setAccountField('balance', +$event)" name="balance">
+      <input class="rounded-md border border-slate-300 px-3 py-2 text-sm" type="date" [ngModel]="accountForm().asOfDate" (ngModelChange)="setAccountField('asOfDate', $event)" name="asOfDate">
+      <label class="flex items-center gap-2 text-sm"><input type="checkbox" [ngModel]="accountForm().isDebt" (ngModelChange)="setAccountField('isDebt', $event)" name="isDebt"> Debt account</label>
+      <label class="flex items-center gap-2 text-sm"><input type="checkbox" [ngModel]="accountForm().isActive" (ngModelChange)="setAccountField('isActive', $event)" name="accountActive"> Active</label>
+      <textarea class="min-h-20 rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="Notes" [ngModel]="accountForm().notes" (ngModelChange)="setAccountField('notes', $event)" name="accountNotes"></textarea>
+      <div class="flex gap-2">
+        <button class="rounded-md bg-blue-700 px-3 py-2 text-sm font-semibold text-white" type="submit">Save</button>
+        <button class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold" type="button" (click)="accountForm.set(emptyAccountForm()); accountHistory.set([])">New</button>
+        <button *ngIf="accountForm().id" class="rounded-md border border-red-300 px-3 py-2 text-sm font-semibold text-red-700" type="button" (click)="deleteAccount()">Delete</button>
+      </div>
+      <button class="rounded-md border border-emerald-300 px-3 py-2 text-sm font-semibold text-emerald-700" type="button" (click)="captureCurrentSnapshot()">Stage Year-Close Snapshot</button>
+
+      <section class="mt-2 grid gap-3 border-t border-slate-200 pt-3">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <h3 class="text-sm font-bold uppercase text-slate-600">Balance History</h3>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-slate-500">{{ accountHistory().length }} entries</span>
+            <button *ngIf="accountHistory().length" class="rounded-md border border-slate-300 px-2 py-1 text-xs font-bold text-slate-700 hover:bg-slate-50" type="button" (click)="printSelectedAccountHistoryReport()">Print</button>
+            <button *ngIf="accountHistory().length" class="rounded-md border border-slate-300 px-2 py-1 text-xs font-bold text-slate-700 hover:bg-slate-50" type="button" (click)="exportSelectedAccountHistoryCsv()">Export</button>
+          </div>
+        </div>
+        <ng-container *ngIf="accountForm().id; else noAccountSelected">
+          <div *ngIf="accountHistoryChartRows().length" class="rounded-md border border-slate-200 bg-white p-3">
+            <div class="mb-2 flex items-center justify-between text-xs font-bold uppercase text-slate-500">
+              <span>Account balance trend</span>
+              <span>{{ accountHistoryChartRows().length }} points</span>
+            </div>
+            <div class="finance-line-chart">
+              <div *ngFor="let trend of accountHistoryChartRows()" class="finance-line-chart__point finance-line-chart__point--account" [style.left.%]="accountHistoryChartRows().length > 1 ? (accountHistoryChartRows().indexOf(trend) / (accountHistoryChartRows().length - 1)) * 100 : 50" [style.top.%]="trend.chartTop" [title]="(trend.history.asOfDate | date:'M/d/yyyy') + ' ' + money(trend.history.balance)"></div>
+            </div>
+          </div>
+          <div class="grid gap-2 sm:grid-cols-2">
+            <div class="rounded-md bg-slate-50 px-3 py-2">
+              <p class="text-xs font-bold uppercase text-slate-500">Latest</p>
+              <p class="text-sm font-bold text-slate-900">{{ money(selectedAccountHistoryLatest() ? selectedAccountHistoryLatest()!.balance : null) }}</p>
+            </div>
+            <div class="rounded-md bg-slate-50 px-3 py-2">
+              <p class="text-xs font-bold uppercase text-slate-500">Last Change</p>
+              <p class="text-sm font-bold" [class.text-emerald-700]="(selectedAccountLastChange() ?? 0) > 0" [class.text-rose-700]="(selectedAccountLastChange() ?? 0) < 0">{{ signedMoney(selectedAccountLastChange()) }}</p>
+            </div>
+            <div class="rounded-md bg-slate-50 px-3 py-2">
+              <p class="text-xs font-bold uppercase text-slate-500">Lifetime Change</p>
+              <p class="text-sm font-bold" [class.text-emerald-700]="(selectedAccountLifetimeChange() ?? 0) > 0" [class.text-rose-700]="(selectedAccountLifetimeChange() ?? 0) < 0">{{ signedMoney(selectedAccountLifetimeChange()) }}</p>
+            </div>
+            <div class="rounded-md bg-slate-50 px-3 py-2">
+              <p class="text-xs font-bold uppercase text-slate-500">Average</p>
+              <p class="text-sm font-bold text-slate-900">{{ money(selectedAccountAverageBalance()) }}</p>
+            </div>
+            <div class="rounded-md bg-slate-50 px-3 py-2">
+              <p class="text-xs font-bold uppercase text-slate-500">High</p>
+              <p class="text-sm font-bold text-slate-900">{{ money(selectedAccountHighest()?.balance) }}</p>
+              <p class="text-xs font-semibold text-slate-500">{{ selectedAccountHighest()?.asOfDate | date:'M/d/yyyy' }}</p>
+            </div>
+            <div class="rounded-md bg-slate-50 px-3 py-2">
+              <p class="text-xs font-bold uppercase text-slate-500">Low</p>
+              <p class="text-sm font-bold text-slate-900">{{ money(selectedAccountLowest()?.balance) }}</p>
+              <p class="text-xs font-semibold text-slate-500">{{ selectedAccountLowest()?.asOfDate | date:'M/d/yyyy' }}</p>
+            </div>
+          </div>
+          <div class="grid max-h-80 gap-2 overflow-auto pr-1">
+            <div *ngFor="let trend of selectedAccountHistoryTrends()" class="rounded-md border border-slate-200 px-3 py-2">
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-sm font-bold text-slate-900">{{ trend.history.asOfDate | date:'M/d/yyyy' }}</span>
+                <span class="text-sm font-bold text-slate-900">{{ money(trend.history.balance) }}</span>
+              </div>
+              <div class="mt-1 flex items-center justify-between gap-2">
+                <span class="text-xs font-semibold text-slate-500">Recorded {{ trend.history.recordedAt | date:'M/d/yyyy h:mm a' }}</span>
+                <span class="text-xs font-bold" [class.text-emerald-700]="(trend.change ?? 0) > 0" [class.text-rose-700]="(trend.change ?? 0) < 0">{{ signedMoney(trend.change) }} / {{ percent(trend.percentChange) }}</span>
+              </div>
+              <p *ngIf="trend.history.notes" class="mt-1 text-xs text-slate-600">{{ trend.history.notes }}</p>
+            </div>
+            <p *ngIf="!accountHistory().length" class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-600">No history has been recorded for this account yet. Saving the balance will create one.</p>
+          </div>
+        </ng-container>
+        <ng-template #noAccountSelected>
+          <p class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-600">Select an account to see its balance history.</p>
+        </ng-template>
+      </section>
+    </form>
+  </section>
+
+  <section *ngIf="activeTab() === 'bills'" class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+    <div class="grid gap-4">
+    <div class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+      <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-100 px-3 py-2">
+        <h2 class="text-sm font-bold uppercase text-slate-600">Monthly Bills</h2>
+        <div class="flex flex-wrap gap-2">
+          <button class="rounded-md border border-emerald-300 bg-white px-3 py-1.5 text-xs font-bold text-emerald-700 hover:bg-emerald-50" type="button" (click)="copyPriorMonthPayments()">Copy Prior Month</button>
+          <button class="rounded-md border border-blue-300 bg-white px-3 py-1.5 text-xs font-bold text-blue-700 hover:bg-blue-50" type="button" (click)="markAllExpectedBillsPaid()">Mark Expected Paid</button>
+          <button class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50" type="button" (click)="exportBillsCsv()">Export CSV</button>
+        </div>
+      </div>
+      <table class="w-full min-w-[820px] text-sm">
+        <thead class="bg-slate-100 text-xs uppercase text-slate-600">
+          <tr><th class="px-3 py-2 text-left">Paid</th><th class="px-3 py-2 text-left">Due</th><th class="px-3 py-2 text-left">Bill</th><th class="px-3 py-2 text-left">Frequency</th><th class="px-3 py-2 text-right">Expected</th><th class="px-3 py-2 text-right">Paid</th><th class="px-3 py-2 text-left">Category</th><th class="px-3 py-2 text-left">Status</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let bill of bills()" class="border-t border-slate-200 hover:bg-slate-50" [class.bg-emerald-50]="bill.isPaidForSelectedMonth" [class.bg-rose-50]="billStatus(bill) === 'overdue'" [class.bg-amber-50]="billStatus(bill) === 'dueSoon'">
+            <td class="px-3 py-2"><input type="checkbox" [checked]="bill.isPaidForSelectedMonth" [disabled]="!bill.isDueForSelectedMonth" (change)="toggleBillPaid(bill)"></td>
+            <td class="px-3 py-2">{{ bill.dueDay }}</td>
+            <td class="px-3 py-2"><button class="font-semibold text-blue-700" type="button" (click)="selectBill(bill)">{{ bill.name }}</button></td>
+            <td class="px-3 py-2">{{ billFrequencyLabel(bill) }}</td>
+            <td class="px-3 py-2 text-right">{{ bill.expectedAmount === null ? '' : money(bill.expectedAmount) }}</td>
+            <td class="px-3 py-2 text-right">{{ bill.amountPaid === null ? '' : money(bill.amountPaid) }}</td>
+            <td class="px-3 py-2">{{ bill.category }}</td>
+            <td class="px-3 py-2">
+              <span class="rounded-full px-2 py-1 text-xs font-bold" [class.bg-emerald-100]="billStatus(bill) === 'paid'" [class.text-emerald-700]="billStatus(bill) === 'paid'" [class.bg-rose-100]="billStatus(bill) === 'overdue'" [class.text-rose-700]="billStatus(bill) === 'overdue'" [class.bg-amber-100]="billStatus(bill) === 'dueSoon'" [class.text-amber-800]="billStatus(bill) === 'dueSoon'" [class.bg-slate-100]="billStatus(bill) === 'open' || billStatus(bill) === 'inactive'" [class.text-slate-700]="billStatus(bill) === 'open' || billStatus(bill) === 'inactive'">{{ billStatusLabel(bill) }}</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 class="text-sm font-bold uppercase text-slate-600">Recurring Bill Reports</h2>
+          <p class="mt-1 text-sm text-slate-600">History and yearly totals for {{ selectedYear() }}.</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50" type="button" (click)="printBillAnalyticsReport()">Print Analytics</button>
+          <button class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50" type="button" (click)="exportBillPaymentHistoryCsv()">Export Payment History</button>
+          <button class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50" type="button" (click)="exportBillAnalyticsCsv()">Export Analytics</button>
+        </div>
+      </div>
+
+      <div class="mt-4 grid gap-4 2xl:grid-cols-2">
+        <article class="rounded-md border border-slate-200 p-3 2xl:col-span-2">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 class="text-xs font-bold uppercase text-slate-500">Recurring Bill Analytics Snapshot</h3>
+              <p class="mt-1 text-sm text-slate-600">{{ selectedMonthName() }} / {{ selectedYear() }} yearly trend</p>
+            </div>
+            <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">{{ activeBills().length }} active bills</span>
+          </div>
+          <div class="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <div *ngFor="let card of billInsightCards()" class="rounded-md border p-3" [ngClass]="card.tone">
+              <p class="text-[11px] font-black uppercase opacity-75">{{ card.label }}</p>
+              <p class="mt-1 truncate text-lg font-black">{{ card.value }}</p>
+              <p class="mt-1 text-xs font-semibold">{{ card.detail }}</p>
+            </div>
+          </div>
+          <div class="mt-3 rounded-md border border-slate-200 bg-slate-50 p-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h4 class="text-xs font-black uppercase text-slate-500">Selected Month Burn-down</h4>
+              <span class="text-xs font-bold text-slate-600">{{ money(monthlyPaidTotal()) }} paid / {{ money(monthlyRemainingTotal()) }} remaining</span>
+            </div>
+            <div class="mt-3 grid gap-2">
+              <div *ngFor="let row of billBurnDownRows()" class="grid grid-cols-[7rem_1fr_8rem] items-center gap-3 text-sm">
+                <span class="font-bold text-slate-700">{{ row.label }}</span>
+                <div class="h-3 overflow-hidden rounded-full bg-white">
+                  <div class="h-full rounded-full" [ngClass]="row.tone" [style.width.%]="row.width"></div>
+                </div>
+                <span class="text-right font-semibold text-slate-700">{{ row.count }} / {{ money(row.amount) }}</span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="rounded-md border border-slate-200 p-3">
+          <h3 class="text-xs font-bold uppercase text-slate-500">Unpaid Bills By Month</h3>
+          <div class="mt-3 grid gap-2">
+            <div *ngFor="let row of billReport().unpaidByMonth" class="grid grid-cols-[64px_1fr_120px] items-center gap-3 text-sm">
+              <span class="font-bold text-slate-700">{{ row.month }}/{{ row.year }}</span>
+              <div class="h-3 overflow-hidden rounded-full bg-slate-100">
+                <div class="h-full rounded-full bg-rose-500" [style.width.%]="(row.unpaidCount / maxUnpaidBills()) * 100"></div>
+              </div>
+              <span class="text-right font-semibold text-slate-700">{{ row.unpaidCount }} / {{ money(row.expectedTotal) }}</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="rounded-md border border-slate-200 p-3">
+          <h3 class="text-xs font-bold uppercase text-slate-500">Yearly Paid By Category</h3>
+          <div class="mt-3 grid gap-2">
+            <div *ngFor="let row of billReport().paidTotalsByCategory" class="grid grid-cols-[120px_1fr_112px] items-center gap-3 text-sm">
+              <span class="truncate font-bold text-slate-700">{{ row.category }}</span>
+              <div class="h-3 overflow-hidden rounded-full bg-slate-100">
+                <div class="h-full rounded-full bg-emerald-500" [style.width.%]="(row.paidTotal / maxPaidCategoryTotal()) * 100"></div>
+              </div>
+              <span class="text-right font-semibold text-slate-700">{{ money(row.paidTotal) }}</span>
+            </div>
+            <p *ngIf="!billReport().paidTotalsByCategory.length" class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-600">No paid bill totals for this year yet.</p>
+          </div>
+        </article>
+      </div>
+
+      <div class="mt-4 grid gap-4 2xl:grid-cols-3">
+        <article class="rounded-md border border-slate-200 p-3">
+          <h3 class="text-xs font-bold uppercase text-slate-500">Monthly Paid Totals</h3>
+          <div class="mt-3 grid gap-2">
+            <div *ngFor="let row of billReport().monthlyPaidTotals" class="grid grid-cols-[64px_1fr_112px] items-center gap-3 text-sm">
+              <span class="font-bold text-slate-700">{{ row.month }}/{{ row.year }}</span>
+              <div class="h-3 overflow-hidden rounded-full bg-slate-100">
+                <div class="h-full rounded-full bg-blue-500" [style.width.%]="(row.paidTotal / maxMonthlyPaidTotal()) * 100"></div>
+              </div>
+              <span class="text-right font-semibold text-slate-700">{{ money(row.paidTotal) }}</span>
+            </div>
+            <p *ngIf="!billReport().monthlyPaidTotals.length" class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-600">No monthly paid totals for this year yet.</p>
+          </div>
+        </article>
+
+        <article class="rounded-md border border-slate-200 p-3">
+          <h3 class="text-xs font-bold uppercase text-slate-500">Frequency Breakdown</h3>
+          <div class="mt-3 grid gap-2">
+            <div *ngFor="let row of billReport().frequencySummaries" class="grid grid-cols-[88px_1fr_116px] items-center gap-3 text-sm">
+              <span class="truncate font-bold text-slate-700">{{ row.frequency }}</span>
+              <div class="h-3 overflow-hidden rounded-full bg-slate-100">
+                <div class="h-full rounded-full bg-violet-500" [style.width.%]="(row.expectedMonthlyTotal / maxFrequencyExpectedTotal()) * 100"></div>
+              </div>
+              <span class="text-right font-semibold text-slate-700">{{ row.billCount }} / {{ money(row.expectedMonthlyTotal) }}</span>
+            </div>
+            <p *ngIf="!billReport().frequencySummaries.length" class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-600">No active bill frequencies yet.</p>
+          </div>
+        </article>
+
+        <article class="rounded-md border border-slate-200 p-3">
+          <h3 class="text-xs font-bold uppercase text-slate-500">Top Paid Bills</h3>
+          <div class="mt-3 grid gap-2">
+            <div *ngFor="let row of topAnnualBillSummaries()" class="rounded-md bg-slate-50 px-3 py-2">
+              <div class="flex items-center justify-between gap-3">
+                <span class="truncate text-sm font-bold text-slate-900">{{ row.billName }}</span>
+                <span class="text-sm font-bold text-slate-900">{{ money(row.paidTotal) }}</span>
+              </div>
+              <div class="mt-1 flex items-center justify-between gap-3 text-xs font-semibold text-slate-500">
+                <span>{{ row.category }}</span>
+                <span>{{ row.paidCount }}/{{ row.dueCount }} paid · {{ row.paymentRate | number:'1.0-0' }}%</span>
+              </div>
+            </div>
+            <p *ngIf="!topAnnualBillSummaries().length" class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-600">No yearly bill summaries yet.</p>
+          </div>
+        </article>
+      </div>
+
+      <div class="mt-4 grid gap-4 2xl:grid-cols-2">
+        <article class="rounded-md border border-slate-200 p-3">
+          <h3 class="text-xs font-bold uppercase text-slate-500">Overdue Risk</h3>
+          <div class="mt-3 grid gap-2">
+            <div *ngFor="let row of topOverdueRisks()" class="grid grid-cols-[minmax(9rem,1fr)_1fr_132px] items-center gap-3 text-sm">
+              <div>
+                <p class="truncate font-bold text-slate-900">{{ row.billName }}</p>
+                <p class="text-xs font-semibold text-slate-500">{{ row.category }} · {{ row.paidCount }}/{{ row.dueCount }} paid</p>
+              </div>
+              <div class="h-3 overflow-hidden rounded-full bg-slate-100">
+                <div class="h-full rounded-full bg-rose-500" [style.width.%]="(row.unpaidExpectedTotal / maxOverdueRiskTotal()) * 100"></div>
+              </div>
+              <span class="text-right font-semibold text-slate-700">{{ row.overdueCount }} overdue · {{ money(row.unpaidExpectedTotal) }}</span>
+            </div>
+            <p *ngIf="!topOverdueRisks().length" class="rounded-md bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700">No overdue risk rows for this year.</p>
+          </div>
+        </article>
+
+        <article class="rounded-md border border-slate-200 p-3">
+          <h3 class="text-xs font-bold uppercase text-slate-500">Payment Variance</h3>
+          <div class="mt-3 grid gap-2">
+            <div *ngFor="let row of topPaymentVariances()" class="grid grid-cols-[minmax(9rem,1fr)_120px_120px] items-center gap-3 rounded-md bg-slate-50 px-3 py-2 text-sm">
+              <div>
+                <p class="truncate font-bold text-slate-900">{{ row.billName }}</p>
+                <p class="text-xs font-semibold text-slate-500">{{ row.category }} · {{ row.paymentCount }} payments</p>
+              </div>
+              <span class="text-right font-semibold text-slate-700">Avg {{ money(row.averagePaid) }}</span>
+              <span class="text-right font-bold" [class.text-rose-700]="row.averageVariance > 0" [class.text-emerald-700]="row.averageVariance < 0" [class.text-slate-700]="row.averageVariance === 0">{{ signedMoney(row.averageVariance) }}</span>
+            </div>
+            <p *ngIf="!topPaymentVariances().length" class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-600">No payment variance to show yet.</p>
+          </div>
+        </article>
+      </div>
+
+      <article class="mt-4 overflow-hidden rounded-md border border-slate-200">
+        <div class="bg-slate-50 px-3 py-2">
+          <h3 class="text-xs font-bold uppercase text-slate-500">Bill-Level Yearly Analytics</h3>
+        </div>
+        <table class="w-full min-w-[860px] text-sm">
+          <thead class="bg-slate-50 text-xs uppercase text-slate-500">
+            <tr><th class="px-3 py-2 text-left">Bill</th><th class="px-3 py-2 text-left">Category</th><th class="px-3 py-2 text-right">Paid / Due</th><th class="px-3 py-2 text-right">Rate</th><th class="px-3 py-2 text-right">Expected</th><th class="px-3 py-2 text-right">Paid</th><th class="px-3 py-2 text-right">Average</th><th class="px-3 py-2 text-left">Last Paid</th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of billReport().annualBillSummaries" class="border-t border-slate-200 hover:bg-slate-50">
+              <td class="px-3 py-2 font-semibold text-slate-900">{{ row.billName }}</td>
+              <td class="px-3 py-2">{{ row.category }}</td>
+              <td class="px-3 py-2 text-right">{{ row.paidCount }} / {{ row.dueCount }}</td>
+              <td class="px-3 py-2 text-right font-bold" [class.text-emerald-700]="row.paymentRate >= 100" [class.text-amber-700]="row.paymentRate > 0 && row.paymentRate < 100" [class.text-rose-700]="row.paymentRate === 0">{{ row.paymentRate | number:'1.0-0' }}%</td>
+              <td class="px-3 py-2 text-right">{{ money(row.expectedTotal) }}</td>
+              <td class="px-3 py-2 text-right font-semibold">{{ money(row.paidTotal) }}</td>
+              <td class="px-3 py-2 text-right">{{ money(row.averagePaid) }}</td>
+              <td class="px-3 py-2">{{ row.lastPaidDate ? (row.lastPaidDate | date:'M/d/yyyy') : '' }}</td>
+            </tr>
+            <tr *ngIf="!billReport().annualBillSummaries.length">
+              <td class="px-3 py-4 text-sm text-slate-600" colspan="8">No bill-level analytics for this year yet.</td>
+            </tr>
+          </tbody>
+        </table>
+      </article>
+
+      <div class="mt-4 grid gap-4 2xl:grid-cols-2">
+        <article class="overflow-hidden rounded-md border border-slate-200">
+          <div class="bg-slate-50 px-3 py-2">
+            <h3 class="text-xs font-bold uppercase text-slate-500">Upcoming / Overdue</h3>
+          </div>
+          <table class="w-full min-w-[620px] text-sm">
+            <thead class="bg-slate-50 text-xs uppercase text-slate-500">
+              <tr><th class="px-3 py-2 text-left">Due</th><th class="px-3 py-2 text-left">Bill</th><th class="px-3 py-2 text-left">Category</th><th class="px-3 py-2 text-right">Expected</th><th class="px-3 py-2 text-left">Status</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let bill of billReport().upcomingAndOverdue" class="border-t border-slate-200" [class.bg-rose-50]="bill.status === 'Overdue'" [class.bg-amber-50]="bill.status === 'Upcoming'">
+                <td class="px-3 py-2 font-semibold">{{ bill.dueDate | date:'M/d/yyyy' }}</td>
+                <td class="px-3 py-2">{{ bill.billName }}</td>
+                <td class="px-3 py-2">{{ bill.category }}</td>
+                <td class="px-3 py-2 text-right">{{ money(bill.expectedAmount) }}</td>
+                <td class="px-3 py-2 font-bold" [class.text-rose-700]="bill.status === 'Overdue'" [class.text-amber-700]="bill.status === 'Upcoming'">{{ bill.status }}</td>
+              </tr>
+              <tr *ngIf="!billReport().upcomingAndOverdue.length">
+                <td class="px-3 py-4 text-sm text-slate-600" colspan="5">No upcoming or overdue bills for the selected month.</td>
+              </tr>
+            </tbody>
+          </table>
+        </article>
+
+        <article class="overflow-hidden rounded-md border border-slate-200">
+          <div class="bg-slate-50 px-3 py-2">
+            <h3 class="text-xs font-bold uppercase text-slate-500">Recent Payment History</h3>
+          </div>
+          <table class="w-full min-w-[680px] text-sm">
+            <thead class="bg-slate-50 text-xs uppercase text-slate-500">
+              <tr><th class="px-3 py-2 text-left">Month</th><th class="px-3 py-2 text-left">Bill</th><th class="px-3 py-2 text-left">Category</th><th class="px-3 py-2 text-right">Paid</th><th class="px-3 py-2 text-left">Date</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let payment of recentBillPaymentHistory()" class="border-t border-slate-200">
+                <td class="px-3 py-2 font-semibold">{{ payment.month }}/{{ payment.year }}</td>
+                <td class="px-3 py-2">{{ payment.billName }}</td>
+                <td class="px-3 py-2">{{ payment.category }}</td>
+                <td class="px-3 py-2 text-right">{{ payment.isPaid ? money(payment.amountPaid ?? payment.expectedAmount) : '' }}</td>
+                <td class="px-3 py-2">{{ payment.paidDate ? (payment.paidDate | date:'M/d/yyyy') : '' }}</td>
+              </tr>
+              <tr *ngIf="!recentBillPaymentHistory().length">
+                <td class="px-3 py-4 text-sm text-slate-600" colspan="5">No bill payment history for this year yet.</td>
+              </tr>
+            </tbody>
+          </table>
+        </article>
+      </div>
+    </section>
+    </div>
+    <form class="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm" (ngSubmit)="saveBill()">
+      <h2 class="text-lg font-bold text-slate-950">{{ billForm().id ? 'Edit Bill' : 'Add Bill' }}</h2>
+      <input class="rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="Bill name" [ngModel]="billForm().name" (ngModelChange)="setBillField('name', $event)" name="billName">
+      <input class="rounded-md border border-slate-300 px-3 py-2 text-sm" list="finance-bill-categories" placeholder="Category" [ngModel]="billForm().category" (ngModelChange)="setBillField('category', $event)" name="billCategory">
+      <input class="rounded-md border border-slate-300 px-3 py-2 text-sm" type="number" min="1" max="31" [ngModel]="billForm().dueDay" (ngModelChange)="setBillField('dueDay', +$event)" name="dueDay">
+      <input class="rounded-md border border-slate-300 px-3 py-2 text-sm" type="number" step="0.01" placeholder="Expected amount" [ngModel]="billForm().expectedAmount" (ngModelChange)="setBillField('expectedAmount', $event === '' ? null : +$event)" name="expectedAmount">
+      <select class="rounded-md border border-slate-300 px-3 py-2 text-sm" [ngModel]="billForm().billingIntervalMonths" (ngModelChange)="setBillField('billingIntervalMonths', +$event)" name="billingIntervalMonths">
+        <option [ngValue]="1">Monthly</option>
+        <option [ngValue]="3">Quarterly</option>
+        <option [ngValue]="6">Semiannual</option>
+        <option [ngValue]="12">Yearly</option>
+      </select>
+      <label class="grid gap-1 text-xs font-bold uppercase text-slate-500">
+        Starts in
+        <select class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold normal-case text-slate-900" [ngModel]="billForm().startMonth" (ngModelChange)="setBillField('startMonth', +$event)" name="billStartMonth">
+          <option [ngValue]="1">January</option>
+          <option [ngValue]="2">February</option>
+          <option [ngValue]="3">March</option>
+          <option [ngValue]="4">April</option>
+          <option [ngValue]="5">May</option>
+          <option [ngValue]="6">June</option>
+          <option [ngValue]="7">July</option>
+          <option [ngValue]="8">August</option>
+          <option [ngValue]="9">September</option>
+          <option [ngValue]="10">October</option>
+          <option [ngValue]="11">November</option>
+          <option [ngValue]="12">December</option>
+        </select>
+      </label>
+      <label class="flex items-center gap-2 text-sm"><input type="checkbox" [ngModel]="billForm().isActive" (ngModelChange)="setBillField('isActive', $event)" name="billActive"> Active</label>
+      <textarea class="min-h-20 rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="Notes" [ngModel]="billForm().notes" (ngModelChange)="setBillField('notes', $event)" name="billNotes"></textarea>
+      <div class="flex gap-2">
+        <button class="rounded-md bg-blue-700 px-3 py-2 text-sm font-semibold text-white" type="submit">Save</button>
+        <button class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold" type="button" (click)="billForm.set(emptyBillForm())">New</button>
+        <button *ngIf="billForm().id" class="rounded-md border border-red-300 px-3 py-2 text-sm font-semibold text-red-700" type="button" (click)="deleteBill()">Delete</button>
+      </div>
+
+      <section class="mt-2 grid gap-3 border-t border-slate-200 pt-3">
+        <h3 class="text-sm font-bold uppercase text-slate-600">Payment Details</h3>
+        <p *ngIf="!billPaymentForm().billId" class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-600">Select a bill to edit this month’s payment.</p>
+        <ng-container *ngIf="billPaymentForm().billId">
+          <p class="text-sm font-bold text-slate-900">{{ billPaymentForm().billName }}</p>
+          <label class="flex items-center gap-2 text-sm"><input type="checkbox" [ngModel]="billPaymentForm().isPaid" (ngModelChange)="setBillPaymentField('isPaid', $event)" name="paymentPaid"> Paid for {{ selectedMonthName() }}</label>
+          <input class="rounded-md border border-slate-300 px-3 py-2 text-sm" type="date" [ngModel]="billPaymentForm().paidDate" (ngModelChange)="setBillPaymentField('paidDate', $event)" name="paymentDate">
+          <input class="rounded-md border border-slate-300 px-3 py-2 text-sm" type="number" step="0.01" placeholder="Amount paid" [ngModel]="billPaymentForm().amountPaid" (ngModelChange)="setBillPaymentField('amountPaid', $event === '' ? null : +$event)" name="paymentAmount">
+          <textarea class="min-h-16 rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="Payment notes" [ngModel]="billPaymentForm().notes" (ngModelChange)="setBillPaymentField('notes', $event)" name="paymentNotes"></textarea>
+          <div class="flex flex-wrap gap-2">
+            <button class="rounded-md bg-emerald-700 px-3 py-2 text-sm font-semibold text-white" type="button" (click)="saveBillPayment()">Save Payment</button>
+            <button class="rounded-md border border-emerald-300 px-3 py-2 text-sm font-semibold text-emerald-700" type="button" (click)="markSelectedBillExpectedPaid()">Expected Paid</button>
+          </div>
+        </ng-container>
+      </section>
+    </form>
+  </section>
+
+  <section *ngIf="activeTab() === 'snapshots'" class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+    <div class="grid gap-4">
+      <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 class="text-sm font-bold uppercase text-slate-600">Year Close</h2>
+          <p class="mt-1 text-sm text-slate-600">Close {{ selectedYear() }} with a frozen year-close snapshot from current balances.</p>
+          </div>
+          <button class="rounded-md px-3 py-2 text-sm font-semibold text-white" [class.bg-emerald-700]="!yearCloseSnapshotExists()" [class.bg-amber-700]="yearCloseSnapshotExists()" type="button" (click)="saveCurrentSnapshot()">{{ yearCloseSnapshotExists() ? 'Update Year-Close Snapshot' : 'Create Year-Close Snapshot' }}</button>
+        </div>
+        <div class="mt-4 grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+          <div *ngFor="let item of yearCloseChecklist()" class="grid grid-cols-[auto_1fr] gap-3 rounded-md border border-slate-200 px-3 py-2">
+            <span class="mt-0.5 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold" [class.bg-emerald-100]="item.complete" [class.text-emerald-700]="item.complete" [class.bg-amber-100]="!item.complete" [class.text-amber-800]="!item.complete">{{ item.complete ? 'OK' : '!' }}</span>
+            <span>
+              <span class="block text-sm font-bold text-slate-900">{{ item.label }}</span>
+              <span class="block text-xs font-semibold text-slate-500">{{ item.detail }}</span>
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <section class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+          <p class="text-xs font-bold uppercase text-slate-500">Overall Difference</p>
+          <p class="mt-1 text-2xl font-bold" [class.text-emerald-700]="(snapshotSummary().differenceChange ?? 0) > 0" [class.text-rose-700]="(snapshotSummary().differenceChange ?? 0) < 0">{{ signedMoney(snapshotSummary().differenceChange) }}</p>
+          <p class="mt-1 text-xs font-semibold text-slate-500">{{ snapshotSummary().first?.snapshotDate | date:'yyyy' }} to {{ snapshotSummary().latest?.snapshotDate | date:'yyyy' }}</p>
+        </div>
+        <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+          <p class="text-xs font-bold uppercase text-slate-500">Best Gain</p>
+          <ng-container *ngIf="bestDifferenceGain() as trend; else noBestGain">
+            <p class="mt-1 text-2xl font-bold text-emerald-700">{{ signedMoney(trend.differenceChange) }}</p>
+            <p class="mt-1 text-xs font-semibold text-slate-500">{{ trend.snapshot.snapshotDate | date:'yyyy' }}</p>
+          </ng-container>
+          <ng-template #noBestGain><p class="mt-1 text-sm font-semibold text-slate-500">Need at least two snapshots.</p></ng-template>
+        </div>
+        <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+          <p class="text-xs font-bold uppercase text-slate-500">Best Debt Reduction</p>
+          <ng-container *ngIf="bestDebtReduction() as trend; else noDebtReduction">
+            <p class="mt-1 text-2xl font-bold text-emerald-700">{{ signedMoney(trend.debtChange) }}</p>
+            <p class="mt-1 text-xs font-semibold text-slate-500">{{ trend.snapshot.snapshotDate | date:'yyyy' }}</p>
+          </ng-container>
+          <ng-template #noDebtReduction><p class="mt-1 text-sm font-semibold text-slate-500">Need at least two snapshots.</p></ng-template>
+        </div>
+        <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+          <p class="text-xs font-bold uppercase text-slate-500">Best Savings Gain</p>
+          <ng-container *ngIf="bestSavingsGain() as trend; else noSavingsGain">
+            <p class="mt-1 text-2xl font-bold text-sky-700">{{ signedMoney(trend.savingsChange) }}</p>
+            <p class="mt-1 text-xs font-semibold text-slate-500">{{ trend.snapshot.snapshotDate | date:'yyyy' }}</p>
+          </ng-container>
+          <ng-template #noSavingsGain><p class="mt-1 text-sm font-semibold text-slate-500">Need at least two snapshots.</p></ng-template>
+        </div>
+      </section>
+
+      <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <h2 class="text-sm font-bold uppercase text-slate-600">Compare Two Years</h2>
+          <button class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" (click)="exportSnapshotComparisonCsv()">Export Comparison</button>
+        </div>
+        <div class="mt-3 grid gap-3 md:grid-cols-2">
+          <label class="grid gap-1 text-sm font-semibold text-slate-700">
+            From
+            <select class="rounded-md border border-slate-300 px-3 py-2 text-sm" [ngModel]="compareFromSnapshotId()" (ngModelChange)="setComparisonFrom($event)">
+              <option [ngValue]="null">Select year</option>
+              <option *ngFor="let snapshot of sortedSnapshots()" [ngValue]="snapshot.id">{{ snapshot.snapshotDate | date:'yyyy' }}</option>
+            </select>
+          </label>
+          <label class="grid gap-1 text-sm font-semibold text-slate-700">
+            To
+            <select class="rounded-md border border-slate-300 px-3 py-2 text-sm" [ngModel]="compareToSnapshotId()" (ngModelChange)="setComparisonTo($event)">
+              <option [ngValue]="null">Select year</option>
+              <option *ngFor="let snapshot of sortedSnapshots()" [ngValue]="snapshot.id">{{ snapshot.snapshotDate | date:'yyyy' }}</option>
+            </select>
+          </label>
+        </div>
+        <div class="mt-4 grid gap-3 md:grid-cols-3">
+          <div class="rounded-md bg-slate-50 px-3 py-2">
+            <p class="text-xs font-bold uppercase text-slate-500">Debt Change</p>
+            <p class="text-lg font-bold" [class.text-emerald-700]="(snapshotComparison().debtChange ?? 0) < 0" [class.text-rose-700]="(snapshotComparison().debtChange ?? 0) > 0">{{ signedMoney(snapshotComparison().debtChange) }}</p>
+          </div>
+          <div class="rounded-md bg-slate-50 px-3 py-2">
+            <p class="text-xs font-bold uppercase text-slate-500">Savings Change</p>
+            <p class="text-lg font-bold" [class.text-emerald-700]="(snapshotComparison().savingsChange ?? 0) > 0" [class.text-rose-700]="(snapshotComparison().savingsChange ?? 0) < 0">{{ signedMoney(snapshotComparison().savingsChange) }}</p>
+          </div>
+          <div class="rounded-md bg-slate-50 px-3 py-2">
+            <p class="text-xs font-bold uppercase text-slate-500">Difference Change</p>
+            <p class="text-lg font-bold" [class.text-emerald-700]="(snapshotComparison().differenceChange ?? 0) > 0" [class.text-rose-700]="(snapshotComparison().differenceChange ?? 0) < 0">{{ signedMoney(snapshotComparison().differenceChange) }}</p>
+          </div>
+        </div>
+      </section>
+
+      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <h2 class="text-sm font-bold uppercase text-slate-600">Snapshot Trend</h2>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-slate-500">{{ snapshotChartRows().length }} frozen totals</span>
+            <button class="rounded-md border border-slate-300 px-2 py-1 text-xs font-bold text-slate-700 hover:bg-slate-50" type="button" (click)="exportSnapshotSummaryCsv()">Export Summary</button>
+          </div>
+        </div>
+        <div class="mt-4 grid gap-3">
+          <div *ngFor="let row of snapshotChartRows()" class="grid gap-1">
+            <div class="flex items-center justify-between gap-3 text-xs font-bold text-slate-600">
+              <span>{{ row.snapshot.snapshotDate | date:'yyyy' }}</span>
+              <span>{{ money(row.snapshot.difference) }}</span>
+            </div>
+            <div class="grid gap-1">
+              <div class="h-2 overflow-hidden rounded-full bg-slate-100"><div class="h-full rounded-full bg-rose-400" [style.width.%]="row.debtWidth"></div></div>
+              <div class="h-2 overflow-hidden rounded-full bg-slate-100"><div class="h-full rounded-full bg-sky-500" [style.width.%]="row.savingsWidth"></div></div>
+              <div class="h-2 overflow-hidden rounded-full bg-slate-100"><div class="h-full rounded-full bg-emerald-500" [style.width.%]="row.differenceWidth"></div></div>
+            </div>
+          </div>
+          <p *ngIf="!snapshotChartRows().length" class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-600">No chart yet. Add yearly snapshots to build the trend.</p>
+        </div>
+      </div>
+
+    <div class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+      <div class="flex flex-wrap items-center justify-between gap-2 bg-yellow-100 px-3 py-2">
+        <h2 class="text-sm font-bold uppercase text-slate-700">Yearly Total Snapshots</h2>
+        <div class="flex flex-wrap gap-2">
+          <button class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50" type="button" (click)="exportSnapshotsCsv()">Export CSV</button>
+          <button class="rounded-md border border-emerald-300 bg-white px-3 py-1.5 text-xs font-bold text-emerald-700 hover:bg-emerald-50" type="button" (click)="saveCurrentSnapshot()">Save Current Year Close</button>
+        </div>
+      </div>
+      <table class="w-full min-w-[900px] text-sm">
+        <thead class="bg-yellow-200 text-xs uppercase text-slate-700">
+          <tr>
+            <th class="px-3 py-2 text-left">Date</th>
+            <th class="px-3 py-2 text-right">Debt</th>
+            <th class="px-3 py-2 text-right">Debt Change</th>
+            <th class="px-3 py-2 text-right">Savings</th>
+            <th class="px-3 py-2 text-right">Savings Change</th>
+            <th class="px-3 py-2 text-right">Diff</th>
+            <th class="px-3 py-2 text-right">Diff Change</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let trend of snapshotTrends()" class="border-t border-yellow-100 hover:bg-yellow-50">
+            <td class="px-3 py-2"><button class="font-semibold text-blue-700" type="button" (click)="selectSnapshot(trend.snapshot)">{{ trend.snapshot.snapshotDate | date:'M/d/yyyy' }}</button></td>
+            <td class="px-3 py-2 text-right">{{ money(trend.snapshot.totalDebt) }}</td>
+            <td class="px-3 py-2 text-right" [class.text-rose-700]="(trend.debtChange ?? 0) > 0" [class.text-emerald-700]="(trend.debtChange ?? 0) < 0">{{ signedMoney(trend.debtChange) }}</td>
+            <td class="px-3 py-2 text-right">{{ money(trend.snapshot.totalSavings) }}</td>
+            <td class="px-3 py-2 text-right" [class.text-emerald-700]="(trend.savingsChange ?? 0) > 0" [class.text-rose-700]="(trend.savingsChange ?? 0) < 0">{{ signedMoney(trend.savingsChange) }}</td>
+            <td class="px-3 py-2 text-right font-semibold">{{ money(trend.snapshot.difference) }}</td>
+            <td class="px-3 py-2 text-right font-semibold" [class.text-emerald-700]="(trend.differenceChange ?? 0) > 0" [class.text-rose-700]="(trend.differenceChange ?? 0) < 0">{{ signedMoney(trend.differenceChange) }}</td>
+          </tr>
+          <tr *ngIf="!snapshotTrends().length">
+            <td class="px-3 py-4 text-sm text-slate-600" colspan="7">No yearly snapshots yet. Save the current year-close totals to start the history.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    </div>
+    <form class="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm" (ngSubmit)="saveSnapshot()">
+      <h2 class="text-lg font-bold text-slate-950">Year Snapshot</h2>
+      <input class="rounded-md border border-slate-300 px-3 py-2 text-sm" type="date" [ngModel]="snapshotForm().snapshotDate" (ngModelChange)="setSnapshotField('snapshotDate', $event)" name="snapshotDate">
+      <input class="rounded-md border border-slate-300 px-3 py-2 text-sm" type="number" step="0.01" [ngModel]="snapshotForm().totalDebt" (ngModelChange)="setSnapshotField('totalDebt', +$event)" name="snapshotDebt">
+      <input class="rounded-md border border-slate-300 px-3 py-2 text-sm" type="number" step="0.01" [ngModel]="snapshotForm().totalSavings" (ngModelChange)="setSnapshotField('totalSavings', +$event)" name="snapshotSavings">
+      <input class="rounded-md border border-slate-300 px-3 py-2 text-sm" type="number" step="0.01" [ngModel]="snapshotForm().difference" (ngModelChange)="setSnapshotField('difference', +$event)" name="snapshotDiff">
+      <label class="flex items-center gap-2 text-sm"><input type="checkbox" [ngModel]="snapshotForm().isFrozen" (ngModelChange)="setSnapshotField('isFrozen', $event)" name="frozen"> Frozen</label>
+      <textarea class="min-h-20 rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="Notes" [ngModel]="snapshotForm().notes" (ngModelChange)="setSnapshotField('notes', $event)" name="snapshotNotes"></textarea>
+      <div class="flex gap-2">
+        <button class="rounded-md bg-blue-700 px-3 py-2 text-sm font-semibold text-white" type="submit">Save</button>
+        <button class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold" type="button" (click)="snapshotForm.set(emptySnapshotForm())">New</button>
+        <button *ngIf="snapshotForm().id" class="rounded-md border border-red-300 px-3 py-2 text-sm font-semibold text-red-700" type="button" (click)="deleteSnapshot()">Delete</button>
+      </div>
+    </form>
+  </section>
+
+  <section *ngIf="activeTab() === 'donations'" class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+    <div class="grid gap-4">
+      <section class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+          <p class="text-xs font-bold uppercase text-slate-500">{{ selectedYear() }} Donations</p>
+          <p class="mt-1 text-2xl font-bold text-emerald-700">{{ money(donationTotal()) }}</p>
+          <p class="mt-1 text-xs font-semibold text-slate-500">{{ donationCount() }} entries</p>
+        </div>
+        <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+          <p class="text-xs font-bold uppercase text-slate-500">Receipts</p>
+          <p class="mt-1 text-2xl font-bold text-blue-700">{{ donationReceiptCount() }} / {{ donationCount() }}</p>
+          <p class="mt-1 text-xs font-semibold text-slate-500">Missing {{ money(missingReceiptTotal()) }}</p>
+        </div>
+        <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+          <p class="text-xs font-bold uppercase text-slate-500">Average</p>
+          <p class="mt-1 text-2xl font-bold text-slate-900">{{ money(averageDonation()) }}</p>
+          <p class="mt-1 text-xs font-semibold text-slate-500">Per donation</p>
+        </div>
+        <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+          <p class="text-xs font-bold uppercase text-slate-500">Largest</p>
+          <ng-container *ngIf="largestDonation() as donation; else noLargestDonation">
+            <p class="mt-1 text-lg font-bold text-slate-900">{{ donation.organization }}</p>
+            <p class="mt-1 text-xs font-semibold text-slate-500">{{ money(donation.amount) }}</p>
+          </ng-container>
+          <ng-template #noLargestDonation>
+            <p class="mt-1 text-lg font-bold text-slate-900">None</p>
+            <p class="mt-1 text-xs font-semibold text-slate-500">$0.00</p>
+          </ng-template>
+        </div>
+      </section>
+
+      <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <h2 class="text-sm font-bold uppercase text-slate-600">Donation Review</h2>
+          <div class="flex flex-wrap gap-2">
+            <button class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold hover:bg-slate-50" type="button" (click)="printDonationReport()">Print Tax Report</button>
+            <button class="rounded-md border border-amber-300 px-3 py-2 text-sm font-semibold text-amber-800 hover:bg-amber-50" type="button" (click)="printReceiptNeededReport()">Print Receipts Needed</button>
+            <button class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold hover:bg-slate-50" type="button" (click)="exportDonationsCsv()">Export Donations</button>
+            <button class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold hover:bg-slate-50" type="button" (click)="exportDonationOrganizationCsv()">Export Summary</button>
+            <button class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold hover:bg-slate-50" type="button" (click)="clearDonationFilters()">Clear Filters</button>
+          </div>
+        </div>
+        <div class="mt-3 grid gap-2 md:grid-cols-[minmax(0,1fr)_220px_140px]">
+          <input class="rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="Search organization, method, receipt, notes" [ngModel]="donationSearch()" (ngModelChange)="donationSearch.set($event)">
+          <select class="rounded-md border border-slate-300 px-3 py-2 text-sm" [ngModel]="donationReceiptFilter()" (ngModelChange)="setDonationReceiptFilter($event)">
+            <option value="all">All receipts</option>
+            <option value="withReceipt">Receipt on file</option>
+            <option value="missingReceipt">Missing receipt</option>
+          </select>
+          <label class="grid gap-1 text-xs font-bold uppercase text-slate-500">
+            Receipt tax year
+            <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold normal-case text-slate-900" type="number" min="1901" step="1" [ngModel]="receiptReportTaxYear()" (ngModelChange)="setReceiptReportTaxYear($event)">
+          </label>
+        </div>
+      </section>
+
+      <section class="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_340px]">
+        <div class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+          <table class="w-full min-w-[760px] text-sm">
+            <thead class="bg-slate-100 text-xs uppercase text-slate-600">
+              <tr><th class="px-3 py-2 text-left">Date</th><th class="px-3 py-2 text-left">Organization</th><th class="px-3 py-2 text-left">Method</th><th class="px-3 py-2 text-right">Amount</th><th class="px-3 py-2 text-left">Receipt</th><th class="px-3 py-2 text-left">Reference</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let donation of filteredDonations()" class="border-t border-slate-200 hover:bg-slate-50" [class.bg-amber-50]="!donation.hasReceipt">
+                <td class="px-3 py-2">{{ donation.donationDate | date:'M/d/yyyy' }}</td>
+                <td class="px-3 py-2"><button class="font-semibold text-blue-700" type="button" (click)="selectDonation(donation)">{{ donation.organization }}</button></td>
+                <td class="px-3 py-2">{{ donation.method || '' }}</td>
+                <td class="px-3 py-2 text-right font-semibold">{{ money(donation.amount) }}</td>
+                <td class="px-3 py-2">
+                  <span class="rounded-full px-2 py-1 text-xs font-bold" [class.bg-emerald-100]="donation.hasReceipt" [class.text-emerald-700]="donation.hasReceipt" [class.bg-amber-100]="!donation.hasReceipt" [class.text-amber-800]="!donation.hasReceipt">{{ donation.hasReceipt ? 'On file' : 'Needed' }}</span>
+                </td>
+                <td class="px-3 py-2">{{ donation.receiptReference || '' }}</td>
+              </tr>
+              <tr *ngIf="!filteredDonations().length">
+                <td class="px-3 py-4 text-sm text-slate-600" colspan="6">No donations match the current filters.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <aside class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+          <h2 class="text-sm font-bold uppercase text-slate-600">By Organization</h2>
+          <div class="mt-3 grid gap-2">
+            <button *ngFor="let summary of donationOrganizationSummaries()" class="rounded-md border border-slate-200 px-3 py-2 text-left hover:bg-slate-50" type="button" (click)="donationSearch.set(summary.organization)">
+              <span class="flex items-center justify-between gap-2">
+                <span class="text-sm font-bold text-slate-900">{{ summary.organization }}</span>
+                <span class="text-sm font-bold text-emerald-700">{{ money(summary.total) }}</span>
+              </span>
+              <span class="mt-1 block text-xs font-semibold text-slate-500">{{ summary.count }} gifts · missing receipts {{ money(summary.missingReceiptTotal) }}</span>
+            </button>
+            <p *ngIf="!donationOrganizationSummaries().length" class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-600">No donation organizations yet.</p>
+          </div>
+        </aside>
+      </section>
+    </div>
+    <form class="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm" (ngSubmit)="saveDonation()">
+      <h2 class="text-lg font-bold text-slate-950">Donation</h2>
+      <input class="rounded-md border border-slate-300 px-3 py-2 text-sm" type="date" [ngModel]="donationForm().donationDate" (ngModelChange)="setDonationField('donationDate', $event)" name="donationDate">
+      <input class="rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="Organization" [ngModel]="donationForm().organization" (ngModelChange)="setDonationField('organization', $event)" name="organization">
+      <input class="rounded-md border border-slate-300 px-3 py-2 text-sm" type="number" step="0.01" [ngModel]="donationForm().amount" (ngModelChange)="setDonationField('amount', +$event)" name="donationAmount">
+      <input class="rounded-md border border-slate-300 px-3 py-2 text-sm" list="finance-donation-methods" placeholder="Method" [ngModel]="donationForm().method" (ngModelChange)="setDonationField('method', $event)" name="donationMethod">
+      <label class="flex items-center gap-2 text-sm"><input type="checkbox" [ngModel]="donationForm().hasReceipt" (ngModelChange)="setDonationField('hasReceipt', $event)" name="hasReceipt"> Receipt on file</label>
+      <input class="rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="Receipt file path, URL, or note" [ngModel]="donationForm().receiptReference" (ngModelChange)="setDonationField('receiptReference', $event)" name="receiptReference">
+      <textarea class="min-h-20 rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="Notes" [ngModel]="donationForm().notes" (ngModelChange)="setDonationField('notes', $event)" name="donationNotes"></textarea>
+      <div class="flex gap-2">
+        <button class="rounded-md bg-blue-700 px-3 py-2 text-sm font-semibold text-white" type="submit">Save</button>
+        <button class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold" type="button" (click)="donationForm.set(emptyDonationForm())">New</button>
+        <button *ngIf="donationForm().id" class="rounded-md border border-red-300 px-3 py-2 text-sm font-semibold text-red-700" type="button" (click)="deleteDonation()">Delete</button>
+      </div>
+    </form>
+  </section>
+</section>
+

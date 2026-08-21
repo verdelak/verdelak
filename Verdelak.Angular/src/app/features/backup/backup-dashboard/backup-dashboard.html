@@ -1,0 +1,269 @@
+<section class="backup-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Admin</p>
+      <h1>Backup Logs</h1>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="secondary-button" (click)="loadData()" [disabled]="loading() || reportLoading()">Refresh</button>
+      <a class="link-button" routerLink="/backups/schedule">Add backup item</a>
+    </div>
+  </header>
+
+  <div *ngIf="error()" class="alert alert-error">{{ error() }}</div>
+  <div *ngIf="message()" class="alert alert-success">{{ message() }}</div>
+
+  <section class="report-summary" *ngIf="report() as report">
+    <button type="button" class="summary-chip" [class.active]="selectedReportStatus() === 'All'" (click)="selectStatus('All')">
+      <span>All</span>
+      <strong>{{ report.totalJobs }}</strong>
+    </button>
+    <button type="button" class="summary-chip danger" [class.active]="selectedReportStatus() === 'Overdue'" (click)="selectStatus('Overdue')">
+      <span>Overdue</span>
+      <strong>{{ report.overdueJobs }}</strong>
+    </button>
+    <button type="button" class="summary-chip warning" [class.active]="selectedReportStatus() === 'NeverCompleted'" (click)="selectStatus('NeverCompleted')">
+      <span>Never completed</span>
+      <strong>{{ report.neverCompletedJobs }}</strong>
+    </button>
+    <button type="button" class="summary-chip notice" [class.active]="selectedReportStatus() === 'DueSoon'" (click)="selectStatus('DueSoon')">
+      <span>Due soon</span>
+      <strong>{{ report.dueSoonJobs }}</strong>
+    </button>
+    <button type="button" class="summary-chip" [class.active]="selectedReportStatus() === 'UnknownFrequency'" (click)="selectStatus('UnknownFrequency')">
+      <span>Frequency check</span>
+      <strong>{{ report.unknownFrequencyJobs }}</strong>
+    </button>
+    <button type="button" class="summary-chip good" [class.active]="selectedReportStatus() === 'Healthy'" (click)="selectStatus('Healthy')">
+      <span>Healthy</span>
+      <strong>{{ report.healthyJobs }}</strong>
+    </button>
+  </section>
+
+  <div class="dashboard-grid">
+    <section class="panel jobs-panel">
+      <div class="panel-header">
+        <div>
+          <h2>Backup Items</h2>
+          <p>{{ filteredReportItems().length }} shown by current report filter.</p>
+        </div>
+        <label class="compact-field">
+          Due soon window
+          <select name="dueSoonDays" [ngModel]="dueSoonDays()" (ngModelChange)="dueSoonDays.set(+$event); loadReport()">
+            <option [value]="3">3 days</option>
+            <option [value]="7">7 days</option>
+            <option [value]="14">14 days</option>
+            <option [value]="30">30 days</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Source</th>
+              <th>Destination</th>
+              <th>Frequency</th>
+              <th>Last completed</th>
+              <th>Next due</th>
+              <th>Health</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let item of filteredReportItems()"
+              (click)="selectJob(item.backupJobID)"
+              [class.selected]="selectedJobId() === item.backupJobID">
+              <td>
+                <strong>{{ item.sourceName }}</strong>
+                <span>{{ item.sourcePathOrURI }}</span>
+              </td>
+              <td>
+                <strong>{{ item.destinationName }}</strong>
+                <span>{{ item.destinationPathOrURI }}</span>
+              </td>
+              <td>
+                <strong>{{ item.taskTitle || 'No schedule name' }}</strong>
+                <span>{{ item.frequencyLabel }}</span>
+              </td>
+              <td>
+                <strong>{{ item.lastCompletedAt ? (item.lastCompletedAt | date:'mediumDate') : 'Never' }}</strong>
+                <span>{{ item.daysSinceLastCompleted === undefined || item.daysSinceLastCompleted === null ? 'No success logged' : item.daysSinceLastCompleted + ' day(s) ago' }}</span>
+              </td>
+              <td>
+                <strong>{{ item.nextDueAt ? (item.nextDueAt | date:'mediumDate') : 'Unknown' }}</strong>
+                <span>{{ item.daysUntilDue === undefined || item.daysUntilDue === null ? item.healthMessage : item.daysUntilDue + ' day(s)' }}</span>
+              </td>
+              <td>
+                <span class="status-pill" [ngClass]="statusClass(item)">{{ statusLabel(item) }}</span>
+              </td>
+            </tr>
+            <tr *ngIf="!loading() && filteredReportItems().length === 0">
+              <td colspan="6" class="empty">No backup items match this report filter.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <aside class="side-stack">
+      <section class="panel detail-panel" *ngIf="selectedJob() as job">
+        <div class="panel-header stacked">
+          <div>
+            <h2>Log Backup</h2>
+            <p>{{ job.sourceName }} to {{ job.destinationName }}</p>
+          </div>
+          <span class="status-pill" [ngClass]="statusClass(selectedReportItem())">{{ statusLabel(selectedReportItem()) }}</span>
+        </div>
+
+        <div class="selected-health" *ngIf="selectedReportItem() as item">
+          <strong>{{ item.healthMessage }}</strong>
+          <span>Last attempt: {{ item.lastAttemptAt ? (item.lastAttemptAt | date:'medium') : 'None' }}</span>
+        </div>
+
+        <form class="log-form" (ngSubmit)="saveLog()">
+          <label>
+            Date and time
+            <input type="datetime-local" name="timestamp" [(ngModel)]="logForm.timestamp">
+          </label>
+
+          <label class="checkbox-row">
+            <input type="checkbox" name="success" [(ngModel)]="logForm.success">
+            Successful backup
+          </label>
+
+          <label>
+            Notes
+            <textarea name="message" rows="3" [(ngModel)]="logForm.message"></textarea>
+          </label>
+
+          <div class="form-row">
+            <label>
+              Bytes copied
+              <input type="number" min="0" name="bytesCopied" [(ngModel)]="logForm.bytesCopied">
+            </label>
+            <label>
+              Duration seconds
+              <input type="number" min="0" name="durationSeconds" [(ngModel)]="logForm.durationSeconds">
+            </label>
+          </div>
+
+          <button type="submit" class="primary-button" [disabled]="saving()">
+            {{ saving() ? 'Saving...' : 'Save log entry' }}
+          </button>
+        </form>
+      </section>
+
+      <section class="panel report-panel">
+        <h2>Overdue Backups</h2>
+        <ol class="report-list">
+          <li *ngFor="let item of overdueItems()" (click)="selectJob(item.backupJobID)" [class.selected]="selectedJobId() === item.backupJobID">
+            <strong>{{ item.sourceName }}</strong>
+            <span>{{ item.healthMessage }}</span>
+          </li>
+        </ol>
+        <p class="empty" *ngIf="overdueItems().length === 0">No overdue backups right now.</p>
+      </section>
+
+      <section class="panel report-panel">
+        <h2>Last Completed</h2>
+        <ol class="report-list">
+          <li *ngFor="let item of lastCompletedItems()" (click)="selectJob(item.backupJobID)" [class.selected]="selectedJobId() === item.backupJobID">
+            <strong>{{ item.sourceName }}</strong>
+            <span>{{ item.lastCompletedAt | date:'medium' }}</span>
+          </li>
+        </ol>
+        <p class="empty" *ngIf="lastCompletedItems().length === 0">No successful backups have been logged.</p>
+      </section>
+
+      <section class="panel report-panel">
+        <h2>Frequency Health</h2>
+        <ol class="report-list">
+          <li *ngFor="let item of frequencyHealthItems()" (click)="selectJob(item.backupJobID)" [class.selected]="selectedJobId() === item.backupJobID">
+            <strong>{{ item.sourceName }}</strong>
+            <span>{{ item.frequencyLabel }} - {{ item.healthMessage }}</span>
+          </li>
+        </ol>
+        <p class="empty" *ngIf="frequencyHealthItems().length === 0">No frequency health issues to review.</p>
+      </section>
+
+      <section class="panel report-panel">
+        <div class="panel-header">
+          <div>
+            <h2>Master Schedule Preview</h2>
+            <p>Next 30 days of generated Backup occurrences.</p>
+          </div>
+          <button type="button" class="secondary-button" (click)="loadSchedule()" [disabled]="scheduleLoading()">{{ scheduleLoading() ? 'Refreshing...' : 'Refresh' }}</button>
+        </div>
+        <ol class="report-list">
+          <li *ngFor="let item of backupSchedule().slice(0, 8)">
+            <div>
+              <strong>{{ item.title }}</strong>
+              <span>Due {{ item.scheduledDate | date:'mediumDate' }}</span>
+            </div>
+            <span class="status-pill" [ngClass]="activityStatusClass(item.status)">{{ item.status }}</span>
+            <app-schedule-actions
+              [capabilities]="scheduleCapabilities(item)"
+              [actionDisabled]="isBackupScheduleAction(item)"
+              [moving]="isMovingBackupOccurrence(item)"
+              [moveDate]="scheduleMoveDate()"
+              [showActionNotes]="true"
+              [actionNote]="scheduleActionNote()"
+              moveButtonClass="rounded bg-slate-900 px-3 py-1.5 text-xs font-bold text-white disabled:opacity-50"
+              (complete)="completeBackupOccurrence(item, $event)"
+              (startMove)="startMoveBackupOccurrence(item)"
+              (skip)="skipBackupOccurrence(item, $event)"
+              (reopen)="reopenBackupOccurrence(item, $event)"
+              (moveDateChange)="scheduleMoveDate.set($event)"
+              (actionNoteChange)="scheduleActionNote.set($event)"
+              (move)="moveBackupOccurrence(item, $event)"
+              (cancelMove)="cancelMoveBackupOccurrence()" />
+          </li>
+        </ol>
+        <p class="empty" *ngIf="!scheduleLoading() && backupSchedule().length === 0">No Backup occurrences generated for the next 30 days.</p>
+        <p class="empty" *ngIf="!scheduleLoading() && backupSchedule().length > 8">Showing first 8 of {{ backupSchedule().length }} Backup rows. Open Master Schedule for the full range.</p>
+      </section>
+      <section class="panel report-panel">
+        <div class="panel-header">
+          <div>
+            <h2>Schedule Activity</h2>
+            <p>Master Schedule actions reflected for backup tasks.</p>
+          </div>
+          <button type="button" class="secondary-button" (click)="loadActivity()">Refresh</button>
+        </div>
+        <ol class="report-list">
+          <li *ngFor="let item of activity().slice(0, 8)">
+            <div>
+              <strong>{{ item.taskTitle }}</strong>
+              <span>Due {{ item.scheduledDate | date:'mediumDate' }}</span>
+            </div>
+            <span class="status-pill" [ngClass]="activityStatusClass(item.status)">{{ item.status }}</span>
+            <p *ngIf="item.notes">{{ item.notes }}</p>
+            <p *ngIf="!item.notes">{{ activityWhen(item) | date:'medium' }}</p>
+          </li>
+        </ol>
+        <p class="empty" *ngIf="activity().length === 0">No recent backup schedule activity.</p>
+      </section>
+
+      <section class="panel history" *ngIf="selectedJob()">
+        <h2>Recent Logs</h2>
+        <ol>
+          <li *ngFor="let log of logs()">
+            <div>
+              <strong>{{ log.timestamp | date:'medium' }}</strong>
+              <span [class.success]="log.success" [class.failed]="!log.success">
+                {{ log.success ? 'Success' : 'Failed' }}
+              </span>
+            </div>
+            <p *ngIf="log.message">{{ log.message }}</p>
+          </li>
+        </ol>
+        <p class="empty" *ngIf="logs().length === 0">No logs have been recorded for this item.</p>
+      </section>
+    </aside>
+  </div>
+</section>
+
+
+

@@ -1,0 +1,120 @@
+<section class="overflow-hidden rounded border border-emerald-200 bg-white shadow-sm" *ngIf="comparison as comparison">
+  <div class="flex flex-wrap items-end justify-between gap-3 border-b border-emerald-100 bg-emerald-50 px-4 py-3">
+    <div>
+      <p class="text-xs font-black uppercase text-emerald-700">Season Comparison</p>
+      <h2 class="text-lg font-bold text-slate-950">{{ comparison.year }} vs {{ comparison.compareYear }}</h2>
+      <p class="text-sm text-slate-600">High-level planning, planting, and harvest changes across garden years.</p>
+    </div>
+    <div class="flex flex-wrap items-end gap-2">
+      <label class="grid gap-1 text-sm font-bold text-slate-700">
+        Compare To
+        <input type="number" min="2000" max="2100" step="1" class="w-28 rounded border border-emerald-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="comparisonYear" (ngModelChange)="comparisonYearChange.emit($event)">
+      </label>
+      <button type="button" class="rounded border border-emerald-700 bg-white px-3 py-2 text-sm font-black text-emerald-900 disabled:opacity-50" [disabled]="loading" (click)="refresh.emit()">
+        {{ loading ? 'Loading.' : 'Refresh' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="grid gap-3 border-b border-emerald-100 p-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
+    <div class="rounded border border-slate-200 bg-slate-50 p-3">
+      <div class="text-xs font-black uppercase text-slate-500">Crops</div>
+      <div class="text-2xl font-black text-slate-950">{{ comparison.current.cropCount }}</div>
+      <div class="text-xs font-black" [ngClass]="deltaTone(comparison.delta.cropCount)">{{ formatDelta(comparison.delta.cropCount) }}</div>
+    </div>
+    <div class="rounded border border-violet-200 bg-violet-50 p-3">
+      <div class="text-xs font-black uppercase text-violet-700">Tray Cells</div>
+      <div class="text-2xl font-black text-violet-950">{{ comparison.current.trayCells }}</div>
+      <div class="text-xs font-black" [ngClass]="deltaTone(comparison.delta.trayCells)">{{ formatDelta(comparison.delta.trayCells) }}</div>
+    </div>
+    <div class="rounded border border-teal-200 bg-teal-50 p-3">
+      <div class="text-xs font-black uppercase text-teal-700">Bed Cells</div>
+      <div class="text-2xl font-black text-teal-950">{{ comparison.current.bedCells }}</div>
+      <div class="text-xs font-black" [ngClass]="deltaTone(comparison.delta.bedCells)">{{ formatDelta(comparison.delta.bedCells) }}</div>
+    </div>
+    <div class="rounded border border-lime-200 bg-lime-50 p-3">
+      <div class="text-xs font-black uppercase text-lime-700">Success</div>
+      <div class="text-2xl font-black text-lime-950">{{ comparison.current.successfulPlantings }}</div>
+      <div class="text-xs font-black" [ngClass]="deltaTone(comparison.delta.successfulPlantings)">{{ formatDelta(comparison.delta.successfulPlantings) }}</div>
+    </div>
+    <div class="rounded border border-amber-200 bg-amber-50 p-3">
+      <div class="text-xs font-black uppercase text-amber-700">Planned Qty</div>
+      <div class="text-2xl font-black text-amber-950">{{ comparison.current.plannedQuantity }}</div>
+      <div class="text-xs font-black" [ngClass]="deltaTone(comparison.delta.plannedQuantity)">{{ formatDelta(comparison.delta.plannedQuantity) }}</div>
+    </div>
+    <div class="rounded border border-orange-200 bg-orange-50 p-3">
+      <div class="text-xs font-black uppercase text-orange-700">Harvests</div>
+      <div class="text-2xl font-black text-orange-950">{{ comparison.current.harvestEntries }}</div>
+      <div class="text-xs font-black" [ngClass]="deltaTone(comparison.delta.harvestEntries)">{{ formatDelta(comparison.delta.harvestEntries) }}</div>
+    </div>
+    <div class="rounded border border-rose-200 bg-rose-50 p-3">
+      <div class="text-xs font-black uppercase text-rose-700">Harvest Qty</div>
+      <div class="text-2xl font-black text-rose-950">{{ comparison.current.harvestQuantity | number:'1.0-2' }}</div>
+      <div class="text-xs font-black" [ngClass]="deltaTone(comparison.delta.harvestQuantity)">{{ formatDelta(comparison.delta.harvestQuantity) }}</div>
+    </div>
+  </div>
+
+  <div class="grid gap-4 p-4 xl:grid-cols-2">
+    <section class="overflow-hidden rounded border border-slate-200 bg-white">
+      <div class="border-b border-slate-200 bg-slate-50 px-3 py-2">
+        <h3 class="text-sm font-black uppercase text-slate-800">By Crop</h3>
+        <p class="text-xs font-semibold text-slate-500">Top current-year crops by harvest and planned quantity.</p>
+      </div>
+      <div class="overflow-auto">
+        <table class="min-w-full divide-y divide-slate-200 text-sm">
+          <thead class="bg-white text-left text-xs font-bold uppercase text-slate-500">
+            <tr>
+              <th class="px-3 py-2">Crop</th>
+              <th class="px-3 py-2">Tray</th>
+              <th class="px-3 py-2">Bed</th>
+              <th class="px-3 py-2">Qty</th>
+              <th class="px-3 py-2">Harvest</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <tr *ngFor="let crop of topCropComparisons">
+              <td class="px-3 py-2 font-bold text-slate-950">{{ crop.seedName }}</td>
+              <td class="px-3 py-2 text-slate-700">{{ crop.currentTrayCells }} <span class="text-xs" [ngClass]="deltaTone(crop.currentTrayCells - crop.previousTrayCells)">({{ formatDelta(crop.currentTrayCells - crop.previousTrayCells) }})</span></td>
+              <td class="px-3 py-2 text-slate-700">{{ crop.currentBedCells }} <span class="text-xs" [ngClass]="deltaTone(crop.currentBedCells - crop.previousBedCells)">({{ formatDelta(crop.currentBedCells - crop.previousBedCells) }})</span></td>
+              <td class="px-3 py-2 text-slate-700">{{ crop.currentPlannedQuantity }} <span class="text-xs" [ngClass]="deltaTone(crop.currentPlannedQuantity - crop.previousPlannedQuantity)">({{ formatDelta(crop.currentPlannedQuantity - crop.previousPlannedQuantity) }})</span></td>
+              <td class="px-3 py-2 text-slate-700">{{ crop.currentHarvestQuantity | number:'1.0-2' }} <span class="text-xs" [ngClass]="deltaTone(crop.currentHarvestQuantity - crop.previousHarvestQuantity)">({{ formatDelta(crop.currentHarvestQuantity - crop.previousHarvestQuantity) }})</span></td>
+            </tr>
+            <tr *ngIf="topCropComparisons.length === 0">
+              <td colspan="5" class="px-3 py-6 text-center text-sm text-slate-500">No crop comparison rows yet.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="overflow-hidden rounded border border-slate-200 bg-white">
+      <div class="border-b border-slate-200 bg-slate-50 px-3 py-2">
+        <h3 class="text-sm font-black uppercase text-slate-800">By Garden Area</h3>
+        <p class="text-xs font-semibold text-slate-500">Bed planning and harvest differences by area.</p>
+      </div>
+      <div class="overflow-auto">
+        <table class="min-w-full divide-y divide-slate-200 text-sm">
+          <thead class="bg-white text-left text-xs font-bold uppercase text-slate-500">
+            <tr>
+              <th class="px-3 py-2">Area</th>
+              <th class="px-3 py-2">Bed</th>
+              <th class="px-3 py-2">Qty</th>
+              <th class="px-3 py-2">Harvest</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <tr *ngFor="let area of topAreaComparisons">
+              <td class="px-3 py-2 font-bold text-slate-950">{{ area.gardenPlotName }}</td>
+              <td class="px-3 py-2 text-slate-700">{{ area.currentBedCells }} <span class="text-xs" [ngClass]="deltaTone(area.currentBedCells - area.previousBedCells)">({{ formatDelta(area.currentBedCells - area.previousBedCells) }})</span></td>
+              <td class="px-3 py-2 text-slate-700">{{ area.currentPlannedQuantity }} <span class="text-xs" [ngClass]="deltaTone(area.currentPlannedQuantity - area.previousPlannedQuantity)">({{ formatDelta(area.currentPlannedQuantity - area.previousPlannedQuantity) }})</span></td>
+              <td class="px-3 py-2 text-slate-700">{{ area.currentHarvestQuantity | number:'1.0-2' }} <span class="text-xs" [ngClass]="deltaTone(area.currentHarvestQuantity - area.previousHarvestQuantity)">({{ formatDelta(area.currentHarvestQuantity - area.previousHarvestQuantity) }})</span></td>
+            </tr>
+            <tr *ngIf="topAreaComparisons.length === 0">
+              <td colspan="4" class="px-3 py-6 text-center text-sm text-slate-500">No garden area comparison rows yet.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</section>

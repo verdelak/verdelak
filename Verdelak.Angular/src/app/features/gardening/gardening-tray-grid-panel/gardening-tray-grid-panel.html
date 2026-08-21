@@ -1,0 +1,238 @@
+  <section class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
+    <article class="overflow-hidden rounded border border-slate-200 bg-white shadow-sm">
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3">
+        <div>
+          <h2 class="text-lg font-bold text-slate-950">{{ vm.selectedTrayName() }}</h2>
+          <p class="text-sm text-slate-600">
+            <ng-container *ngIf="vm.selectedTray()?.dimensions as dimensions; else noDimensions">
+              {{ dimensions.slotsDeep }} rows x {{ dimensions.slotsWide }} columns
+            </ng-container>
+            <ng-template #noDimensions>No tray dimensions yet.</ng-template>
+          </p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="rounded border border-emerald-200 bg-white px-2 py-1 text-xs font-bold text-emerald-800">{{ vm.selectedTrayPlanningLabel() }}</span>
+          <span class="rounded border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-bold text-amber-800">{{ vm.selectedTrayPlannedCount() }} planned</span>
+          <span class="rounded border border-sky-200 bg-sky-50 px-2 py-1 text-xs font-bold text-sky-800">{{ vm.selectedTrayStartedCount() }} started</span>
+          <span class="rounded border border-emerald-200 bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-800">{{ vm.selectedTraySuccessCount() }} success</span>
+          <div class="flex rounded border border-slate-300 bg-white p-1">
+            <button type="button" class="rounded px-3 py-1.5 text-xs font-black transition" [ngClass]="vm.trayAssignmentMode() === 'select' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'" (click)="vm.setTrayAssignmentMode('select')">Select</button>
+            <button type="button" class="rounded px-3 py-1.5 text-xs font-black transition" [ngClass]="vm.trayAssignmentMode() === 'paint' ? 'bg-emerald-800 text-white' : 'text-slate-600 hover:bg-slate-100'" (click)="vm.setTrayAssignmentMode('paint')">Paint</button>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="vm.trayRows().length; else emptyTray" class="overflow-auto p-4">
+        <div *ngIf="vm.trayAssignmentMode() === 'paint'" class="mb-3 rounded border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-900">
+          Painting {{ vm.selectedAssignmentSeedName() }}. Click tray cells to apply the current seed, date, and status.
+        </div>
+        <div class="garden-tray-grid" [style.--garden-columns]="vm.selectedTrayColumnCount()">
+          <div class="garden-header-cell"></div>
+          <div *ngFor="let cell of vm.trayRows()[0]" class="garden-header-cell">{{ cell.column }}</div>
+
+          <ng-container *ngFor="let row of vm.trayRows()">
+            <div class="garden-header-cell">{{ row[0].row }}</div>
+            <button *ngFor="let cell of row" type="button" class="garden-cell rounded border p-2 text-left transition hover:ring-2 hover:ring-emerald-200" [ngClass]="vm.cellTone(cell)" [title]="cell.plant ? (cell.label + ' ' + (cell.plant.seedName || 'Unknown seed')) : cell.label + ' empty'" (click)="vm.selectCell(cell)">
+              <span class="block text-[0.65rem] font-bold uppercase text-slate-500">{{ cell.label }}</span>
+              <span class="mt-1 block text-sm font-black">{{ cell.code || '-' }}</span>
+              <span *ngIf="cell.plant" class="mt-1 block truncate text-xs font-semibold">{{ cell.plant.seedName || 'Unknown seed' }}</span>
+            </button>
+          </ng-container>
+        </div>
+      </div>
+
+      <ng-template #emptyTray>
+        <div class="p-8 text-center text-sm text-slate-500">
+          {{ vm.loading() ? 'Loading tray.' : 'No tray grid is ready yet. Add a tray and dimensions through the API/Admin flow next.' }}
+        </div>
+      </ng-template>
+    </article>
+
+    <aside class="grid content-start gap-4">
+      <section class="rounded border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="mb-3 flex items-center justify-between gap-2">
+          <h2 class="text-lg font-bold text-slate-950">Selected Cell</h2>
+          <span class="rounded border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-black text-slate-700">{{ vm.selectedCell()?.label || '-' }}</span>
+        </div>
+
+        <ng-container *ngIf="vm.selectedCell(); else chooseCell">
+          <div class="grid gap-3">
+            <div class="rounded border border-slate-200 bg-slate-50 p-3">
+              <div class="text-xs font-black uppercase text-slate-500">Assignment Brush</div>
+              <div class="mt-1 text-sm font-bold text-slate-900">{{ vm.selectedAssignmentSeedName() }}</div>
+              <div class="mt-1 text-xs font-semibold text-slate-500">{{ vm.trayAssignmentMode() === 'paint' ? 'Paint mode applies this brush when a cell is clicked.' : 'Select mode edits the highlighted cell.' }}</div>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <button type="button" class="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-black text-slate-700 disabled:opacity-50" [disabled]="!vm.assignmentForm().seedId" (click)="vm.useSelectedSeedDefaultDate()">Use seed date</button>
+                <button type="button" class="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-black text-slate-700" (click)="vm.clearAssignmentBrush()">Clear brush</button>
+              </div>
+            </div>
+
+            <label class="grid gap-1 text-sm font-bold text-slate-700">
+              Seed
+              <select class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="vm.assignmentForm().seedId" (ngModelChange)="vm.setAssignmentSeed($event)">
+                <option [ngValue]="null">Choose seed</option>
+                <option *ngFor="let seed of vm.sortedSeeds()" [ngValue]="seed.id">{{ seed.name }}</option>
+              </select>
+            </label>
+
+            <label class="grid gap-1 text-sm font-bold text-slate-700">
+              Plant date
+              <input type="date" class="rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="vm.assignmentForm().plantDate" (ngModelChange)="vm.setAssignmentDate($event)">
+            </label>
+
+            <div class="flex flex-wrap gap-2">
+              <button type="button" class="rounded border px-3 py-2 text-xs font-black transition" [ngClass]="vm.assignmentForm().planning ? 'border-amber-300 bg-amber-50 text-amber-900' : 'border-slate-200 bg-white text-slate-700'" (click)="vm.setAssignmentStatus('planned')">Planned</button>
+              <button type="button" class="rounded border px-3 py-2 text-xs font-black transition" [ngClass]="!vm.assignmentForm().planning && !vm.assignmentForm().success ? 'border-sky-300 bg-sky-50 text-sky-900' : 'border-slate-200 bg-white text-slate-700'" (click)="vm.setAssignmentStatus('started')">Started</button>
+              <button type="button" class="rounded border px-3 py-2 text-xs font-black transition" [ngClass]="vm.assignmentForm().success ? 'border-emerald-300 bg-emerald-50 text-emerald-900' : 'border-slate-200 bg-white text-slate-700'" (click)="vm.setAssignmentStatus('success')">Success</button>
+            </div>
+
+
+  
+          <div class="grid grid-cols-2 gap-2">
+              <label class="flex items-center gap-2 rounded border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-bold text-slate-700">
+                <input type="checkbox" class="h-4 w-4 rounded border-slate-300 text-emerald-700" [ngModel]="vm.assignmentForm().planning" (ngModelChange)="vm.setAssignmentPlanning($event)">
+                Planned
+              </label>
+              <label class="flex items-center gap-2 rounded border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-bold text-slate-700">
+                <input type="checkbox" class="h-4 w-4 rounded border-slate-300 text-emerald-700" [ngModel]="vm.assignmentForm().success" (ngModelChange)="vm.setAssignmentSuccess($event)">
+                Success
+              </label>
+            </div>
+
+            <div class="flex flex-wrap gap-2">
+              <button type="button" class="rounded bg-emerald-900 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" [disabled]="vm.savingAssignment()" (click)="vm.saveAssignment()">
+                {{ vm.selectedAssignment() ? 'Save Cell' : 'Assign Seed' }}
+              </button>
+              <button type="button" class="rounded border border-emerald-200 bg-white px-4 py-2 text-sm font-bold text-emerald-800 disabled:opacity-50" [disabled]="vm.savingAssignment() || !vm.selectedAssignment()" (click)="vm.copySelectedAssignment()">
+                Copy Cell
+              </button>
+              <button type="button" class="rounded border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 disabled:opacity-50" [disabled]="vm.savingAssignment()" (click)="vm.clearAssignment()">
+                Clear
+              </button>
+            </div>
+
+            <div class="rounded border border-slate-200 bg-white p-3">
+              <div class="text-xs font-black uppercase text-slate-500">Grid Actions</div>
+              <div class="mt-2 flex flex-wrap gap-2">
+                <button type="button" class="rounded border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-black text-emerald-800 disabled:opacity-50" [disabled]="vm.savingAssignment() || !vm.assignmentForm().seedId" (click)="vm.fillSelectedRow()">Fill Row</button>
+                <button type="button" class="rounded border border-emerald-200 bg-white px-3 py-2 text-xs font-black text-emerald-800 disabled:opacity-50" [disabled]="vm.savingAssignment() || !vm.assignmentForm().seedId" (click)="vm.fillSelectedRowEmpty()">Fill Empty Row</button>
+                <button type="button" class="rounded border border-rose-200 bg-white px-3 py-2 text-xs font-black text-rose-700 disabled:opacity-50" [disabled]="vm.savingAssignment()" (click)="vm.clearSelectedRow()">Clear Row</button>
+                <button type="button" class="rounded border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-black text-emerald-800 disabled:opacity-50" [disabled]="vm.savingAssignment() || !vm.assignmentForm().seedId" (click)="vm.fillSelectedColumn()">Fill Column</button>
+                <button type="button" class="rounded border border-emerald-200 bg-white px-3 py-2 text-xs font-black text-emerald-800 disabled:opacity-50" [disabled]="vm.savingAssignment() || !vm.assignmentForm().seedId" (click)="vm.fillSelectedColumnEmpty()">Fill Empty Column</button>
+                <button type="button" class="rounded border border-rose-200 bg-white px-3 py-2 text-xs font-black text-rose-700 disabled:opacity-50" [disabled]="vm.savingAssignment()" (click)="vm.clearSelectedColumn()">Clear Column</button>
+                <button type="button" class="rounded border border-fuchsia-200 bg-fuchsia-50 px-3 py-2 text-xs font-black text-fuchsia-800 disabled:opacity-50" [disabled]="vm.savingAssignment() || !(vm.assignmentForm().seedId || vm.selectedLegendSeedId())" (click)="vm.clearSelectedSeedFromTray()">Clear Seed</button>
+              </div>
+            </div>
+
+            <p *ngIf="vm.assignmentMessage()" class="rounded border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700">{{ vm.assignmentMessage() }}</p>
+          </div>
+        </ng-container>
+
+        <ng-template #chooseCell>
+          <div class="grid gap-3">
+            <p class="text-sm text-slate-500">Select a tray cell to edit it, or switch to Paint after choosing a seed from the legend.</p>
+            <label class="grid gap-1 text-sm font-bold text-slate-700">
+              Seed brush
+              <select class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="vm.assignmentForm().seedId" (ngModelChange)="vm.setAssignmentSeed($event)">
+                <option [ngValue]="null">Choose seed</option>
+                <option *ngFor="let seed of vm.sortedSeeds()" [ngValue]="seed.id">{{ seed.name }}</option>
+              </select>
+            </label>
+  
+          <div class="grid grid-cols-2 gap-2">
+              <button type="button" class="rounded bg-emerald-900 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" [disabled]="!vm.assignmentForm().seedId" (click)="vm.setTrayAssignmentMode('paint')">Start Painting</button>
+              <button type="button" class="rounded border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700" (click)="vm.clearAssignmentBrush()">Clear Brush</button>
+            </div>
+          </div>
+        </ng-template>
+      </section>
+
+      <section class="rounded border border-violet-100 bg-violet-50 p-4 shadow-sm">
+        <div class="mb-3">
+          <h2 class="text-lg font-bold text-violet-950">Copy Tray Year</h2>
+          <p class="text-xs font-semibold text-violet-800">Copy tray assignments into a new season as planned, not successful.</p>
+        </div>
+        <div class="grid gap-3">
+
+          <div class="flex flex-wrap gap-2">
+            <button type="button" class="rounded border border-violet-200 bg-white px-2 py-1 text-xs font-black text-violet-900" (click)="vm.useNextYearForTrayCopy()">Use {{ vm.selectedYear() }} to {{ vm.selectedYear() + 1 }}</button>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <label class="grid gap-1 text-sm font-bold text-slate-700">
+              From
+              <input type="number" min="2000" max="2100" class="rounded border border-violet-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="vm.trayCopyFromYear()" (ngModelChange)="vm.setTrayCopyFromYear($event)">
+            </label>
+            <label class="grid gap-1 text-sm font-bold text-slate-700">
+              To
+              <input type="number" min="2000" max="2100" class="rounded border border-violet-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="vm.trayCopyToYear()" (ngModelChange)="vm.setTrayCopyToYear($event)">
+            </label>
+          </div>
+          <select class="rounded border border-violet-200 bg-white px-3 py-2 text-sm font-bold text-slate-700" [ngModel]="vm.trayCopyScope()" (ngModelChange)="vm.setTrayCopyScope($event)">
+            <option value="selected">Selected tray only</option>
+            <option value="all">All trays</option>
+          </select>
+          <label class="flex items-center gap-2 rounded border border-violet-200 bg-white px-3 py-2 text-xs font-black text-violet-900">
+            <input type="checkbox" class="h-4 w-4" [ngModel]="vm.trayCopyOverwrite()" (ngModelChange)="vm.setTrayCopyOverwrite($event)">
+            Replace existing target-year tray cells
+          </label>
+          <div *ngIf="vm.trayCopyPreview() as preview" class="grid grid-cols-2 gap-2 rounded border border-violet-200 bg-white p-3 text-xs font-black text-slate-700">
+            <span class="rounded bg-violet-50 px-2 py-1 text-violet-800">Source {{ preview.sourceCount }}</span>
+            <span class="rounded bg-slate-50 px-2 py-1 text-slate-700">Target {{ preview.existingTargetCount }}</span>
+            <span class="rounded bg-emerald-50 px-2 py-1 text-emerald-800">Will copy {{ preview.willCopy }}</span>
+            <span class="rounded bg-amber-50 px-2 py-1 text-amber-800">Will skip {{ preview.willSkip }}</span>
+            <span *ngIf="preview.willDelete > 0" class="col-span-2 rounded bg-rose-50 px-2 py-1 text-rose-700">Will delete {{ preview.willDelete }} target rows before copying</span>
+          </div>
+          <div *ngIf="vm.trayCopyResult() as result" class="grid grid-cols-3 gap-2 rounded border border-violet-200 bg-white p-3 text-xs font-black text-slate-700">
+            <span class="rounded bg-emerald-50 px-2 py-1 text-emerald-800">Copied {{ result.copied }}</span>
+            <span class="rounded bg-amber-50 px-2 py-1 text-amber-800">Skipped {{ result.skipped }}</span>
+            <span class="rounded bg-rose-50 px-2 py-1 text-rose-700">Replaced {{ result.deletedExisting }}</span>
+          </div>
+          <div class="grid gap-2 sm:grid-cols-3">
+            <button type="button" class="rounded border border-violet-700 bg-white px-4 py-2 text-sm font-black text-violet-900 disabled:opacity-50" [disabled]="vm.previewingTrayCopy() || vm.copyingTrayYear()" (click)="vm.previewTrayYear()">
+              {{ vm.previewingTrayCopy() ? 'Previewing.' : 'Preview Copy' }}
+            </button>
+            <button type="button" class="rounded bg-violet-800 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" [disabled]="vm.copyingTrayYear() || vm.previewingTrayCopy()" (click)="vm.copyTrayYear()">
+              {{ vm.copyingTrayYear() ? 'Copying.' : 'Copy Tray Assignments' }}
+            </button>
+            <button type="button" class="rounded border border-violet-200 bg-white px-4 py-2 text-sm font-black text-violet-900 disabled:opacity-50" [disabled]="!vm.trayCopyPreview() && !vm.trayCopyResult()" (click)="vm.downloadTrayCopyReportCsv()">Report CSV</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="rounded border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="mb-3 flex items-center justify-between gap-2">
+          <h2 class="text-lg font-bold text-slate-950">Legend</h2>
+          <div class="flex items-center gap-2">
+            <button *ngIf="vm.selectedLegendSeedId()" type="button" class="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-black text-slate-700 hover:bg-slate-50" (click)="vm.clearLegendFocus()">Show All</button>
+            <span class="text-xs font-bold uppercase text-slate-500">{{ vm.trayLegend().length }} seeds</span>
+          </div>
+        </div>
+        <div class="grid gap-2">
+        <article *ngFor="let item of vm.trayLegend()" class="rounded border p-3 transition" [ngClass]="vm.selectedLegendSeedId() === item.seedId ? 'border-fuchsia-300 bg-fuchsia-50 shadow-sm' : 'border-slate-200 bg-slate-50'">
+          <div class="flex items-start justify-between gap-3">
+            <button type="button" class="min-w-0 text-left" (click)="vm.focusLegendSeed(item)" title="Highlight this seed in the tray grid">
+              <div class="flex items-center gap-2">
+                <span class="rounded border border-emerald-200 bg-white px-2 py-1 text-sm font-black text-emerald-800">{{ item.code }}</span>
+                <span class="truncate font-bold text-slate-950">{{ item.seedName }}</span>
+              </div>
+              <div class="mt-1 text-xs font-semibold text-slate-500">First planted {{ vm.formatDate(item.firstPlantDate) }}</div>
+            </button>
+            <button type="button" class="rounded border border-emerald-200 bg-white px-2 py-1 text-xs font-black text-emerald-800 transition hover:bg-emerald-50" (click)="vm.useSeedFromLegend(item)" title="Use this seed as the tray painting brush">Paint</button>
+          </div>
+          <div class="mt-2 grid grid-cols-4 gap-1 text-center text-[0.7rem] font-black text-slate-600">
+            <span class="rounded bg-white px-1.5 py-1">{{ item.count }} cells</span>
+            <span class="rounded bg-sky-50 px-1.5 py-1 text-sky-800">{{ item.plantedCount }} planted</span>
+            <span class="rounded bg-emerald-50 px-1.5 py-1 text-emerald-800">{{ item.successCount }} success</span>
+            <span class="rounded bg-amber-50 px-1.5 py-1 text-amber-800">{{ item.planningCount }} planned</span>
+          </div>
+          <div class="mt-2 flex max-h-24 flex-wrap gap-1 overflow-auto rounded border border-slate-200 bg-white p-2">
+            <button *ngFor="let slotId of item.slotIds; let i = index" type="button" class="rounded border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-black text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50" (click)="vm.selectTraySlot(slotId)" title="Open this tray cell">
+              {{ item.slotLabels[i] }}
+            </button>
+          </div>
+        </article>
+        <p *ngIf="vm.trayLegend().length === 0" class="text-sm text-slate-500">No seed assignments for this year yet.</p>
+      </div>
+      </section>
+

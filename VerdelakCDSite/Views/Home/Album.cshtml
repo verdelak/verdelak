@@ -1,0 +1,59 @@
+@model AlbumDetailViewModel
+
+@{
+    ViewData["Title"] = Model.Album?.Title ?? "CD Details";
+}
+
+<div class="mb-4">
+    <a class="btn btn-outline-secondary" asp-controller="Home" asp-action="Index">Back to collection</a>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+{
+    <div class="alert alert-warning" role="alert">@Model.ErrorMessage</div>
+}
+
+@if (Model.Album is not null)
+{
+    <section class="border rounded-3 bg-white p-4 p-lg-5 mb-4">
+        <p class="text-uppercase fw-semibold text-primary mb-2">@Model.Album.Artist.Artist</p>
+        <h1 class="display-6 fw-semibold mb-3">@Model.Album.Title</h1>
+        @if (Model.Album.ReleaseDate is not null)
+        {
+            <p class="text-secondary">Released @Model.Album.ReleaseDate.Value.ToString("MMMM d, yyyy")</p>
+        }
+        @if (!string.IsNullOrWhiteSpace(Model.Album.InfoText))
+        {
+            <p class="lead">@Model.Album.InfoText</p>
+        }
+        @if (!string.IsNullOrWhiteSpace(Model.Album.AdditionalInfo))
+        {
+            <p class="text-secondary mb-0">@Model.Album.AdditionalInfo</p>
+        }
+    </section>
+
+    <section class="py-3">
+        <h2 class="h3 mb-3">Reviews</h2>
+        @if (Model.Album.Reviews.Count == 0)
+        {
+            <div class="border rounded-3 bg-white p-4 text-secondary">No reviews have been added for this CD yet.</div>
+        }
+        else
+        {
+            <div class="row g-3">
+                @foreach (var review in Model.Album.Reviews)
+                {
+                    <div class="col-lg-6">
+                        <article class="review-card h-100 border rounded-3 bg-white p-3">
+                            <div class="d-flex align-items-center justify-content-between gap-3 mb-2">
+                                <span class="badge text-bg-primary">@review.Rating / 5</span>
+                                <span class="text-secondary small">@review.CreatedAt.ToString("MMM d, yyyy")</span>
+                            </div>
+                            <p class="mb-0">@review.Text</p>
+                        </article>
+                    </div>
+                }
+            </div>
+        }
+    </section>
+}

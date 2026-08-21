@@ -1,0 +1,521 @@
+<section class="mx-auto grid w-full max-w-7xl gap-4 px-4 py-4">
+  <header class="flex flex-col gap-3 border-b border-slate-200 pb-4 md:flex-row md:items-end md:justify-between">
+    <div>
+      <p class="text-xs font-bold uppercase tracking-wide text-blue-600">Inventory</p>
+      <h1 class="mt-1 text-2xl font-bold text-slate-950">{{ titleText() }}</h1>
+      <p class="mt-1 text-sm text-slate-600">{{ total() | number }} {{ statusLabel() }} item{{ total() === 1 ? '' : 's' }}</p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <a *ngIf="routeMode() !== 'want-list'" routerLink="/software/want-list" class="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-bold text-amber-800 shadow-sm transition hover:bg-amber-100">Want list</a>
+      <a *ngIf="routeMode() === 'want-list'" routerLink="/software" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50">All software</a>
+      <button type="button" class="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-bold text-emerald-800 shadow-sm transition hover:bg-emerald-100" (click)="exportWantedCsv()">Export want-list report</button>
+      <button *ngIf="routeMode() === 'want-list'" type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="printWantedReport()">Print report</button>
+      <a *ngIf="canManageSettings()" routerLink="/admin/settings" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50">Manage platforms/locations</a>
+      <button *ngIf="canManage()" type="button" class="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-bold text-blue-800 shadow-sm transition hover:bg-blue-100" (click)="openImportPanel()">Bulk import</button>
+      <button *ngIf="canManage()" type="button" class="rounded-md bg-blue-600 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700" (click)="startNew()">New software</button>
+    </div>
+  </header>
+
+  <div *ngIf="error()" class="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-800">{{ error() }}</div>
+  <div *ngIf="message()" class="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800">{{ message() }}</div>
+
+  <section *ngIf="canManage() && importPanelOpen()" class="grid gap-4 rounded-lg border border-blue-200 bg-blue-50/40 p-4 shadow-sm">
+    <div class="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+      <div>
+        <h2 class="text-lg font-bold text-slate-950">Bulk Import Software</h2>
+        <p class="mt-1 text-sm text-slate-600">Paste one item per line. Rows can be title only, or separated by tabs, commas, or pipes with location/status/platform values.</p>
+      </div>
+      <button type="button" class="w-fit rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="closeImportPanel()">Close</button>
+    </div>
+
+    <div class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_20rem]">
+      <label class="grid gap-1 text-sm font-semibold text-slate-700">
+        Paste rows
+        <textarea class="min-h-56 rounded-md border border-slate-300 bg-white px-3 py-2 font-mono text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="importText()" (ngModelChange)="setImportText($event)" [ngModelOptions]="{standalone: true}" placeholder="Dark Future: Blood Red States&#10;Project Highrise | GOG | Have&#10;Fallout 4, Steam, Want"></textarea>
+      </label>
+
+      <div class="grid content-start gap-3 rounded-md border border-slate-200 bg-white p-3">
+        <label class="grid gap-1 text-sm font-semibold text-slate-700">Default platform
+          <select class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="importDefaultPlatformId()" (ngModelChange)="importDefaultPlatformId.set($event); importPreview.set(null)" [ngModelOptions]="{standalone: true}">
+            <option [ngValue]="null">Choose platform</option>
+            <option *ngFor="let platform of platforms()" [ngValue]="platform.id">{{ platform.name }}</option>
+          </select>
+        </label>
+        <label class="grid gap-1 text-sm font-semibold text-slate-700">Default location
+          <select class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="importDefaultLocationId()" (ngModelChange)="importDefaultLocationId.set($event); importPreview.set(null)" [ngModelOptions]="{standalone: true}">
+            <option [ngValue]="null">None / row decides</option>
+            <option *ngFor="let location of locations()" [ngValue]="location.id">{{ location.name }}</option>
+          </select>
+        </label>
+        <label class="grid gap-1 text-sm font-semibold text-slate-700">Default status
+          <select class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="importDefaultStatus()" (ngModelChange)="importDefaultStatus.set($event); importPreview.set(null)" [ngModelOptions]="{standalone: true}">
+            <option value="H">Owned</option>
+            <option value="W">Wanted</option>
+          </select>
+        </label>
+        <label class="flex items-center gap-2 text-sm font-semibold text-slate-700">
+          <input type="checkbox" [ngModel]="importHasHeader()" (ngModelChange)="importHasHeader.set($event); importPreview.set(null)" [ngModelOptions]="{standalone: true}" />
+          First row is a header
+        </label>
+        <div class="flex flex-wrap gap-2">
+          <button type="button" class="rounded-md bg-blue-600 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:opacity-50" [disabled]="importLoading()" (click)="previewImport()">{{ importLoading() ? 'Working...' : 'Preview' }}</button>
+          <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50" [disabled]="importLoading()" (click)="clearImport()">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="importPreview() as preview" class="grid gap-3">
+      <div class="flex flex-wrap items-center gap-2 text-sm">
+        <span class="rounded-full bg-white px-3 py-1 font-bold text-slate-700 ring-1 ring-slate-200">{{ preview.totalRows | number }} row{{ preview.totalRows === 1 ? '' : 's' }}</span>
+        <span class="rounded-full bg-emerald-100 px-3 py-1 font-bold text-emerald-800">{{ preview.readyCount | number }} ready</span>
+        <span class="rounded-full bg-amber-100 px-3 py-1 font-bold text-amber-800">{{ preview.skipCount | number }} skipped</span>
+        <span class="rounded-full bg-red-100 px-3 py-1 font-bold text-red-800">{{ preview.errorCount | number }} error{{ preview.errorCount === 1 ? '' : 's' }}</span>
+        <button type="button" class="ml-auto rounded-md bg-emerald-600 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-700 disabled:opacity-50" [disabled]="importLoading() || preview.readyCount === 0" (click)="commitImport()">Import ready rows</button>
+      </div>
+      <div class="max-h-96 overflow-auto rounded-md border border-slate-200 bg-white">
+        <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
+          <thead class="sticky top-0 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+            <tr>
+              <th class="px-3 py-2 font-bold">Row</th>
+              <th class="px-3 py-2 font-bold">Action</th>
+              <th class="px-3 py-2 font-bold">Title</th>
+              <th class="px-3 py-2 font-bold">Platform</th>
+              <th class="px-3 py-2 font-bold">Location</th>
+              <th class="px-3 py-2 font-bold">Status</th>
+              <th class="px-3 py-2 font-bold">Match</th>
+              <th class="px-3 py-2 font-bold">Messages</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <tr *ngFor="let row of preview.rows">
+              <td class="px-3 py-2 text-slate-500">{{ row.rowNumber }}</td>
+              <td class="px-3 py-2">
+                <div class="grid gap-1">
+                  <span class="w-fit rounded px-2 py-1 text-xs font-bold" [ngClass]="importActionTone(row.action)">{{ row.action }}</span>
+                  <select *ngIf="row.action !== 'Error'" class="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-semibold text-slate-700" [ngModel]="row.action" (ngModelChange)="setImportRowAction(row.rowNumber, $event)" [ngModelOptions]="{standalone: true}">
+                    <option value="Create">Create</option>
+                    <option value="Skip">Skip</option>
+                    <option *ngIf="row.matches.length" value="Update">Update match</option>
+                  </select>
+                </div>
+              </td>
+              <td class="px-3 py-2 font-bold text-slate-900">{{ row.title || row.rawText }}</td>
+              <td class="px-3 py-2 text-slate-700">{{ row.platform || 'Missing' }}</td>
+              <td class="px-3 py-2 text-slate-700">{{ row.location || 'None' }}</td>
+              <td class="px-3 py-2 text-slate-700">{{ row.statusID === 'W' ? 'Wanted' : 'Owned' }}</td>
+              <td class="px-3 py-2 text-xs text-slate-700">
+                <select *ngIf="row.matches.length" class="w-56 rounded border border-slate-300 bg-white px-2 py-1 text-xs" [ngModel]="row.existingId" (ngModelChange)="setImportRowExistingId(row.rowNumber, $event)" [ngModelOptions]="{standalone: true}">
+                  <option [ngValue]="null">Choose match</option>
+                  <option *ngFor="let match of row.matches" [ngValue]="match.id">{{ match.matchType }}: {{ match.platform }} / {{ match.location || 'None' }} / {{ match.statusID === 'W' ? 'Wanted' : 'Owned' }}</option>
+                </select>
+                <span *ngIf="!row.matches.length" class="text-slate-400">None</span>
+              </td>
+              <td class="px-3 py-2 text-xs text-slate-600">{{ row.messages.join('; ') || 'Ready' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid gap-3 md:grid-cols-3">
+    <button type="button" class="rounded-lg border p-4 text-left shadow-sm transition" [ngClass]="statusFilterTone('H')" (click)="setStatusFilter('H')">
+      <span class="text-xs font-bold uppercase tracking-wide text-slate-500">Owned</span>
+      <strong class="mt-1 block text-2xl text-slate-950">{{ (report()?.ownedCount ?? ownedOnPage()) | number }}</strong>
+    </button>
+    <button type="button" class="rounded-lg border p-4 text-left shadow-sm transition" [ngClass]="statusFilterTone('W')" (click)="setStatusFilter('W')">
+      <span class="text-xs font-bold uppercase tracking-wide text-slate-500">Wanted</span>
+      <strong class="mt-1 block text-2xl text-slate-950">{{ (report()?.wantedCount ?? wantedOnPage()) | number }}</strong>
+    </button>
+    <button type="button" class="rounded-lg border p-4 text-left shadow-sm transition" [ngClass]="statusFilterTone('unknown')" (click)="setStatusFilter('unknown')">
+      <span class="text-xs font-bold uppercase tracking-wide text-slate-500">Unknown Status</span>
+      <strong class="mt-1 block text-2xl text-slate-950">{{ (report()?.unknownStatusCount ?? 0) | number }}</strong>
+    </button>
+  </section>
+
+  <section class="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm lg:grid-cols-2" *ngIf="report()">
+    <div>
+      <h2 class="text-sm font-black uppercase text-slate-600">By Platform</h2>
+      <div class="mt-3 grid gap-2">
+        <button *ngFor="let bucket of topPlatformBuckets()" type="button" class="flex items-center justify-between rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-left text-sm transition hover:border-blue-300" (click)="applyPlatformFilter(bucket.id)">
+          <span class="font-bold text-slate-900">{{ bucket.name }}</span>
+          <span class="rounded-full bg-white px-2 py-1 text-xs font-bold text-slate-700">{{ bucketCount(bucket) | number }}</span>
+        </button>
+      </div>
+    </div>
+    <div>
+      <h2 class="text-sm font-black uppercase text-slate-600">By Location</h2>
+      <div class="mt-3 grid gap-2">
+        <button *ngFor="let bucket of topLocationBuckets()" type="button" class="flex items-center justify-between rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-left text-sm transition hover:border-blue-300" (click)="applyLocationFilter(bucket.id)">
+          <span class="font-bold text-slate-900">{{ bucket.name }}</span>
+          <span class="rounded-full bg-white px-2 py-1 text-xs font-bold text-slate-700">{{ bucketCount(bucket) | number }}</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm print:border-0 print:shadow-none" *ngIf="wantedReportItems().length || routeMode() === 'want-list'">
+    <div class="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+      <div>
+        <h2 class="text-sm font-black uppercase text-slate-600">{{ routeMode() === 'want-list' ? 'Software Want List Report' : 'Wanted Software Report' }}</h2>
+        <p class="mt-1 text-sm text-slate-600">{{ wantedReportItems().length | number }} wanted item{{ wantedReportItems().length === 1 ? '' : 's' }} match the current search/platform/location/media filters.</p>
+      </div>
+      <div class="flex flex-wrap gap-2 print:hidden">
+        <button type="button" class="w-fit rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50" [disabled]="loadingWantedReport()" (click)="loadWantedReport()">
+          {{ loadingWantedReport() ? 'Refreshing...' : 'Refresh report' }}
+        </button>
+        <button type="button" class="w-fit rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-bold text-emerald-800 shadow-sm transition hover:bg-emerald-100" (click)="exportWantedCsv()">Export CSV</button>
+      </div>
+    </div>
+    <div class="grid gap-3 lg:grid-cols-3">
+      <div class="rounded-md border border-slate-200 bg-slate-50 p-3">
+        <h3 class="text-xs font-black uppercase text-slate-500">Top Platforms</h3>
+        <div class="mt-2 flex flex-wrap gap-2">
+          <button *ngFor="let row of wantedReportByPlatform()" type="button" class="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200" (click)="applyPlatformFilter(platformIdForName(row.name), 'W')">{{ row.name }}: {{ row.count }}</button>
+          <span *ngIf="wantedReportByPlatform().length === 0" class="text-sm text-slate-500">No wanted platform data.</span>
+        </div>
+      </div>
+      <div class="rounded-md border border-slate-200 bg-slate-50 p-3">
+        <h3 class="text-xs font-black uppercase text-slate-500">Top Locations</h3>
+        <div class="mt-2 flex flex-wrap gap-2">
+          <button *ngFor="let row of wantedReportByLocation()" type="button" class="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200" (click)="applyLocationFilter(locationIdForName(row.name), 'W')">{{ row.name }}: {{ row.count }}</button>
+          <span *ngIf="wantedReportByLocation().length === 0" class="text-sm text-slate-500">No wanted location data.</span>
+        </div>
+      </div>
+      <div class="rounded-md border border-slate-200 bg-slate-50 p-3">
+        <h3 class="text-xs font-black uppercase text-slate-500">Top Media</h3>
+        <div class="mt-2 flex flex-wrap gap-2">
+          <button *ngFor="let row of wantedReportByMedia()" type="button" class="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200" (click)="applyMediaFilter(row.name, 'W')">{{ row.name }}: {{ row.count }}</button>
+          <span *ngIf="wantedReportByMedia().length === 0" class="text-sm text-slate-500">No wanted media data.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto rounded-md border border-slate-200" *ngIf="wantedReportRows().length">
+      <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
+        <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+          <tr>
+            <th class="px-3 py-2 font-bold">Title</th>
+            <th class="px-3 py-2 font-bold">Platform</th>
+            <th class="px-3 py-2 font-bold">Location</th>
+            <th class="px-3 py-2 font-bold">Media</th>
+            <th class="px-3 py-2 font-bold">Publisher</th>
+            <th class="px-3 py-2 font-bold print:hidden">Action</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <tr *ngFor="let item of wantedReportRows()" class="bg-white">
+            <td class="px-3 py-2">
+              <button type="button" class="text-left font-bold text-blue-700 hover:text-blue-900" (click)="selectItem(item)">{{ item.title }}</button>
+              <p class="text-xs text-slate-500">{{ item.versionEdition || item.developer || '' }}</p>
+            </td>
+            <td class="px-3 py-2 text-slate-700">{{ item.platform }}</td>
+            <td class="px-3 py-2 text-slate-700">{{ item.location || 'None' }}</td>
+            <td class="px-3 py-2 text-slate-700">{{ item.mediaType || 'Unknown' }}</td>
+            <td class="px-3 py-2 text-slate-700">{{ item.publisher || 'Unknown' }}</td>
+            <td class="px-3 py-2 print:hidden">
+              <button *ngIf="canManage()" type="button" class="rounded-md border border-emerald-200 bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-800 transition hover:bg-emerald-100 disabled:opacity-50" [disabled]="loading()" (click)="markItemStatus(item, 'H')">Mark owned</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p *ngIf="wantedReportRows().length === 0" class="rounded-md border border-slate-200 bg-slate-50 px-3 py-6 text-center text-sm font-semibold text-slate-500">{{ wantedReportEmptyText() }}</p>
+    <p *ngIf="wantedReportHiddenCount()" class="text-xs font-semibold text-slate-500">Showing first {{ wantedReportRows().length | number }} report rows. Open the full want-list page or export CSV for the remaining {{ wantedReportHiddenCount() | number }} row{{ wantedReportHiddenCount() === 1 ? '' : 's' }}.</p>
+  </section>
+
+  <section class="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+    <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
+      <label class="grid gap-1 text-sm font-semibold text-slate-700 xl:col-span-2">
+        Search
+        <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="search" [ngModel]="query()" (ngModelChange)="query.set($event)" [ngModelOptions]="{standalone: true}" placeholder="Title, publisher, developer" />
+      </label>
+      <label class="grid gap-1 text-sm font-semibold text-slate-700">
+        Platform
+        <select class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="platformId()" (ngModelChange)="platformId.set($event)" [ngModelOptions]="{standalone: true}">
+          <option [ngValue]="null">All</option>
+          <option *ngFor="let platform of platforms()" [ngValue]="platform.id">{{ platform.name }}</option>
+        </select>
+      </label>
+      <label class="grid gap-1 text-sm font-semibold text-slate-700">
+        Location
+        <select class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="locationId()" (ngModelChange)="locationId.set($event)" [ngModelOptions]="{standalone: true}">
+          <option [ngValue]="null">All</option>
+          <option *ngFor="let location of locations()" [ngValue]="location.id">{{ location.name }}</option>
+        </select>
+      </label>
+      <label class="grid gap-1 text-sm font-semibold text-slate-700">
+        Media
+        <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" [ngModel]="mediaType()" (ngModelChange)="mediaType.set($event)" [ngModelOptions]="{standalone: true}" list="software-media-types" placeholder="Digital, CD, DVD" />
+        <datalist id="software-media-types">
+          <option *ngFor="let media of allMediaTypes()" [value]="media"></option>
+        </datalist>
+      </label>
+      <label class="grid gap-1 text-sm font-semibold text-slate-700">
+        Status
+        <select class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="status()" (ngModelChange)="status.set($event)" [ngModelOptions]="{standalone: true}">
+          <option value="H">Owned</option>
+          <option value="W">Wanted</option>
+          <option value="unknown">Unknown status</option>
+          <option value="all">All</option>
+        </select>
+      </label>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <button type="button" class="rounded-md bg-slate-900 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-slate-700" (click)="applyFilters()">Apply</button>
+      <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="clearFilters()">Clear</button>
+      <span *ngIf="hasActiveFilters()" class="self-center rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">Filtered</span>
+    </div>
+    <div *ngIf="activeFilterChips().length" class="flex flex-wrap gap-2 border-t border-slate-100 pt-3">
+      <button *ngFor="let chip of activeFilterChips()" type="button" class="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-bold text-blue-800 transition hover:bg-blue-100" (click)="removeFilter(chip.key)" [title]="'Remove ' + chip.label + ' filter'">
+        {{ chip.label }}: {{ chip.value }} x
+      </button>
+    </div>
+  </section>
+
+  <section class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_25rem]">
+    <div class="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
+      <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
+        <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+          <tr>
+            <th class="px-3 py-3 font-bold"><button type="button" (click)="sortBy('title')">Title {{ sortLabel('title') }}</button></th>
+            <th class="px-3 py-3 font-bold"><button type="button" (click)="sortBy('platform')">Platform {{ sortLabel('platform') }}</button></th>
+            <th class="px-3 py-3 font-bold"><button type="button" (click)="sortBy('location')">Location {{ sortLabel('location') }}</button></th>
+            <th class="px-3 py-3 font-bold"><button type="button" (click)="sortBy('publisher')">Publisher {{ sortLabel('publisher') }}</button></th>
+            <th class="px-3 py-3 font-bold">Media</th>
+            <th class="px-3 py-3 font-bold">Pieces</th>
+            <th class="px-3 py-3 font-bold">Status</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <tr *ngFor="let item of items()" class="cursor-pointer transition hover:bg-blue-50" [class.bg-blue-50]="selectedItem()?.id === item.id" (click)="selectItem(item)">
+            <td class="px-3 py-2">
+              <p class="font-bold text-slate-950">{{ item.title }}</p>
+              <p class="text-xs text-slate-500">{{ item.versionEdition || item.developer || '' }}</p>
+            </td>
+            <td class="px-3 py-2 text-slate-700">{{ item.platform }}</td>
+            <td class="px-3 py-2 text-slate-700">{{ item.location || 'None' }}</td>
+            <td class="px-3 py-2 text-slate-700">{{ item.publisher || 'Unknown' }}</td>
+            <td class="px-3 py-2 text-slate-700">{{ item.mediaType || 'Unknown' }}</td>
+            <td class="px-3 py-2 text-xs font-semibold text-slate-600">
+              <span *ngIf="item.hasBox">Box </span>
+              <span *ngIf="item.hasManual">Manual </span>
+              <span *ngIf="item.hasDisc">Disc</span>
+              <span *ngIf="!item.hasBox && !item.hasManual && !item.hasDisc">None</span>
+            </td>
+            <td class="px-3 py-2">
+              <span class="rounded px-2 py-1 text-xs font-bold" [ngClass]="statusTone(item)">{{ statusText(item) }}</span>
+            </td>
+          </tr>
+          <tr *ngIf="items().length === 0">
+            <td colspan="7" class="px-3 py-8 text-center text-sm text-slate-500">{{ loading() ? 'Loading software...' : 'No software found.' }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="flex items-center justify-between gap-3 border-t border-slate-200 px-3 py-2 text-sm text-slate-600">
+        <button type="button" class="rounded border border-slate-300 px-3 py-1.5 font-bold disabled:opacity-50" [disabled]="page() <= 1" (click)="load(page() - 1)">Previous</button>
+        <div class="flex items-center gap-2">
+          <span>Page {{ page() | number }} of {{ totalPages() | number }}</span>
+          <label class="flex items-center gap-1 text-xs font-semibold text-slate-500">
+            Rows
+            <select class="rounded border border-slate-300 bg-white px-2 py-1" [ngModel]="pageSize()" (ngModelChange)="setPageSize($event)" [ngModelOptions]="{standalone: true}">
+              <option [ngValue]="25">25</option>
+              <option [ngValue]="50">50</option>
+              <option [ngValue]="100">100</option>
+              <option [ngValue]="200">200</option>
+            </select>
+          </label>
+        </div>
+        <button type="button" class="rounded border border-slate-300 px-3 py-1.5 font-bold disabled:opacity-50" [disabled]="page() >= totalPages()" (click)="load(page() + 1)">Next</button>
+      </div>
+    </div>
+
+    <aside class="grid content-start gap-4">
+      <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm" *ngIf="selectedItem() as item; else noSelection">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <p class="text-xs font-bold uppercase tracking-wide text-blue-600">Selected software</p>
+            <h2 class="mt-1 text-xl font-bold text-slate-950">{{ item.title }}</h2>
+            <p class="mt-1 text-sm text-slate-600">{{ itemIdentity(item) || item.developer || item.publisher || 'No platform details listed.' }}</p>
+          </div>
+          <span class="rounded px-2 py-1 text-xs font-bold" [ngClass]="statusTone(item)">{{ statusText(item) }}</span>
+        </div>
+
+        <div class="mt-4 grid grid-cols-2 gap-2 text-sm">
+          <div class="rounded-md border border-slate-200 bg-slate-50 p-3">
+            <p class="text-xs font-bold uppercase text-slate-500">Platform</p>
+            <p class="mt-1 font-bold text-slate-950">{{ item.platform }}</p>
+          </div>
+          <div class="rounded-md border border-slate-200 bg-slate-50 p-3">
+            <p class="text-xs font-bold uppercase text-slate-500">Location</p>
+            <p class="mt-1 font-bold text-slate-950">{{ item.location || 'None' }}</p>
+          </div>
+          <div class="rounded-md border border-slate-200 bg-slate-50 p-3">
+            <p class="text-xs font-bold uppercase text-slate-500">Media</p>
+            <p class="mt-1 font-bold text-slate-950">{{ item.mediaType || 'Unknown' }}</p>
+          </div>
+          <div class="rounded-md border border-slate-200 bg-slate-50 p-3">
+            <p class="text-xs font-bold uppercase text-slate-500">Pieces</p>
+            <p class="mt-1 font-bold text-slate-950">{{ piecesText(item) }}</p>
+          </div>
+        </div>
+
+        <div class="mt-4 grid gap-2 sm:grid-cols-2">
+          <div *ngFor="let fact of selectedDetailFacts()" class="rounded-md px-3 py-2 ring-1 ring-black/5" [ngClass]="fact.tone">
+            <p class="text-[11px] font-black uppercase opacity-75">{{ fact.label }}</p>
+            <p class="mt-1 text-sm font-bold">{{ fact.value }}</p>
+          </div>
+        </div>
+
+        <dl class="mt-4 grid gap-3 text-sm">
+          <div class="grid grid-cols-[7rem_1fr] gap-3">
+            <dt class="font-bold text-slate-500">Publisher</dt>
+            <dd class="text-slate-900">{{ item.publisher || 'Unknown' }}</dd>
+          </div>
+          <div class="grid grid-cols-[7rem_1fr] gap-3">
+            <dt class="font-bold text-slate-500">Developer</dt>
+            <dd class="text-slate-900">{{ item.developer || 'Unknown' }}</dd>
+          </div>
+          <div class="grid grid-cols-[7rem_1fr] gap-3">
+            <dt class="font-bold text-slate-500">Edition</dt>
+            <dd class="text-slate-900">{{ item.versionEdition || 'None listed' }}</dd>
+          </div>
+        </dl>
+
+        <section class="mt-4 rounded-md border border-slate-200 bg-slate-50 p-3">
+          <div class="flex items-center justify-between gap-2">
+            <h3 class="text-sm font-black text-slate-900">Detail readiness</h3>
+            <span class="rounded-full bg-white px-2 py-0.5 text-[11px] font-black text-slate-600 ring-1 ring-slate-200">
+              {{ selectedDetailChecks().length }} checks
+            </span>
+          </div>
+          <div class="mt-2 grid gap-2 sm:grid-cols-2">
+            <div *ngFor="let check of selectedDetailChecks()" class="rounded border px-2 py-1.5 text-xs" [ngClass]="detailCheckTone(check)">
+              <div class="font-black uppercase opacity-75">{{ check.label }}</div>
+              <div class="mt-0.5 font-bold">{{ check.value }}</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="mt-4 rounded-md border border-blue-100 bg-blue-50 p-3">
+          <h3 class="text-sm font-black text-blue-950">Browse from this item</h3>
+          <div class="mt-2 flex flex-wrap gap-2">
+            <button type="button" class="rounded border border-blue-200 bg-white px-2 py-1 text-xs font-bold text-blue-800 transition hover:bg-blue-100" (click)="searchSelectedTitle(item)">Same title</button>
+            <button type="button" class="rounded border border-blue-200 bg-white px-2 py-1 text-xs font-bold text-blue-800 transition hover:bg-blue-100" (click)="filterToSelectedPlatform(item)">Platform</button>
+            <button type="button" class="rounded border border-blue-200 bg-white px-2 py-1 text-xs font-bold text-blue-800 transition hover:bg-blue-100" (click)="filterToSelectedLocation(item)">Location</button>
+            <button type="button" class="rounded border border-blue-200 bg-white px-2 py-1 text-xs font-bold text-blue-800 transition hover:bg-blue-100" (click)="filterToSelectedMedia(item)">Media</button>
+          </div>
+        </section>
+
+        <section *ngIf="selectedRelatedItems().length" class="mt-4 rounded-md border border-amber-200 bg-amber-50 p-3">
+          <div class="flex items-center justify-between gap-2">
+            <h3 class="text-sm font-black text-amber-950">Same-title review</h3>
+            <span class="rounded-full bg-white/80 px-2 py-0.5 text-[11px] font-black text-amber-800 ring-1 ring-amber-200">{{ selectedRelatedItems().length }}</span>
+          </div>
+          <div class="mt-2 grid gap-2">
+            <button *ngFor="let related of selectedRelatedItems()" type="button" class="rounded border border-amber-200 bg-white px-2 py-1.5 text-left text-xs transition hover:bg-amber-100" (click)="selectRelatedItem(related)">
+              <span class="font-black text-slate-950">{{ related.item.title }}</span>
+              <span class="mt-0.5 block font-semibold text-slate-600">{{ related.context }} / {{ related.item.platform }} / {{ related.item.location || 'None' }} / {{ statusText(related.item) }}</span>
+            </button>
+          </div>
+        </section>
+
+        <section class="mt-4 grid gap-2" *ngIf="item.serialLicenseKeyNotes || item.notes; else noSoftwareNotes">
+          <div *ngIf="item.serialLicenseKeyNotes" class="rounded-md bg-slate-50 p-3">
+            <h3 class="text-sm font-bold text-slate-800">Serial / License Notes</h3>
+            <p class="mt-1 whitespace-pre-wrap text-sm text-slate-700">{{ item.serialLicenseKeyNotes }}</p>
+          </div>
+          <div *ngIf="item.notes" class="rounded-md bg-slate-50 p-3">
+            <h3 class="text-sm font-bold text-slate-800">Notes</h3>
+            <p class="mt-1 whitespace-pre-wrap text-sm text-slate-700">{{ item.notes }}</p>
+          </div>
+        </section>
+        <ng-template #noSoftwareNotes>
+          <p class="mt-4 rounded-md bg-slate-50 p-3 text-sm text-slate-500">No notes recorded.</p>
+        </ng-template>
+
+        <div class="mt-4 flex flex-wrap gap-2" *ngIf="canManage()">
+          <button type="button" class="rounded-md bg-blue-600 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700" (click)="editSelected()">Edit</button>
+          <button type="button" class="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-bold text-blue-800 shadow-sm transition hover:bg-blue-100" (click)="duplicateSelected()">Duplicate</button>
+          <button *ngIf="item.statusID !== 'H'" type="button" class="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-bold text-emerald-800 shadow-sm transition hover:bg-emerald-100 disabled:opacity-50" [disabled]="loading()" (click)="markSelectedStatus('H')">Mark owned</button>
+          <button *ngIf="item.statusID !== 'W'" type="button" class="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-bold text-amber-800 shadow-sm transition hover:bg-amber-100 disabled:opacity-50" [disabled]="loading()" (click)="markSelectedStatus('W')">Mark wanted</button>
+          <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="startNew()">New</button>
+          <button type="button" class="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-bold text-red-700 shadow-sm transition hover:bg-red-100 disabled:opacity-50" [disabled]="loading()" (click)="deleteItem(item.id, item.title)">Delete</button>
+        </div>
+      </section>
+
+      <ng-template #noSelection>
+        <section class="rounded-lg border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm">
+          Select a software item to view details.
+        </section>
+      </ng-template>
+
+      <form *ngIf="canManage() && isEditing()" class="grid content-start gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm" (ngSubmit)="save()">
+        <div class="flex items-center justify-between gap-2">
+          <h2 class="text-lg font-bold text-slate-950">{{ form().id ? 'Edit software' : 'Add software' }}</h2>
+          <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="cancelEdit()">Close</button>
+        </div>
+        <label class="grid gap-1 text-sm font-semibold text-slate-700">Title
+          <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" maxlength="100" required [ngModel]="form().title" (ngModelChange)="setFormField('title', $event)" name="title" />
+        </label>
+        <div class="grid gap-2 sm:grid-cols-2">
+          <label class="grid gap-1 text-sm font-semibold text-slate-700">Status
+            <select class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="form().statusID" (ngModelChange)="setFormField('statusID', $event)" name="statusID">
+              <option value="H">Owned</option>
+              <option value="W">Wanted</option>
+            </select>
+          </label>
+          <label class="grid gap-1 text-sm font-semibold text-slate-700">Media
+            <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="form().mediaType" (ngModelChange)="setFormField('mediaType', $event)" name="mediaType" placeholder="Digital, CD, DVD" />
+          </label>
+        </div>
+        <label class="grid gap-1 text-sm font-semibold text-slate-700">Platform
+          <select class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="form().platformId" (ngModelChange)="setFormField('platformId', $event)" name="platformId">
+            <option [ngValue]="null">Choose platform</option>
+            <option *ngFor="let platform of platforms()" [ngValue]="platform.id">{{ platform.name }}</option>
+          </select>
+          <span class="text-xs font-normal text-slate-500">Platforms are managed in Admin Settings.</span>
+        </label>
+        <label class="grid gap-1 text-sm font-semibold text-slate-700">Location
+          <select class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="form().locationId" (ngModelChange)="setFormField('locationId', $event)" name="locationId">
+            <option [ngValue]="null">None</option>
+            <option *ngFor="let location of locations()" [ngValue]="location.id">{{ location.name }}</option>
+          </select>
+          <span class="text-xs font-normal text-slate-500">Locations are managed in Admin Settings.</span>
+        </label>
+        <div class="grid gap-2 sm:grid-cols-2">
+          <label class="grid gap-1 text-sm font-semibold text-slate-700">Publisher
+            <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="form().publisher" (ngModelChange)="setFormField('publisher', $event)" name="publisher" />
+          </label>
+          <label class="grid gap-1 text-sm font-semibold text-slate-700">Developer
+            <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="form().developer" (ngModelChange)="setFormField('developer', $event)" name="developer" />
+          </label>
+        </div>
+        <label class="grid gap-1 text-sm font-semibold text-slate-700">Version / Edition
+          <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="form().versionEdition" (ngModelChange)="setFormField('versionEdition', $event)" name="versionEdition" />
+        </label>
+        <div class="flex flex-wrap gap-3 text-sm font-semibold text-slate-700">
+          <label class="flex items-center gap-2"><input type="checkbox" [ngModel]="form().hasBox" (ngModelChange)="setFormField('hasBox', $event)" name="hasBox" /> Box</label>
+          <label class="flex items-center gap-2"><input type="checkbox" [ngModel]="form().hasManual" (ngModelChange)="setFormField('hasManual', $event)" name="hasManual" /> Manual</label>
+          <label class="flex items-center gap-2"><input type="checkbox" [ngModel]="form().hasDisc" (ngModelChange)="setFormField('hasDisc', $event)" name="hasDisc" /> Disc</label>
+        </div>
+        <label class="grid gap-1 text-sm font-semibold text-slate-700">Serial / License Notes
+          <textarea class="min-h-20 rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="form().serialLicenseKeyNotes" (ngModelChange)="setFormField('serialLicenseKeyNotes', $event)" name="serialLicenseKeyNotes"></textarea>
+        </label>
+        <label class="grid gap-1 text-sm font-semibold text-slate-700">Notes
+          <textarea class="min-h-24 rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="form().notes" (ngModelChange)="setFormField('notes', $event)" name="notes"></textarea>
+        </label>
+        <div class="flex flex-wrap gap-2">
+          <button type="submit" class="rounded-md bg-blue-600 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:opacity-50" [disabled]="loading()">{{ form().id ? 'Save Changes' : 'Add Software' }}</button>
+          <button *ngIf="form().id" type="button" class="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-bold text-red-700 shadow-sm transition hover:bg-red-100 disabled:opacity-50" [disabled]="loading()" (click)="deleteSelected()">Delete</button>
+        </div>
+      </form>
+    </aside>
+  </section>
+</section>
+
+
+
+
+
+

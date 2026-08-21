@@ -1,0 +1,153 @@
+name: CI Publish
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      deploy_api:
+        description: Deploy Verdelak.Api to Azure App Service
+        required: true
+        default: false
+        type: boolean
+      deploy_site:
+        description: Deploy VerdelakCDSite to Azure App Service
+        required: true
+        default: false
+        type: boolean
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  build-api:
+    name: Build API
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore API
+        run: dotnet restore Verdelak.Api/Verdelak.Api.csproj
+
+      - name: Build API
+        run: dotnet build Verdelak.Api/Verdelak.Api.csproj --configuration Release --no-restore
+
+      - name: Publish API
+        run: dotnet publish Verdelak.Api/Verdelak.Api.csproj --configuration Release --no-build --output artifacts/api
+
+      - name: Upload API artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: verdelak-api
+          path: artifacts/api
+
+  build-angular:
+    name: Build Angular
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: Verdelak.Angular/package-lock.json
+
+      - name: Install Angular dependencies
+        working-directory: Verdelak.Angular
+        run: npm ci
+
+      - name: Build Angular
+        working-directory: Verdelak.Angular
+        run: npm run build
+
+      - name: Upload Angular artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: verdelak-angular
+          path: Verdelak.Angular/dist
+
+  build-site:
+    name: Build Public Site
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore public site
+        run: dotnet restore VerdelakCDSite/VerdelakCDSite.csproj
+
+      - name: Build public site
+        run: dotnet build VerdelakCDSite/VerdelakCDSite.csproj --configuration Release --no-restore
+
+      - name: Publish public site
+        run: dotnet publish VerdelakCDSite/VerdelakCDSite.csproj --configuration Release --no-build --output artifacts/site
+
+      - name: Upload public site artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: verdelak-public-site
+          path: artifacts/site
+
+  deploy-api:
+    name: Deploy API
+    runs-on: windows-latest
+    needs:
+      - build-api
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy_api
+
+    steps:
+      - name: Download API artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: verdelak-api
+          path: artifacts/api
+
+      - name: Deploy API to Azure App Service
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ vars.AZURE_API_APP_NAME }}
+          publish-profile: ${{ secrets.AZURE_API_PUBLISH_PROFILE }}
+          package: artifacts/api
+
+  deploy-site:
+    name: Deploy Public Site
+    runs-on: windows-latest
+    needs:
+      - build-site
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy_site
+
+    steps:
+      - name: Download public site artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: verdelak-public-site
+          path: artifacts/site
+
+      - name: Deploy public site to Azure App Service
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ vars.AZURE_SITE_APP_NAME }}
+          publish-profile: ${{ secrets.AZURE_SITE_PUBLISH_PROFILE }}
+          package: artifacts/site

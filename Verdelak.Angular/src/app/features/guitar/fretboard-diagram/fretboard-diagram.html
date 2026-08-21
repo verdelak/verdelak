@@ -1,0 +1,34 @@
+<section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <h2 class="text-sm font-bold uppercase text-slate-600">{{ title }}</h2>
+    <div class="flex flex-wrap gap-3 text-xs font-bold uppercase text-slate-500">
+      <span class="inline-flex items-center gap-1"><span class="h-3 w-3 rounded-full bg-blue-700"></span>Root</span>
+      <span class="inline-flex items-center gap-1"><span class="h-3 w-3 rounded-full bg-emerald-500"></span>Scale</span>
+      <span class="inline-flex items-center gap-1"><span class="h-3 w-3 rounded-full bg-slate-200"></span>Outside</span>
+    </div>
+  </div>
+
+  <div class="mt-4 overflow-x-auto rounded-lg border border-slate-300">
+    <div class="fretboard" [style.--fret-count]="frets().length" [style.--string-count]="displayStrings().length">
+      <div class="fretboard__corner"></div>
+      <div *ngFor="let fret of frets()" class="fretboard__fret-label">{{ fret }}</div>
+
+      <ng-container *ngFor="let string of displayStrings()">
+        <div class="fretboard__string-label">
+          <span class="fretboard__string-name">{{ string.openNote }}</span>
+        </div>
+        <div *ngFor="let fret of string.frets" class="fretboard__cell" [class.fretboard__cell--nut]="fret.fret === 0">
+          <span
+            *ngIf="fret.isScaleNote"
+            class="fretboard__note"
+            [class.fretboard__note--root]="fret.isRoot"
+            [class.fretboard__note--scale]="fret.isScaleNote && !fret.isRoot"
+            [title]="'String ' + string.stringNumber + ', fret ' + fret.fret + ': ' + fret.note + (fret.interval ? ' / ' + fret.interval : '')"
+          >
+            {{ fret.display }}
+          </span>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</section>

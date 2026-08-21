@@ -1,0 +1,107 @@
+.fretboard {
+  --fret-count: 16;
+  --string-count: 6;
+  --label-width: 3.25rem;
+  --fret-width: 3.4rem;
+  --header-height: 2rem;
+  --string-height: 3rem;
+  display: grid;
+  grid-template-columns: var(--label-width) repeat(var(--fret-count), var(--fret-width));
+  grid-template-rows: var(--header-height) repeat(var(--string-count), var(--string-height));
+  width: max-content;
+  min-width: 100%;
+  background: #f8fafc;
+}
+
+.fretboard__corner,
+.fretboard__fret-label,
+.fretboard__string-label,
+.fretboard__cell {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  border-right: 1px solid #cbd5e1;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.fretboard__corner,
+.fretboard__fret-label {
+  height: var(--header-height);
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.fretboard__string-label {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  height: var(--string-height);
+  background: #f8fafc;
+  color: #334155;
+  font-size: 0.875rem;
+  font-weight: 800;
+}
+
+.fretboard__string-name {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: #e2e8f0;
+}
+
+.fretboard__cell {
+  position: relative;
+  height: var(--string-height);
+  background: #fff;
+  overflow: visible;
+}
+
+.fretboard__cell::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 2px;
+  transform: translateY(-50%);
+  background: #94a3b8;
+}
+
+.fretboard__cell--nut {
+  box-shadow: inset 0.25rem 0 0 #0f172a;
+}
+
+.fretboard__note {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.18);
+}
+
+.fretboard__note--scale {
+  background: #10b981;
+}
+
+.fretboard__note--root {
+  background: #1d4ed8;
+  box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.18), 0 1px 2px rgba(15, 23, 42, 0.18);
+}

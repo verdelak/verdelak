@@ -1,0 +1,145 @@
+<section class="rpg-wrap">
+  <header class="page-title">
+    <div>
+      <p>Inventory / Gaming</p>
+      <h1>{{ title }}</h1>
+    </div>
+    <div class="actions">
+      <button mat-stroked-button type="button" (click)="exportCurrentPageCsv()" [disabled]="svc.products().length === 0">
+        <mat-icon>download</mat-icon> Page CSV
+      </button>
+      <button mat-stroked-button type="button" (click)="exportReportCsv()" [disabled]="svc.products().length === 0">
+        <mat-icon>summarize</mat-icon> Report CSV
+      </button>
+      <a *ngIf="auth.isAdmin()" mat-flat-button color="primary"
+        [routerLink]="['/rpg/new']"
+        [queryParams]="{ systemId, seriesId, typeId, q }">
+        Add
+      </a>
+    </div>
+  </header>
+
+  <header class="toolbar">
+    <div class="filters">
+      <mat-form-field appearance="outline">
+        <mat-label>Status</mat-label>
+        <mat-select [(ngModel)]="status" (selectionChange)="refetch(true)">
+          <mat-option value="H">Owned</mat-option>
+          <mat-option value="W">Wanted</mat-option>
+          <mat-option value="all">All</mat-option>
+          <mat-option value="unknown">Unknown</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>System</mat-label>
+        <mat-select [(ngModel)]="systemId" (selectionChange)="refetch(true)">
+          <mat-option [value]="null">All</mat-option>
+          <mat-option *ngFor="let s of systems" [value]="s.id">{{ s.name }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Series</mat-label>
+        <mat-select [(ngModel)]="seriesId" (selectionChange)="refetch(true)">
+          <mat-option [value]="null">All</mat-option>
+          <mat-option *ngFor="let s of filteredSeries()" [value]="s.id">{{ s.name }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Type</mat-label>
+        <mat-select [(ngModel)]="typeId" (selectionChange)="refetch(true)">
+          <mat-option [value]="null">All</mat-option>
+          <mat-option *ngFor="let t of types" [value]="t.id">{{ t.name }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="search">
+        <mat-label>Search name / ISBN</mat-label>
+        <input matInput [(ngModel)]="q" (keyup.enter)="refetch(true)" />
+      </mat-form-field>
+
+      <button mat-stroked-button (click)="clearFilters()">
+        <mat-icon>filter_alt_off</mat-icon> Clear
+      </button>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="state" *ngIf="svc.loading()">
+      <mat-spinner diameter="32"></mat-spinner> Loading...
+    </div>
+    <div class="state error" *ngIf="svc.lastError()">{{ svc.lastError() }}</div>
+
+    <div class="list" *ngIf="!svc.loading() && !svc.lastError()">
+      <section class="summary-grid" *ngIf="svc.products().length > 0">
+        <article class="summary-card" *ngFor="let card of summaryCards()">
+          <div class="summary-label">{{ card.label }}</div>
+          <strong>{{ card.value | number }}</strong>
+          <span>{{ card.detail }}</span>
+        </article>
+      </section>
+
+      <section class="report-grid" *ngIf="svc.products().length > 0">
+        <article class="report-panel">
+          <h2>System Report</h2>
+          <button class="report-row" type="button" *ngFor="let row of systemReportRows()" (click)="applySystemReport(row)">
+            <span>{{ row.name }}</span>
+            <strong>{{ row.productCount | number }}</strong>
+            <small>{{ row.ownedCount | number }} owned / {{ row.wantedCount | number }} wanted</small>
+          </button>
+        </article>
+
+        <article class="report-panel">
+          <h2>Type Report</h2>
+          <button class="report-row" type="button" *ngFor="let row of typeReportRows()" (click)="applyTypeReport(row)">
+            <span>{{ row.name }}</span>
+            <strong>{{ row.productCount | number }}</strong>
+            <small>{{ row.missingIsbnCount | number }} missing ISBN</small>
+          </button>
+        </article>
+
+        <article class="report-panel">
+          <h2>Attention</h2>
+          <a class="attention-row" *ngFor="let p of attentionRows()" [routerLink]="['/rpg', p.id]">
+            <span>{{ p.productName }}</span>
+            <small>
+              {{ statusLabel(p.status) }}
+              <ng-container *ngIf="!p.isbn"> / Missing ISBN</ng-container>
+              <ng-container *ngIf="!p.system"> / Missing system</ng-container>
+              <ng-container *ngIf="!p.series"> / Missing series</ng-container>
+              <ng-container *ngIf="!p.type"> / Missing type</ng-container>
+            </small>
+          </a>
+          <div class="muted" *ngIf="attentionRows().length === 0">No current-page rows need attention.</div>
+        </article>
+      </section>
+
+      <a class="item" *ngFor="let p of svc.products()" [routerLink]="['/rpg', p.id]">
+        <div class="title">{{ p.productName }}</div>
+        <div class="meta">
+          <span>{{ p.system || '-' }}</span>
+          <span>&bull;</span>
+          <span>{{ p.series || '-' }}</span>
+          <span>&bull;</span>
+          <span>{{ p.type || '-' }}</span>
+          <span>&bull;</span>
+          <span>{{ statusLabel(p.status) }}</span>
+        </div>
+        <div class="isbn" *ngIf="p.isbn">ISBN: {{ p.isbn }}</div>
+      </a>
+
+      <div class="state" *ngIf="svc.products().length === 0">
+        No RPG products found.
+      </div>
+    </div>
+
+    <footer class="paging">
+      <button mat-stroked-button (click)="prev()" [disabled]="page===1">Prev</button>
+      <span class="page-num">{{ page }}</span>
+      <button mat-stroked-button (click)="next()" [disabled]="svc.products().length < pageSize">Next</button>
+      <span class="total">Total: {{ svc.total() }}</span>
+    </footer>
+  </div>
+</section>

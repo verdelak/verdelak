@@ -1,0 +1,11 @@
+<div *ngIf="inventory.loading()">Loading items...</div>
+<div *ngIf="inventory.error()" class="error">{{ inventory.error() }}</div>
+<button (click)="createNewItem()">+ New Item</button>
+<div class="item-list">
+  <app-item-card
+    *ngFor="let item of filteredItems()"
+    [item]="item"
+    [rooms]="inventory.rooms()"
+    (click)="selectItem(item.id)"
+  ></app-item-card>
+</div>

@@ -1,0 +1,210 @@
+
+// Include theming for Angular Material with `mat.theme()`.
+// This Sass mixin will define CSS variables that are used for styling Angular Material
+// components according to the Material 3 design spec.
+// Learn more about theming and how to use it for your application's
+// custom components at https://material.angular.dev/guide/theming
+@use '@angular/material' as mat;
+@use 'tailwindcss';
+
+@import 'bootstrap/scss/functions';
+@import 'bootstrap/scss/variables';
+@import 'bootstrap/scss/variables-dark';
+@import 'bootstrap/scss/maps';
+@import 'bootstrap/scss/mixins';
+@import 'bootstrap/scss/root';
+@import 'bootstrap/scss/reboot';
+@import 'bootstrap/scss/type';
+@import 'bootstrap/scss/images';
+@import 'bootstrap/scss/containers';
+@import 'bootstrap/scss/transitions';
+@import 'bootstrap/scss/buttons';
+@import 'bootstrap/scss/dropdown';
+@import 'bootstrap/scss/nav';
+@import 'bootstrap/scss/navbar';
+
+html {
+  @include mat.theme((
+    color: (
+      primary: mat.$azure-palette,
+      tertiary: mat.$blue-palette,
+    ),
+    typography: Roboto,
+    density: 0,
+  ));
+}
+
+body {
+  // Default the application to a light color theme. This can be changed to
+  // `dark` to enable the dark color theme, or to `light dark` to defer to the
+  // user's system settings.
+  color-scheme: light;
+
+  // Set a default background, font and text colors for the application using
+  // Angular Material's system-level CSS variables. Learn more about these
+  // variables at https://material.angular.dev/guide/system-variables
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
+
+  // Reset the user agent margin.
+  margin: 0;
+}
+/* You can add global styles to this file, and also import other style files */
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+
+.min-vh-100 {
+  min-height: 100vh;
+}
+
+.sticky-top {
+  position: sticky;
+  top: 0;
+}
+
+.d-none {
+  display: none !important;
+}
+
+.d-grid {
+  display: grid !important;
+}
+
+.d-inline-flex {
+  display: inline-flex !important;
+}
+
+.align-items-center {
+  align-items: center !important;
+}
+
+.justify-content-end {
+  justify-content: flex-end !important;
+}
+
+.border-top {
+  border-top: 1px solid var(--bs-border-color);
+}
+
+.border-bottom {
+  border-bottom: 1px solid var(--bs-border-color);
+}
+
+.border-start {
+  border-inline-start: 1px solid var(--bs-border-color);
+}
+
+.fw-semibold {
+  font-weight: 600 !important;
+}
+
+.ms-auto {
+  margin-inline-start: auto !important;
+}
+
+.py-lg-3 {
+  @media (min-width: 992px) {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+  }
+}
+
+.py-xxl-5 {
+  @media (min-width: 1400px) {
+    padding-top: 3rem !important;
+    padding-bottom: 3rem !important;
+  }
+}
+
+@media (min-width: 992px) {
+  .d-lg-flex {
+    display: flex !important;
+  }
+
+  .d-lg-inline-flex {
+    display: inline-flex !important;
+  }
+
+  .d-lg-none {
+    display: none !important;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .d-lg-none {
+    display: block !important;
+  }
+}
+
+.app-shell {
+  min-width: 320px;
+}
+
+.app-container,
+.app-navbar-container {
+  width: min(100%, 1800px);
+  margin-inline: auto;
+  padding-inline: clamp(0.75rem, 1.8vw, 2.5rem);
+}
+
+.app-page-grid {
+  display: grid;
+  gap: clamp(1rem, 1.4vw, 1.75rem);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+}
+
+.app-dashboard-grid {
+  display: grid;
+  gap: clamp(1rem, 1.4vw, 1.75rem);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+}
+
+.app-table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.app-table-scroll > table {
+  min-width: 48rem;
+}
+
+@media (min-width: 1600px) {
+  .app-container,
+  .app-navbar-container {
+    width: min(100%, 1920px);
+  }
+}
+
+@media (max-width: 575.98px) {
+  input,
+  select,
+  textarea,
+  button {
+    font-size: 1rem;
+  }
+
+  .mat-mdc-card,
+  .rounded-lg {
+    border-radius: 0.5rem;
+  }
+}

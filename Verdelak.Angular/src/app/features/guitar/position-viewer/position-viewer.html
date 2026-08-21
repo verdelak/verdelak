@@ -1,0 +1,24 @@
+<section class="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <h2 class="text-sm font-bold uppercase text-slate-600">Positions</h2>
+    <div class="flex flex-wrap gap-2">
+      <button
+        *ngFor="let position of positions; let i = index"
+        class="rounded-md border px-3 py-2 text-xs font-bold"
+        [class.border-slate-900]="activeIndex() === i"
+        [class.bg-slate-900]="activeIndex() === i"
+        [class.text-white]="activeIndex() === i"
+        [class.border-slate-300]="activeIndex() !== i"
+        [class.text-slate-700]="activeIndex() !== i"
+        type="button"
+        (click)="setPosition(i)"
+      >
+        {{ position.startFret }}-{{ position.endFret }}
+      </button>
+    </div>
+  </div>
+
+  <ng-container *ngIf="activePosition() as position">
+    <app-fretboard-diagram [title]="'Position ' + position.positionNumber + ' · frets ' + position.startFret + '-' + position.endFret" [fretboard]="position.strings"></app-fretboard-diagram>
+  </ng-container>
+</section>

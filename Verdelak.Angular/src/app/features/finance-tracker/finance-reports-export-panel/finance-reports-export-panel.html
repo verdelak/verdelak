@@ -1,0 +1,40 @@
+<section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+  <div class="grid gap-4">
+    <div>
+      <h2 class="text-sm font-bold uppercase text-slate-600">Reports & Exports</h2>
+      <p class="mt-1 text-sm text-slate-600">Print date-range reports, download CSV files, or export an Excel-compatible workbook.</p>
+      <p class="mt-1 text-xs font-semibold text-slate-500">Workbook export downloads a true .xlsx file with balances, bills, analytics, snapshots, and donations.</p>
+    </div>
+    <div class="grid gap-3 lg:grid-cols-[280px_1fr]">
+      <div class="grid gap-2 rounded-md bg-slate-50 p-3 sm:grid-cols-2 lg:grid-cols-1">
+        <label class="grid gap-1 text-xs font-bold uppercase text-slate-500">
+          From
+          <input class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold normal-case text-slate-900" type="date" [ngModel]="vm.reportStartDate()" (ngModelChange)="vm.setReportStartDate($event)">
+        </label>
+        <label class="grid gap-1 text-xs font-bold uppercase text-slate-500">
+          To
+          <input class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold normal-case text-slate-900" type="date" [ngModel]="vm.reportEndDate()" (ngModelChange)="vm.setReportEndDate($event)">
+        </label>
+      </div>
+      <div class="grid gap-2">
+        <div class="flex flex-wrap gap-2">
+          <button class="rounded-md bg-slate-900 px-3 py-2 text-sm font-semibold text-white" type="button" (click)="vm.printFinanceSummaryReport()">Print Summary</button>
+          <button class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold hover:bg-slate-50" type="button" (click)="vm.printBalancesReport()">Print Balances</button>
+          <button class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold hover:bg-slate-50" type="button" (click)="vm.printBillsReport()">Print Bills</button>
+          <button class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold hover:bg-slate-50" type="button" (click)="vm.printBillAnalyticsReport()">Print Bill Analytics</button>
+          <button class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold hover:bg-slate-50" type="button" (click)="vm.printSnapshotsReport()">Print Snapshots</button>
+          <button class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold hover:bg-slate-50" type="button" (click)="vm.printDonationReport()">Print Donations</button>
+          <button class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold hover:bg-slate-50" type="button" (click)="vm.printNetWorthHistoryReport()">Print Net Worth</button>
+          <button *ngIf="vm.accountHistory().length" class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold hover:bg-slate-50" type="button" (click)="vm.printSelectedAccountHistoryReport()">Print Account History</button>
+          <button class="rounded-md border border-blue-300 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-100" type="button" (click)="vm.exportFinanceWorkbook()">Full .xlsx Workbook</button>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button class="rounded-md border border-slate-300 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50" type="button" (click)="vm.exportBalancesCsv()">Balances CSV</button>
+          <button class="rounded-md border border-slate-300 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50" type="button" (click)="vm.exportBillsCsv()">Bills CSV</button>
+          <button class="rounded-md border border-slate-300 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50" type="button" (click)="vm.exportSnapshotsCsv()">Snapshots CSV</button>
+          <button class="rounded-md border border-slate-300 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50" type="button" (click)="vm.exportDonationsCsv()">Donations CSV</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

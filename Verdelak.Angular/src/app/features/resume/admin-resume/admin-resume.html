@@ -1,0 +1,151 @@
+<section class="grid gap-4">
+  <header class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+    <p class="text-xs font-bold uppercase tracking-wider text-blue-600">Administration</p>
+    <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">Resume</h1>
+    <p class="mt-1 text-sm text-slate-600">Manage the resume profile and ordered section entries.</p>
+  </header>
+
+  <div *ngIf="error()" class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800">{{ error() }}</div>
+  <div *ngIf="message()" class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">{{ message() }}</div>
+
+  <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+    <div class="flex items-center justify-between gap-3">
+      <h2 class="text-lg font-bold text-slate-950">Profile</h2>
+      <button type="button" class="rounded-md bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60" (click)="saveProfile()" [disabled]="loading()">Save profile</button>
+    </div>
+
+    <div class="mt-4 grid gap-4 md:grid-cols-2">
+      <label class="grid gap-1 text-sm font-semibold text-slate-700">
+        Name
+        <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" name="name" [ngModel]="profile().name" (ngModelChange)="setProfileField('name', $event)" />
+      </label>
+      <label class="grid gap-1 text-sm font-semibold text-slate-700">
+        Title
+        <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" name="title" [ngModel]="profile().title" (ngModelChange)="setProfileField('title', $event)" />
+      </label>
+      <label class="grid gap-1 text-sm font-semibold text-slate-700">
+        Location
+        <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" name="location" [ngModel]="profile().location" (ngModelChange)="setProfileField('location', $event)" />
+      </label>
+      <label class="grid gap-1 text-sm font-semibold text-slate-700">
+        Email
+        <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="email" name="email" [ngModel]="profile().email" (ngModelChange)="setProfileField('email', $event)" />
+      </label>
+      <label class="grid gap-1 text-sm font-semibold text-slate-700">
+        Phone
+        <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" name="phone" [ngModel]="profile().phone" (ngModelChange)="setProfileField('phone', $event)" />
+      </label>
+      <label class="grid gap-1 text-sm font-semibold text-slate-700">
+        Website
+        <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" name="website" [ngModel]="profile().website" (ngModelChange)="setProfileField('website', $event)" />
+      </label>
+      <label class="grid gap-1 text-sm font-semibold text-slate-700 md:col-span-2">
+        Summary
+        <textarea class="min-h-28 rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="summary" [ngModel]="profile().summary" (ngModelChange)="setProfileField('summary', $event)"></textarea>
+      </label>
+    </div>
+  </section>
+
+  <section class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_28rem]">
+    <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h2 class="text-lg font-bold text-slate-950">Entries</h2>
+        <div class="flex flex-wrap gap-2">
+          <button type="button" class="rounded-md border px-3 py-2 text-sm font-bold transition" [class.border-blue-200]="selectedSection() === 'All'" [class.bg-blue-50]="selectedSection() === 'All'" [class.text-blue-700]="selectedSection() === 'All'" [class.border-slate-300]="selectedSection() !== 'All'" (click)="selectedSection.set('All')">All</button>
+          <button *ngFor="let section of sections" type="button" class="rounded-md border px-3 py-2 text-sm font-bold transition" [class.border-blue-200]="selectedSection() === section" [class.bg-blue-50]="selectedSection() === section" [class.text-blue-700]="selectedSection() === section" [class.border-slate-300]="selectedSection() !== section" (click)="selectedSection.set(section)">{{ section }}</button>
+        </div>
+      </div>
+
+      <div class="mt-4 overflow-x-auto rounded-lg border border-slate-200">
+        <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
+          <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+            <tr>
+              <th class="px-3 py-3 font-bold">Section</th>
+              <th class="px-3 py-3 font-bold">Order</th>
+              <th class="px-3 py-3 font-bold">Title</th>
+              <th class="px-3 py-3 font-bold">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 bg-white">
+            <tr *ngFor="let item of filteredItems()" class="cursor-pointer transition hover:bg-blue-50" (click)="selectItem(item)" [class.bg-blue-50]="itemForm().id === item.id">
+              <td class="whitespace-nowrap px-3 py-3 font-semibold text-slate-700">{{ item.section }}</td>
+              <td class="whitespace-nowrap px-3 py-3 text-slate-600">{{ item.sortOrder }}</td>
+              <td class="px-3 py-3 font-bold text-slate-950">{{ item.title }}</td>
+              <td class="whitespace-nowrap px-3 py-3">
+                <span class="rounded-full px-2.5 py-1 text-xs font-bold" [class.bg-emerald-50]="item.isActive" [class.text-emerald-700]="item.isActive" [class.bg-slate-100]="!item.isActive" [class.text-slate-500]="!item.isActive">{{ item.isActive ? 'Active' : 'Hidden' }}</span>
+              </td>
+            </tr>
+            <tr *ngIf="filteredItems().length === 0">
+              <td colspan="4" class="px-3 py-6 text-center text-sm text-slate-500">No resume entries found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="flex items-center justify-between gap-3">
+        <h2 class="text-lg font-bold text-slate-950">{{ itemForm().id ? 'Edit Entry' : 'New Entry' }}</h2>
+        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="newItem()">New</button>
+      </div>
+
+      <form class="mt-4 grid gap-4" (ngSubmit)="saveItem()">
+        <div class="grid gap-4 sm:grid-cols-2">
+          <label class="grid gap-1 text-sm font-semibold text-slate-700">
+            Section
+            <select class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="section" [ngModel]="itemForm().section" (ngModelChange)="setItemField('section', $event)">
+              <option *ngFor="let section of sections" [ngValue]="section">{{ section }}</option>
+            </select>
+          </label>
+          <label class="grid gap-1 text-sm font-semibold text-slate-700">
+            Sort order
+            <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="number" name="sortOrder" [ngModel]="itemForm().sortOrder" (ngModelChange)="setItemField('sortOrder', $event)" />
+          </label>
+        </div>
+
+        <label class="grid gap-1 text-sm font-semibold text-slate-700">
+          Title
+          <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" name="itemTitle" [ngModel]="itemForm().title" (ngModelChange)="setItemField('title', $event)" />
+        </label>
+        <label class="grid gap-1 text-sm font-semibold text-slate-700">
+          Subtitle
+          <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" name="subtitle" [ngModel]="itemForm().subtitle" (ngModelChange)="setItemField('subtitle', $event)" />
+        </label>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          <label class="grid gap-1 text-sm font-semibold text-slate-700">
+            Start
+            <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" name="startText" [ngModel]="itemForm().startText" (ngModelChange)="setItemField('startText', $event)" />
+          </label>
+          <label class="grid gap-1 text-sm font-semibold text-slate-700">
+            End
+            <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" name="endText" [ngModel]="itemForm().endText" (ngModelChange)="setItemField('endText', $event)" />
+          </label>
+        </div>
+
+        <label class="grid gap-1 text-sm font-semibold text-slate-700">
+          Location
+          <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" name="itemLocation" [ngModel]="itemForm().location" (ngModelChange)="setItemField('location', $event)" />
+        </label>
+        <label class="grid gap-1 text-sm font-semibold text-slate-700">
+          Body
+          <textarea class="min-h-36 rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="body" [ngModel]="itemForm().body" (ngModelChange)="setItemField('body', $event)"></textarea>
+        </label>
+        <label class="grid gap-1 text-sm font-semibold text-slate-700">
+          Tags / Skills
+          <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" name="tags" [ngModel]="itemForm().tags" (ngModelChange)="setItemField('tags', $event)" />
+        </label>
+
+        <label class="flex items-center gap-2 text-sm font-semibold text-slate-700">
+          <input type="checkbox" name="isActive" [ngModel]="itemForm().isActive" (ngModelChange)="setItemField('isActive', $event)" />
+          Active
+        </label>
+
+        <div class="flex flex-col gap-2 sm:flex-row">
+          <button type="submit" class="rounded-md bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60" [disabled]="loading()">Save entry</button>
+          <button type="button" class="rounded-md border border-red-200 bg-white px-4 py-2 text-sm font-bold text-red-700 shadow-sm transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50" (click)="deleteSelectedItem()" [disabled]="loading() || !itemForm().id">Delete</button>
+        </div>
+      </form>
+    </article>
+  </section>
+</section>

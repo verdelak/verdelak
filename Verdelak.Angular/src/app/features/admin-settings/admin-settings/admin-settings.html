@@ -1,0 +1,464 @@
+<section class="grid gap-4">
+  <header class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+      <div>
+        <p class="text-xs font-bold uppercase tracking-wider text-blue-600">Administration</p>
+        <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">Settings</h1>
+        <p class="mt-1 text-sm text-slate-600">Manage shared lookup values used across the site.</p>
+      </div>
+    </div>
+  </header>
+
+  <div *ngIf="error()" class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800">{{ error() }}</div>
+  <div *ngIf="message()" class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">{{ message() }}</div>
+
+  <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+      <div>
+        <h2 class="text-lg font-bold text-slate-950">External Sites</h2>
+        <p class="mt-1 text-sm text-slate-600">Shared links used by the External menu for local development and future hosted URLs. Blank active links stay disabled in the menu until a URL is added.</p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="resetExternalSites()" [disabled]="externalSitesLoading()">Defaults</button>
+        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="exportExternalSitesCsv()" [disabled]="externalSitesLoading()">Export links</button>
+        <button type="button" class="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-bold text-blue-800 shadow-sm transition hover:bg-blue-100" (click)="addExternalSite()" [disabled]="externalSitesLoading()">Add site</button>
+        <button type="button" class="rounded-md bg-blue-600 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60" (click)="saveExternalSites()" [disabled]="externalSitesLoading()">
+          {{ externalSitesLoading() ? 'Saving.' : 'Save external sites' }}
+        </button>
+      </div>
+    </div>
+
+    <label class="mt-4 grid max-w-xs gap-1 text-sm font-semibold text-slate-700">
+      Active URL set
+      <select class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="externalSites().environmentName" (ngModelChange)="setExternalEnvironment($event)">
+        <option value="local">Local</option>
+        <option value="production">Production</option>
+      </select>
+    </label>
+
+    <div class="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+      <article *ngFor="let card of externalSiteSummaryCards()" class="rounded-md border border-slate-200 bg-slate-50 p-3">
+        <p class="text-xs font-bold uppercase text-slate-500">{{ card.label }}</p>
+        <p class="mt-1 text-2xl font-bold text-slate-950">{{ card.value }}</p>
+        <p class="mt-1 text-xs font-semibold text-slate-600">{{ card.detail }}</p>
+      </article>
+    </div>
+
+    <div *ngIf="externalSiteWarnings().length" class="mt-4 rounded-md border border-amber-200 bg-amber-50 p-3">
+      <h3 class="text-sm font-bold text-amber-950">External Site Review</h3>
+      <ul class="mt-2 grid gap-1 text-sm font-semibold text-amber-800">
+        <li *ngFor="let warning of externalSiteWarnings()">{{ warning }}</li>
+      </ul>
+    </div>
+
+    <div class="mt-4 overflow-x-auto rounded-lg border border-slate-200">
+      <table class="min-w-[90rem] divide-y divide-slate-200 text-left text-sm">
+        <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+          <tr>
+            <th class="px-3 py-3 font-bold">Active</th>
+            <th class="px-3 py-3 font-bold">Key</th>
+            <th class="px-3 py-3 font-bold">Label</th>
+            <th class="px-3 py-3 font-bold">Local URL</th>
+            <th class="px-3 py-3 font-bold">Production URL</th>
+            <th class="px-3 py-3 font-bold">Menu target</th>
+            <th class="px-3 py-3 font-bold">Sort</th>
+            <th class="px-3 py-3 font-bold">New tab</th>
+            <th class="px-3 py-3 font-bold">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 bg-white">
+          <tr *ngFor="let row of sortedExternalSiteRows()">
+            <td class="px-3 py-3 align-top">
+              <input type="checkbox" [ngModel]="row.site.isActive" (ngModelChange)="setExternalSiteField(row.index, 'isActive', $event)" [attr.aria-label]="'Enable ' + row.site.label" />
+            </td>
+            <td class="px-3 py-3 align-top">
+              <input class="w-36 rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" maxlength="50" [ngModel]="row.site.key" (ngModelChange)="setExternalSiteField(row.index, 'key', $event)" />
+            </td>
+            <td class="px-3 py-3 align-top">
+              <input class="w-40 rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" maxlength="100" [ngModel]="row.site.label" (ngModelChange)="setExternalSiteField(row.index, 'label', $event)" />
+            </td>
+            <td class="px-3 py-3 align-top">
+              <input class="w-64 rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="url" placeholder="http://localhost:5120" [ngModel]="row.site.localUrl" (ngModelChange)="setExternalSiteField(row.index, 'localUrl', $event)" />
+            </td>
+            <td class="px-3 py-3 align-top">
+              <input class="w-64 rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="url" placeholder="https://example.azurewebsites.net" [ngModel]="row.site.productionUrl" (ngModelChange)="setExternalSiteField(row.index, 'productionUrl', $event)" />
+            </td>
+            <td class="px-3 py-3 align-top">
+              <div class="grid max-w-72 gap-1">
+                <span class="rounded-full px-2 py-1 text-xs font-bold" [class.bg-emerald-50]="row.site.isActive && externalSiteResolvedUrl(row.site)" [class.text-emerald-700]="row.site.isActive && externalSiteResolvedUrl(row.site)" [class.bg-slate-100]="!row.site.isActive" [class.text-slate-500]="!row.site.isActive" [class.bg-amber-50]="row.site.isActive && !externalSiteResolvedUrl(row.site)" [class.text-amber-700]="row.site.isActive && !externalSiteResolvedUrl(row.site)">
+                  {{ externalSiteStatus(row.site) }}
+                </span>
+                <a *ngIf="externalSiteResolvedUrl(row.site) as resolvedUrl" class="truncate text-xs font-semibold text-blue-700 hover:text-blue-900" [href]="resolvedUrl" target="_blank" rel="noopener">{{ resolvedUrl }}</a>
+              </div>
+            </td>
+            <td class="px-3 py-3 align-top">
+              <input class="w-24 rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="number" min="1" step="1" [ngModel]="row.site.sortOrder" (ngModelChange)="setExternalSiteField(row.index, 'sortOrder', $event)" />
+            </td>
+            <td class="px-3 py-3 align-top">
+              <input type="checkbox" [ngModel]="row.site.openInNewTab" (ngModelChange)="setExternalSiteField(row.index, 'openInNewTab', $event)" [attr.aria-label]="'Open ' + row.site.label + ' in a new tab'" />
+            </td>
+            <td class="px-3 py-3 align-top">
+              <div class="flex flex-wrap gap-2">
+                <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50" (click)="openExternalSite(row.site)" [disabled]="!externalSiteResolvedUrl(row.site)">Open</button>
+                <button type="button" class="rounded-md border border-red-200 bg-white px-3 py-2 text-sm font-bold text-red-700 shadow-sm transition hover:bg-red-50" (click)="removeExternalSite(row.index)">Remove</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+      <div>
+        <h2 class="text-lg font-bold text-slate-950">Barcode Lookup Providers</h2>
+        <p class="mt-1 text-sm text-slate-600">Controls which external sources Auto lookup uses and the order they run.</p>
+        <p class="mt-2 rounded-md bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700">Auto order: {{ barcodeProviderOrderPreview() }}</p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="resetBarcodeLookups()" [disabled]="barcodeLookupsLoading()">Defaults</button>
+        <button type="button" class="rounded-md bg-blue-600 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60" (click)="saveBarcodeLookups()" [disabled]="barcodeLookupsLoading()">
+          {{ barcodeLookupsLoading() ? 'Saving.' : 'Save barcode lookups' }}
+        </button>
+      </div>
+    </div>
+
+    <div class="mt-4 overflow-x-auto rounded-lg border border-slate-200">
+      <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
+        <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+          <tr>
+            <th class="px-3 py-3 font-bold">Enabled</th>
+            <th class="px-3 py-3 font-bold">Provider</th>
+            <th class="px-3 py-3 font-bold">Order</th>
+            <th class="px-3 py-3 font-bold">Priority</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 bg-white">
+          <tr *ngFor="let provider of barcodeProviders(); let first = first; let last = last">
+            <td class="px-3 py-3">
+              <input type="checkbox" [ngModel]="provider.enabled" (ngModelChange)="setBarcodeProviderEnabled(provider.provider, $event)" [attr.aria-label]="'Enable ' + provider.provider" />
+            </td>
+            <td class="whitespace-nowrap px-3 py-3 font-semibold text-slate-900">{{ provider.provider }}</td>
+            <td class="px-3 py-3">
+              <div class="flex gap-1">
+                <button type="button" class="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-700 disabled:cursor-not-allowed disabled:opacity-40" (click)="moveBarcodeProvider(provider.provider, -1)" [disabled]="barcodeLookupsLoading() || first" [attr.aria-label]="'Move ' + provider.provider + ' up'">Up</button>
+                <button type="button" class="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-700 disabled:cursor-not-allowed disabled:opacity-40" (click)="moveBarcodeProvider(provider.provider, 1)" [disabled]="barcodeLookupsLoading() || last" [attr.aria-label]="'Move ' + provider.provider + ' down'">Down</button>
+              </div>
+            </td>
+            <td class="px-3 py-3">
+              <input type="number" min="1" step="1" class="w-28 rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="provider.priority" (ngModelChange)="setBarcodeProviderPriority(provider.provider, $event)" />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+      <div>
+        <h2 class="text-lg font-bold text-slate-950">Finance Tracker</h2>
+        <p class="mt-1 text-sm text-slate-600">Shared categories, year-close date, and default report period used by Finance Tracker.</p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="resetFinanceSettings()" [disabled]="financeSettingsLoading()">Defaults</button>
+        <button type="button" class="rounded-md bg-blue-600 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60" (click)="saveFinanceSettings()" [disabled]="financeSettingsLoading()">
+          {{ financeSettingsLoading() ? 'Saving.' : 'Save finance settings' }}
+        </button>
+      </div>
+    </div>
+
+    <div class="mt-4 grid gap-4 xl:grid-cols-3">
+      <label class="grid gap-1 text-sm font-semibold text-slate-700">
+        Account categories
+        <textarea rows="7" class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="financeAccountCategoryText()" (ngModelChange)="financeAccountCategoryText.set($event)"></textarea>
+      </label>
+      <label class="grid gap-1 text-sm font-semibold text-slate-700">
+        Bill categories
+        <textarea rows="7" class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="financeBillCategoryText()" (ngModelChange)="financeBillCategoryText.set($event)"></textarea>
+      </label>
+      <label class="grid gap-1 text-sm font-semibold text-slate-700">
+        Donation methods
+        <textarea rows="7" class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="financeDonationMethodText()" (ngModelChange)="financeDonationMethodText.set($event)"></textarea>
+      </label>
+    </div>
+
+    <div class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <label class="grid gap-1 text-sm font-semibold text-slate-700">
+        Year close month
+        <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="number" min="1" max="12" step="1" [ngModel]="financeSettings().yearCloseMonth" (ngModelChange)="setFinanceSetting('yearCloseMonth', $event)" />
+      </label>
+      <label class="grid gap-1 text-sm font-semibold text-slate-700">
+        Year close day
+        <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="number" min="1" max="31" step="1" [ngModel]="financeSettings().yearCloseDay" (ngModelChange)="setFinanceSetting('yearCloseDay', $event)" />
+      </label>
+      <label class="grid gap-1 text-sm font-semibold text-slate-700">
+        Default report year
+        <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="number" min="2000" max="2100" step="1" [ngModel]="financeSettings().defaultReportYear" (ngModelChange)="setFinanceSetting('defaultReportYear', $event)" />
+      </label>
+      <label class="grid gap-1 text-sm font-semibold text-slate-700">
+        Default report month
+        <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="number" min="1" max="12" step="1" [ngModel]="financeSettings().defaultReportMonth" (ngModelChange)="setFinanceSetting('defaultReportMonth', $event)" />
+      </label>
+    </div>
+  </section>
+
+  <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+      <div>
+        <h2 class="text-lg font-bold text-slate-950">Fish Report Thresholds</h2>
+        <p class="mt-1 text-sm text-slate-600">Shared defaults used by the Fish reports page.</p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="resetFishThresholds()" [disabled]="fishThresholdsLoading()">Defaults</button>
+        <button type="button" class="rounded-md bg-blue-600 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60" (click)="saveFishThresholds()" [disabled]="fishThresholdsLoading()">
+          {{ fishThresholdsLoading() ? 'Saving.' : 'Save thresholds' }}
+        </button>
+      </div>
+    </div>
+
+    <div class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+      <label class="grid gap-1 text-sm font-semibold text-slate-700">
+        Water test due
+        <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="number" min="0" step="1" [ngModel]="fishThresholds().waterTestDueDays" (ngModelChange)="setFishThreshold('waterTestDueDays', $event)" />
+      </label>
+      <label class="grid gap-1 text-sm font-semibold text-slate-700">
+        Critical overdue
+        <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="number" min="0" step="1" [ngModel]="fishThresholds().overdueCriticalDays" (ngModelChange)="setFishThreshold('overdueCriticalDays', $event)" />
+      </label>
+      <label class="grid gap-1 text-sm font-semibold text-slate-700">
+        Critical test age
+        <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="number" min="0" step="1" [ngModel]="fishThresholds().waterTestCriticalDays" (ngModelChange)="setFishThreshold('waterTestCriticalDays', $event)" />
+      </label>
+      <label class="grid gap-1 text-sm font-semibold text-slate-700">
+        Low product %
+        <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="number" min="0" max="100" step="1" [ngModel]="fishThresholds().lowProductPercent" (ngModelChange)="setFishThreshold('lowProductPercent', $event)" />
+      </label>
+      <label class="grid gap-1 text-sm font-semibold text-slate-700">
+        Expiring soon
+        <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="number" min="0" step="1" [ngModel]="fishThresholds().expiringSoonDays" (ngModelChange)="setFishThreshold('expiringSoonDays', $event)" />
+      </label>
+    </div>
+  </section>
+
+  <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+      <div>
+        <h2 class="text-lg font-bold text-slate-950">Shopping Categories</h2>
+        <p class="mt-1 text-sm text-slate-600">Optional category suggestions used by the Shopping List page.</p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="resetShoppingCategories()" [disabled]="shoppingCategoriesLoading()">Defaults</button>
+        <button type="button" class="rounded-md bg-blue-600 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60" (click)="saveShoppingCategories()" [disabled]="shoppingCategoriesLoading()">
+          {{ shoppingCategoriesLoading() ? 'Saving.' : 'Save categories' }}
+        </button>
+      </div>
+    </div>
+
+    <label class="mt-4 grid gap-1 text-sm font-semibold text-slate-700">
+      Categories
+      <textarea rows="7" class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="shoppingCategoryText()" (ngModelChange)="shoppingCategoryText.set($event)"></textarea>
+    </label>
+  </section>
+
+  <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+      <div>
+        <h2 class="text-lg font-bold text-slate-950">Recipe Lookups</h2>
+        <p class="mt-1 text-sm text-slate-600">Shared suggestions for recipe categories, cuisines, and food tags.</p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="resetRecipeLookups()" [disabled]="recipeLookupsLoading()">Defaults</button>
+        <button type="button" class="rounded-md bg-blue-600 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60" (click)="saveRecipeLookups()" [disabled]="recipeLookupsLoading()">
+          {{ recipeLookupsLoading() ? 'Saving.' : 'Save recipe lookups' }}
+        </button>
+      </div>
+    </div>
+
+    <div class="mt-4 grid gap-4 lg:grid-cols-3">
+      <label class="grid gap-1 text-sm font-semibold text-slate-700">
+        Categories
+        <textarea rows="7" class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="recipeCategoryText()" (ngModelChange)="recipeCategoryText.set($event)"></textarea>
+      </label>
+      <label class="grid gap-1 text-sm font-semibold text-slate-700">
+        Cuisines
+        <textarea rows="7" class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="recipeCuisineText()" (ngModelChange)="recipeCuisineText.set($event)"></textarea>
+      </label>
+      <label class="grid gap-1 text-sm font-semibold text-slate-700">
+        Tags
+        <textarea rows="7" class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="recipeTagText()" (ngModelChange)="recipeTagText.set($event)"></textarea>
+      </label>
+    </div>
+  </section>
+
+  <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+      <div>
+        <h2 class="text-lg font-bold text-slate-950">Alcohol Lookups</h2>
+        <p class="mt-1 text-sm text-slate-600">Shared categories and storage locations used by the Alcohol inventory page.</p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="resetAlcoholLookups()" [disabled]="alcoholLookupsLoading()">Defaults</button>
+        <button type="button" class="rounded-md bg-blue-600 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60" (click)="saveAlcoholLookups()" [disabled]="alcoholLookupsLoading()">
+          {{ alcoholLookupsLoading() ? 'Saving.' : 'Save alcohol lookups' }}
+        </button>
+      </div>
+    </div>
+
+    <div class="mt-4 grid gap-4 lg:grid-cols-2">
+      <label class="grid gap-1 text-sm font-semibold text-slate-700">
+        Categories
+        <textarea rows="8" class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="alcoholCategoryText()" (ngModelChange)="alcoholCategoryText.set($event)"></textarea>
+      </label>
+      <label class="grid gap-1 text-sm font-semibold text-slate-700">
+        Locations
+        <textarea rows="8" class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="alcoholLocationText()" (ngModelChange)="alcoholLocationText.set($event)"></textarea>
+      </label>
+    </div>
+  </section>
+
+  <section class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
+    <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="flex items-center justify-between gap-3">
+        <div>
+          <h2 class="text-lg font-bold text-slate-950">Software Platforms</h2>
+          <p class="mt-1 text-sm text-slate-600">Shared platform values used by the Software inventory page.</p>
+        </div>
+        <button type="button" class="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-bold text-blue-800 shadow-sm transition hover:bg-blue-100 disabled:cursor-wait disabled:opacity-60" (click)="seedSoftwareDefaults()" [disabled]="softwarePlatformsLoading() || softwareLocationsLoading()">Add common defaults</button>
+      </div>
+
+      <div class="mt-4 overflow-x-auto rounded-lg border border-slate-200">
+        <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
+          <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+            <tr>
+              <th class="px-3 py-3 font-bold">Platform</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 bg-white">
+            <tr *ngFor="let platform of softwarePlatforms()" (click)="selectSoftwarePlatform(platform)" class="cursor-pointer transition hover:bg-blue-50" [class.bg-blue-50]="selectedSoftwarePlatformId() === platform.id">
+              <td class="whitespace-nowrap px-3 py-3 font-bold text-slate-950">{{ platform.name }}</td>
+            </tr>
+            <tr *ngIf="softwarePlatforms().length === 0 && !softwarePlatformsLoading()">
+              <td class="px-3 py-6 text-center text-sm text-slate-500">No software platforms found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <h2 class="text-lg font-bold text-slate-950">{{ softwarePlatformForm().id ? 'Edit Platform' : 'Platform Details' }}</h2>
+
+      <form class="mt-4 grid gap-4" (ngSubmit)="saveSoftwarePlatform()">
+        <label class="grid gap-1 text-sm font-semibold text-slate-700">
+          Platform name
+          <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" maxlength="50" name="softwarePlatformName" [ngModel]="softwarePlatformForm().name" (ngModelChange)="setSoftwarePlatformName($event)" />
+        </label>
+
+        <div class="flex flex-col gap-2 sm:flex-row">
+          <button type="submit" class="rounded-md bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60" [disabled]="softwarePlatformsLoading()">{{ softwarePlatformForm().id ? 'Save Platform' : 'Add Platform' }}</button>
+          <button type="button" class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="startNewSoftwarePlatform()">Clear</button>
+          <button type="button" class="rounded-md border border-red-200 bg-white px-4 py-2 text-sm font-bold text-red-700 shadow-sm transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50" (click)="deleteSelectedSoftwarePlatform()" [disabled]="softwarePlatformsLoading() || !softwarePlatformForm().id">Delete</button>
+        </div>
+      </form>
+    </article>
+  </section>
+
+  <section class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
+    <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="flex items-center justify-between gap-3">
+        <div>
+          <h2 class="text-lg font-bold text-slate-950">Software Locations</h2>
+          <p class="mt-1 text-sm text-slate-600">Storefront, launcher, and physical storage values used by Software inventory.</p>
+        </div>
+      </div>
+
+      <div class="mt-4 overflow-x-auto rounded-lg border border-slate-200">
+        <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
+          <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+            <tr>
+              <th class="px-3 py-3 font-bold">Location</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 bg-white">
+            <tr *ngFor="let location of softwareLocations()" (click)="selectSoftwareLocation(location)" class="cursor-pointer transition hover:bg-blue-50" [class.bg-blue-50]="selectedSoftwareLocationId() === location.id">
+              <td class="whitespace-nowrap px-3 py-3 font-bold text-slate-950">{{ location.name }}</td>
+            </tr>
+            <tr *ngIf="softwareLocations().length === 0 && !softwareLocationsLoading()">
+              <td class="px-3 py-6 text-center text-sm text-slate-500">No software locations found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <h2 class="text-lg font-bold text-slate-950">{{ softwareLocationForm().id ? 'Edit Location' : 'Location Details' }}</h2>
+
+      <form class="mt-4 grid gap-4" (ngSubmit)="saveSoftwareLocation()">
+        <label class="grid gap-1 text-sm font-semibold text-slate-700">
+          Location name
+          <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" maxlength="50" name="softwareLocationName" [ngModel]="softwareLocationForm().name" (ngModelChange)="setSoftwareLocationName($event)" />
+        </label>
+
+        <div class="flex flex-col gap-2 sm:flex-row">
+          <button type="submit" class="rounded-md bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60" [disabled]="softwareLocationsLoading()">{{ softwareLocationForm().id ? 'Save Location' : 'Add Location' }}</button>
+          <button type="button" class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="startNewSoftwareLocation()">Clear</button>
+          <button type="button" class="rounded-md border border-red-200 bg-white px-4 py-2 text-sm font-bold text-red-700 shadow-sm transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50" (click)="deleteSelectedSoftwareLocation()" [disabled]="softwareLocationsLoading() || !softwareLocationForm().id">Delete</button>
+        </div>
+      </form>
+    </article>
+  </section>
+
+  <section class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
+    <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="flex items-center justify-between gap-3">
+        <h2 class="text-lg font-bold text-slate-950">Spookytown Types</h2>
+        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="startNewSpookytownType()">New type</button>
+      </div>
+
+      <div class="mt-4 overflow-x-auto rounded-lg border border-slate-200">
+        <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
+          <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+            <tr>
+              <th class="px-3 py-3 font-bold">ID</th>
+              <th class="px-3 py-3 font-bold">Type</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 bg-white">
+            <tr *ngFor="let type of spookytownTypes()" (click)="selectSpookytownType(type)" class="cursor-pointer transition hover:bg-blue-50" [class.bg-blue-50]="selectedTypeId() === type.id">
+              <td class="whitespace-nowrap px-3 py-3 font-bold text-slate-950">{{ type.id }}</td>
+              <td class="whitespace-nowrap px-3 py-3 text-slate-700">{{ type.type }}</td>
+            </tr>
+            <tr *ngIf="spookytownTypes().length === 0 && !loading()">
+              <td colspan="2" class="px-3 py-6 text-center text-sm text-slate-500">No Spookytown types found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <h2 class="text-lg font-bold text-slate-950">{{ form().originalId ? 'Edit Type' : 'New Type' }}</h2>
+
+      <form class="mt-4 grid gap-4" (ngSubmit)="saveSpookytownType()">
+        <label class="grid gap-1 text-sm font-semibold text-slate-700">
+          Type ID
+          <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal uppercase shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" maxlength="1" name="spookytownTypeId" [ngModel]="form().id" (ngModelChange)="setFormField('id', $event)" [disabled]="!!form().originalId" />
+        </label>
+
+        <label class="grid gap-1 text-sm font-semibold text-slate-700">
+          Type name
+          <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" name="spookytownTypeName" [ngModel]="form().type" (ngModelChange)="setFormField('type', $event)" />
+        </label>
+
+        <div class="flex flex-col gap-2 sm:flex-row">
+          <button type="submit" class="rounded-md bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60" [disabled]="loading()">Save</button>
+          <button type="button" class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="startNewSpookytownType()">Clear</button>
+          <button type="button" class="rounded-md border border-red-200 bg-white px-4 py-2 text-sm font-bold text-red-700 shadow-sm transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50" (click)="deleteSelectedSpookytownType()" [disabled]="loading() || !form().originalId">Delete</button>
+        </div>
+      </form>
+    </article>
+  </section>
+</section>

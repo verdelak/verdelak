@@ -1,0 +1,171 @@
+<div *ngIf="error(); else gameDetail">
+  <p class="error">{{ error() }}</p>
+  <button (click)="goBack()">Back</button>
+</div>
+
+<ng-template #gameDetail>
+  <div *ngIf="game()">
+    <h2>{{ game()!.title }}</h2>
+    <div *ngIf="!isEditing(); else editForm">
+    <!-- read-only view -->
+    <p *ngIf="game()!.isExpansion && baseGame()">
+        This is an expansion for:
+        <a [routerLink]="['/boardgames', baseGame()!.gameID]">{{ baseGame()!.title }}</a>
+    </p>
+
+    <!-- current details -->
+    <p>
+      <strong>Owned:</strong> {{ game()!.owns ? '✅ Yes' : 'No' }}<br>
+      <strong>Wishlist:</strong> {{ game()!.wishlist ? '🛒 Yes' : 'No' }}<br>
+      <strong>My Rating:</strong> {{ game()!.personalRating ?? '—' }}<br>
+      <strong>BGG Rating:</strong> {{ game()!.bgg_Rating?.toFixed(3) ?? '—' }}<br>
+    </p>
+
+    <p>
+      <strong>Notes:</strong><br>
+      <span *ngIf="game()!.notes; else noNotes">{{ game()!.notes }}</span>
+      <ng-template #noNotes><i>No notes</i></ng-template>
+    </p>
+
+    <button (click)="startEdit()">Edit</button>
+    <button (click)="goBack()">Back</button>
+    </div>
+
+    <p *ngIf="game()!.isExpansion">
+      <strong>This is an expansion.</strong>
+      <br>
+      <span *ngIf="game()!.baseGameID">
+        Base Game ID:
+        <a [routerLink]="['/boardgames', game()!.baseGameID]">{{ game()!.baseGameID }}</a>
+      </span>
+    </p>
+
+    <div *ngIf="!game()!.isExpansion && expansions().length > 0">
+        <h3>Expansions</h3>
+        <ul>
+            <li *ngFor="let exp of expansions()">
+            <a [routerLink]="['/boardgames', exp.gameID]">{{ exp.title }}</a>
+            <span *ngIf="exp.owns">✅</span>
+            <span *ngIf="exp.wishlist">🛒</span>
+            </li>
+        </ul>
+    </div>
+
+    <div *ngIf="game()!.isExpansion && baseGame()">
+    <p class="base-game-ref">
+        This is an expansion for:
+        <a [routerLink]="['/boardgames', baseGame()!.gameID]">{{ baseGame()!.title }}</a>
+    </p>
+    </div>
+
+
+        <h3>Log a Play</h3>
+    <form (ngSubmit)="logPlay()">
+    <label>
+        Date:
+        <input
+            type="date"
+            [ngModel]="playDate()"
+            (ngModelChange)="playDate.set($event)"
+            name="playDate"
+            />
+    </label><br>
+
+    <label>
+        Plays:
+        <input
+        type="number"
+        [ngModel]="playCount()"
+        (ngModelChange)="playCount.set($event)"
+        name="playCount"
+        />    
+    </label><br>
+
+    <label>
+        Notes:
+        <textarea
+        [ngModel]="playNote()"
+        (ngModelChange)="playNote.set($event)"
+        name="playNote"
+        rows="2"
+        ></textarea>
+    </label><br>
+
+    <button type="submit">Log Play</button>
+    </form>
+
+    <div *ngIf="playHistory().length > 0">
+        <h3>Play History</h3>
+        <table class="play-table">
+            <thead>
+            <tr>
+                <th>Date</th>
+                <th>Plays</th>
+                <th>Notes</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let play of playHistory()">
+                <td>{{ play.playDate }}</td>
+                <td>{{ play.playCount }}</td>
+                <td>{{ play.notes || '—' }}</td>
+            </tr>
+            </tbody>
+        </table>
+        </div>
+
+    <button (click)="goBack()">Back to List</button>
+  </div>
+</ng-template>
+
+<ng-template #editForm>
+  <form (ngSubmit)="saveChanges()">
+    <label>
+      Title:
+      <input [(ngModel)]="editModel()!.title" name="title" required />
+    </label><br>
+
+    <label>
+      <input type="checkbox" [(ngModel)]="editModel()!.owns" name="owns" />
+      Owned
+    </label>
+
+    <label>
+      <input type="checkbox" [(ngModel)]="editModel()!.wishlist" name="wishlist" />
+      Wishlist
+    </label><br>
+
+    <label>
+      My Rating:
+      <input type="number" step="0.1" min="0" max="10"
+             [(ngModel)]="editModel()!.personalRating"
+             name="rating" />
+    </label><br>
+
+    <label>
+      Notes:<br>
+      <textarea [(ngModel)]="editModel()!.notes" name="notes" rows="4"></textarea>
+    </label><br>
+
+    <label>
+    <input type="checkbox" [(ngModel)]="editModel()!.isExpansion" name="isExpansion" />
+    Is Expansion
+    </label><br>
+
+    <div *ngIf="editModel()!.isExpansion">
+    <label>
+        Base Game:
+        <select [(ngModel)]="editModel()!.baseGameID" name="baseGameID">
+        <option [ngValue]="null">-- None Selected --</option>
+        <option *ngFor="let base of baseGameOptions()" [ngValue]="base.gameID">
+            {{ base.title }}
+        </option>
+        </select>
+    </label><br>
+    </div>
+
+    <button type="submit">Save</button>
+    <button type="button" (click)="cancelEdit()">Cancel</button>
+  </form>
+</ng-template>
+

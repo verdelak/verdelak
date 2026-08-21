@@ -1,0 +1,151 @@
+:host {
+  display: block;
+}
+
+.guitar-print-sheet {
+  color: #0f172a;
+}
+
+.guitar-print-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid #cbd5e1;
+  padding-bottom: 0.75rem;
+}
+
+.guitar-print-header h1 {
+  margin: 0.125rem 0 0;
+  font-size: 22pt;
+  line-height: 1.1;
+}
+
+.guitar-print-eyebrow,
+.guitar-print-meta {
+  margin: 0;
+  color: #475569;
+  font-size: 9pt;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.guitar-print-meta {
+  display: grid;
+  gap: 0.125rem;
+  text-align: right;
+}
+
+.guitar-print-sheet section {
+  break-inside: avoid;
+  margin-top: 0.75rem;
+}
+
+.guitar-print-sheet h2 {
+  margin: 0 0 0.35rem;
+  font-size: 13pt;
+}
+
+.guitar-print-sheet h3 {
+  margin: 0 0 0.2rem;
+  font-size: 10pt;
+}
+
+.guitar-print-sheet p,
+.guitar-print-sheet li {
+  font-size: 9pt;
+  line-height: 1.35;
+}
+
+.guitar-print-sheet p {
+  margin: 0 0 0.25rem;
+}
+
+.guitar-print-grid,
+.guitar-print-arpeggios,
+.guitar-print-routines {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.guitar-print-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.guitar-print-arpeggios {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.guitar-print-routines {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.guitar-print-sheet article {
+  border: 1px solid #cbd5e1;
+  border-radius: 0.25rem;
+  padding: 0.45rem;
+}
+
+.guitar-print-sheet ul,
+.guitar-print-sheet ol {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+@media print {
+  :host {
+    background: white;
+  }
+
+  .guitar-page {
+    max-width: none;
+    padding: 0;
+  }
+
+  .guitar-controls,
+  .guitar-screen {
+    display: none !important;
+  }
+
+  .guitar-print-sheet {
+    display: grid !important;
+    gap: 0.65rem;
+  }
+
+  .guitar-print-sheet app-fretboard-diagram {
+    display: block;
+    break-inside: avoid;
+  }
+
+  .guitar-print-sheet ::ng-deep app-fretboard-diagram section {
+    border: 1px solid #cbd5e1;
+    box-shadow: none;
+    padding: 0.45rem;
+  }
+
+  .guitar-print-sheet ::ng-deep app-fretboard-diagram .mt-4 {
+    margin-top: 0.35rem;
+    overflow: visible;
+  }
+
+  .guitar-print-sheet ::ng-deep .fretboard {
+    min-width: 0;
+    width: 100%;
+    --label-width: 1.8rem;
+    --fret-width: minmax(1.55rem, 1fr);
+    --header-height: 1.2rem;
+    --string-height: 1.6rem;
+  }
+
+  .guitar-print-sheet ::ng-deep .fretboard__fret-label,
+  .guitar-print-sheet ::ng-deep .fretboard__corner {
+    font-size: 6pt;
+  }
+
+  .guitar-print-sheet ::ng-deep .fretboard__string-name,
+  .guitar-print-sheet ::ng-deep .fretboard__note {
+    height: 1.15rem;
+    width: 1.15rem;
+    font-size: 6pt;
+  }
+}

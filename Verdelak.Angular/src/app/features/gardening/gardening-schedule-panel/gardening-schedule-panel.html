@@ -1,0 +1,190 @@
+<section class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
+  <article class="overflow-hidden rounded border border-slate-200 bg-white shadow-sm">
+    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3">
+      <div>
+        <h2 class="text-lg font-bold text-slate-950">Gardening Schedule</h2>
+        <p class="text-sm text-slate-600">{{ activeTaskCount }} active of {{ taskCount }} tasks - {{ openActivityCount }} open recent occurrences</p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <select class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700" [ngModel]="generateDays" (ngModelChange)="generateDaysChange.emit($event)">
+          <option [ngValue]="30">30 days</option>
+          <option [ngValue]="60">60 days</option>
+          <option [ngValue]="90">90 days</option>
+        </select>
+        <button type="button" class="rounded bg-lime-800 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" [disabled]="generatingTasks" (click)="generateSchedule.emit()">Generate Schedule</button>
+        <a routerLink="/tasks" [queryParams]="{ source: 'Gardening' }" class="rounded border border-lime-300 bg-white px-4 py-2 text-sm font-bold text-lime-900 transition hover:bg-lime-50">Open Gardening Schedule</a>
+      </div>
+    </div>
+
+    <section class="grid gap-3 border-b border-slate-200 bg-white p-4">
+      <div class="grid gap-2 rounded border border-lime-100 bg-lime-50 p-3 text-sm font-semibold text-lime-900 md:grid-cols-4">
+        <span>{{ activeTaskCount }} active task definitions</span>
+        <span>{{ openScheduleCount }} open generated</span>
+        <span>{{ completedScheduleCount }} completed</span>
+        <span>{{ skippedScheduleCount }} skipped</span>
+      </div>
+
+      <section class="grid gap-3 rounded border border-slate-200 bg-slate-50 p-3">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h3 class="text-sm font-black uppercase text-slate-600">Master Schedule Preview</h3>
+            <p class="text-sm text-slate-600">Generated Gardening occurrences for the next {{ generateDays }} days. Actions here update the same rows shown on the shared schedule.</p>
+          </div>
+          <button type="button" class="rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 disabled:opacity-50" [disabled]="scheduleLoading" (click)="loadSchedule.emit()">Refresh</button>
+        </div>
+
+        <div *ngIf="scheduleLoading" class="rounded border border-dashed border-slate-300 bg-white p-4 text-sm text-slate-500">Loading Gardening schedule rows.</div>
+
+        <div *ngIf="!scheduleLoading && schedule.length" class="grid gap-2 md:grid-cols-2">
+          <article *ngFor="let item of schedule.slice(0, 12)" class="rounded border border-slate-200 bg-white p-3">
+            <div class="flex flex-wrap items-start justify-between gap-2">
+              <div class="min-w-0">
+                <div class="font-bold text-slate-950">{{ item.title }}</div>
+                <div class="text-xs font-semibold text-slate-500">Due {{ formatDate(item.scheduledDate) }}</div>
+                <p *ngIf="item.detail" class="mt-1 text-sm text-slate-600">{{ item.detail }}</p>
+              </div>
+              <span class="rounded border px-2 py-1 text-xs font-bold" [ngClass]="activityStatusTone(item.status)">{{ item.status }}</span>
+            </div>
+
+            <app-schedule-actions
+              [capabilities]="scheduleCapabilities(item)"
+              [actionDisabled]="isScheduleAction(item)"
+              [moving]="isMovingOccurrence(item)"
+              [moveDate]="scheduleMoveDate"
+              [showActionNotes]="true"
+              [actionNote]="scheduleActionNote"
+              moveButtonClass="rounded bg-lime-800 px-3 py-1.5 text-xs font-bold text-white disabled:opacity-50"
+              (complete)="completeOccurrence.emit({ item, note: $event })"
+              (startMove)="startMoveOccurrence.emit(item)"
+              (skip)="skipOccurrence.emit({ item, note: $event })"
+              (reopen)="reopenOccurrence.emit({ item, note: $event })"
+              (moveDateChange)="moveDateChange.emit($event)"
+              (actionNoteChange)="actionNoteChange.emit($event)"
+              (move)="moveOccurrence.emit({ item, note: $event })"
+              (cancelMove)="cancelMoveOccurrence.emit()" />
+          </article>
+        </div>
+
+        <p *ngIf="!scheduleLoading && schedule.length > 12" class="text-xs font-semibold text-slate-500">Showing first 12 of {{ schedule.length }} generated Gardening rows. Open the shared Master Schedule for the full range.</p>
+        <p *ngIf="!scheduleLoading && schedule.length === 0" class="rounded border border-dashed border-slate-300 bg-white p-4 text-sm text-slate-500">No generated Gardening occurrences in this range yet. Use Generate Schedule to create rows from active task definitions.</p>
+      </section>
+
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h3 class="text-sm font-black uppercase text-slate-600">Schedule Activity</h3>
+          <p class="text-sm text-slate-600">Recent completed, skipped, moved, and reopened Gardening occurrences.</p>
+        </div>
+        <button type="button" class="rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700" (click)="loadActivity.emit()">Refresh</button>
+      </div>
+      <div class="grid gap-2 md:grid-cols-2">
+        <article *ngFor="let item of activity.slice(0, 8)" class="rounded border border-slate-200 bg-slate-50 p-3">
+          <div class="flex flex-wrap items-start justify-between gap-2">
+            <div>
+              <div class="text-sm font-bold text-slate-950">{{ item.taskTitle }}</div>
+              <div class="text-xs font-semibold text-slate-500">Due {{ formatDate(item.scheduledDate) }}</div>
+            </div>
+            <span class="rounded border px-2 py-1 text-xs font-bold" [ngClass]="activityStatusTone(item.status)">{{ item.status }}</span>
+          </div>
+          <div class="mt-1 text-xs font-semibold text-slate-500">{{ formatDate(activityWhen(item)) }}</div>
+          <p *ngIf="item.notes" class="mt-1 text-sm text-slate-700">{{ item.notes }}</p>
+        </article>
+        <p *ngIf="activity.length === 0" class="text-sm text-slate-500">No recent Gardening schedule activity.</p>
+      </div>
+    </section>
+
+    <div class="overflow-auto">
+      <table class="min-w-full divide-y divide-slate-200 text-sm">
+        <thead class="bg-slate-50 text-left text-xs font-bold uppercase text-slate-600">
+          <tr>
+            <th class="px-4 py-2">Task</th>
+            <th class="px-4 py-2">Schedule</th>
+            <th class="px-4 py-2">Start</th>
+            <th class="px-4 py-2">Active</th>
+            <th class="px-4 py-2"></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <tr *ngFor="let task of tasks" class="align-top">
+            <td class="px-4 py-3">
+              <div class="font-bold text-slate-950">{{ task.title }}</div>
+              <div class="max-w-lg text-xs text-slate-500">{{ task.description || '-' }}</div>
+            </td>
+            <td class="px-4 py-3 text-slate-700">
+              <div class="font-bold">{{ task.scheduleType }}</div>
+              <div class="text-xs">{{ task.recurrencePattern }}</div>
+            </td>
+            <td class="px-4 py-3 text-slate-700">{{ formatDate(task.startDate) }}</td>
+            <td class="px-4 py-3">
+              <span class="rounded px-2 py-1 text-xs font-bold" [ngClass]="task.isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'">{{ task.isActive ? 'Yes' : 'No' }}</span>
+            </td>
+            <td class="px-4 py-3">
+              <div class="flex flex-wrap gap-2">
+                <button type="button" class="rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700" (click)="editTask.emit(task)">Edit</button>
+                <button type="button" class="rounded border border-rose-200 bg-white px-3 py-1.5 text-xs font-bold text-rose-700" (click)="deleteTask.emit(task)">Delete</button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="tasks.length === 0">
+            <td colspan="5" class="px-4 py-8 text-center text-sm text-slate-500">No Gardening tasks yet.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+
+  <aside class="rounded border border-slate-200 bg-white p-4 shadow-sm">
+    <div class="mb-3 flex items-center justify-between gap-2">
+      <h2 class="text-lg font-bold text-slate-950">{{ taskForm.id ? 'Edit Task' : 'New Task' }}</h2>
+      <button type="button" class="rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700" (click)="newTask.emit()">New</button>
+    </div>
+
+    <div class="grid gap-3">
+      <label class="grid gap-1 text-sm font-bold text-slate-700">
+        Title
+        <input class="rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="taskForm.title" (ngModelChange)="patchTaskForm.emit({ title: $event })">
+      </label>
+      <label class="grid gap-1 text-sm font-bold text-slate-700">
+        Description
+        <textarea rows="2" class="rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="taskForm.description" (ngModelChange)="patchTaskForm.emit({ description: $event })"></textarea>
+      </label>
+      <div class="grid grid-cols-2 gap-2">
+        <label class="grid gap-1 text-sm font-bold text-slate-700">
+          Schedule
+          <select class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="taskForm.scheduleType" (ngModelChange)="patchTaskForm.emit({ scheduleType: $event })">
+            <option value="OneTime">One time</option>
+            <option value="Daily">Daily</option>
+            <option value="Weekly">Weekly</option>
+            <option value="Monthly">Monthly</option>
+            <option value="Interval">Interval</option>
+          </select>
+        </label>
+        <label class="grid gap-1 text-sm font-bold text-slate-700">
+          Start
+          <input type="date" class="rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="taskForm.startDate" (ngModelChange)="patchTaskForm.emit({ startDate: $event })">
+        </label>
+      </div>
+      <label class="grid gap-1 text-sm font-bold text-slate-700">
+        Pattern
+        <input class="rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="taskForm.recurrencePattern" (ngModelChange)="patchTaskForm.emit({ recurrencePattern: $event })">
+      </label>
+      <div class="flex flex-wrap gap-2">
+        <button type="button" class="rounded border border-lime-200 bg-lime-50 px-3 py-1.5 text-xs font-bold text-lime-800" (click)="applyTaskTemplate.emit('daily')">Daily</button>
+        <button type="button" class="rounded border border-lime-200 bg-lime-50 px-3 py-1.5 text-xs font-bold text-lime-800" (click)="applyTaskTemplate.emit('weekly')">Weekly</button>
+        <button type="button" class="rounded border border-lime-200 bg-lime-50 px-3 py-1.5 text-xs font-bold text-lime-800" (click)="applyTaskTemplate.emit('monthly')">Monthly</button>
+        <button type="button" class="rounded border border-lime-200 bg-lime-50 px-3 py-1.5 text-xs font-bold text-lime-800" (click)="applyTaskTemplate.emit('seasonal')">Every 2 Weeks</button>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <label class="grid gap-1 text-sm font-bold text-slate-700">
+          End
+          <input type="date" class="rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="taskForm.endDate" (ngModelChange)="patchTaskForm.emit({ endDate: $event })">
+        </label>
+        <label class="flex items-center gap-2 rounded border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-bold text-slate-700">
+          <input type="checkbox" class="h-4 w-4" [ngModel]="taskForm.isActive" (ngModelChange)="patchTaskForm.emit({ isActive: $event })">
+          Active
+        </label>
+      </div>
+      <button type="button" class="rounded bg-lime-800 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" [disabled]="savingTask" (click)="saveTask.emit()">Save Task</button>
+      <p *ngIf="taskMessage" class="rounded border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700">{{ taskMessage }}</p>
+    </div>
+  </aside>
+</section>

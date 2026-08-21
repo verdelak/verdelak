@@ -1,0 +1,8 @@
+:host { display:block; max-width: 900px; }
+form { display: grid; gap: 1rem; }
+fieldset { border: 1px solid #ddd; padding: .75rem; border-radius: .5rem; }
+.row { display: flex; gap: 1rem; flex-wrap: wrap; }
+label { display:flex; flex-direction: column; gap: .25rem; font-size: .95rem; }
+input, select { padding: .35rem .5rem; }
+button { padding: .5rem .9rem; cursor: pointer; }
+.message { margin-top: .75rem; }

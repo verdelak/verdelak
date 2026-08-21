@@ -1,0 +1,347 @@
+  <details class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+    <summary class="cursor-pointer text-sm font-bold text-slate-900">Bulk add staging {{ vm.stagedItems().length ? '(' + vm.stagedItems().length + ' ready)' : '' }}</summary>
+  <section class="mt-3 grid gap-4 xl:grid-cols-[22rem_minmax(0,1fr)]">
+    <div class="grid content-start gap-3">
+      <div>
+        <h2 class="text-lg font-bold text-slate-950">Bulk Add Staging</h2>
+      </div>
+
+      <label class="grid gap-1 text-sm font-semibold text-slate-700">
+        Add under
+        <select class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="vm.stagingParentId()" (ngModelChange)="vm.setStagingParent($event)" [ngModelOptions]="{standalone: true}">
+          <option [ngValue]="null">Choose parent</option>
+          <option *ngFor="let parent of vm.stagingParents()" [ngValue]="parent.id">{{ parent.topLevelSection || 'Plan root' }} / level {{ parent.outlineLevel }} / {{ parent.title }}</option>
+        </select>
+      </label>
+
+      <label class="grid gap-1 text-sm font-semibold text-slate-700">
+        Default staged type
+        <select class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="vm.stagingDefaultItemType()" (ngModelChange)="vm.stagingDefaultItemType.set($event)" [ngModelOptions]="{standalone: true}">
+          <option *ngFor="let type of vm.editableItemTypes" [value]="type">{{ type }}</option>
+        </select>
+      </label>
+
+      <details class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+        <summary class="cursor-pointer text-sm font-bold text-slate-900">Column mapping {{ vm.stagingHeaders().length ? '(' + vm.stagingHeaders().length + ' columns)' : '' }}</summary>
+        <div class="mt-3 grid gap-3">
+          <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">Preset
+            <select class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="vm.stagingColumnPreset()" (ngModelChange)="vm.applyStagingColumnPreset($event)" [ngModelOptions]="{standalone: true}">
+              <option *ngFor="let preset of vm.stagingColumnPresets" [value]="preset.value">{{ preset.label }}</option>
+            </select>
+          </label>
+          <div *ngIf="vm.stagingHeaders().length" class="grid gap-2 sm:grid-cols-2">
+            <div *ngFor="let card of vm.stagingMappingCards()" class="rounded-md border border-slate-200 bg-white px-3 py-2">
+              <p class="text-xs font-bold uppercase tracking-wide text-slate-500">{{ card.label }}</p>
+              <p class="mt-1 text-lg font-bold text-slate-950">{{ card.value | number }}</p>
+              <p class="text-xs text-slate-500">{{ card.detail }}</p>
+            </div>
+          </div>
+          <div *ngIf="vm.stagingHeaders().length; else noColumnHeaders" class="grid gap-2 sm:grid-cols-2">
+            <label *ngFor="let column of vm.stagingColumnOptions" class="grid gap-1 text-xs font-bold uppercase text-slate-600">
+              {{ column.label }}
+              <select class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="vm.stagingColumnSelections()[column.key]" (ngModelChange)="vm.setStagingColumn(column.key, $event)" [ngModelOptions]="{standalone: true}">
+                <option [ngValue]="null">Not mapped</option>
+                <option *ngFor="let header of vm.stagingHeaders(); let i = index" [ngValue]="i">{{ header || 'Column ' + (i + 1) }}</option>
+              </select>
+            </label>
+          </div>
+          <section *ngIf="vm.stagingDuplicateMappings().length" class="grid gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2">
+            <p class="text-sm font-bold text-amber-950">Duplicate mappings</p>
+            <p *ngFor="let item of vm.stagingDuplicateMappings()" class="text-xs font-semibold text-amber-900">{{ item.header }} is mapped to {{ item.columns }}.</p>
+          </section>
+          <section *ngIf="vm.stagingUnmappedHeaders().length" class="grid gap-2 rounded-md border border-slate-200 bg-white px-3 py-2">
+            <p class="text-sm font-bold text-slate-900">Unmapped headers</p>
+            <p class="text-xs font-semibold text-slate-500">{{ vm.stagingUnmappedHeaderPreview() }}</p>
+          </section>
+          <div *ngIf="vm.stagingMappingPreviewRows().length" class="overflow-x-auto rounded-md border border-slate-200 bg-white">
+            <table class="min-w-full divide-y divide-slate-200 text-left text-xs">
+              <thead class="bg-slate-50 uppercase tracking-wide text-slate-500">
+                <tr>
+                  <th class="px-2 py-2 font-bold">Row</th>
+                  <th class="px-2 py-2 font-bold">Title</th>
+                  <th class="px-2 py-2 font-bold">Type</th>
+                  <th class="px-2 py-2 font-bold">Complete</th>
+                  <th class="px-2 py-2 font-bold">Window</th>
+                  <th class="px-2 py-2 font-bold">Start</th>
+                  <th class="px-2 py-2 font-bold">End</th>
+                  <th class="px-2 py-2 font-bold">Schedule</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <tr *ngFor="let row of vm.stagingMappingPreviewRows()">
+                  <td class="px-2 py-2 font-bold text-slate-700">{{ row.rowNumber }}</td>
+                  <td class="px-2 py-2 text-slate-900">{{ row.title }}</td>
+                  <td class="px-2 py-2 text-slate-700">{{ row.type }}</td>
+                  <td class="px-2 py-2 text-slate-700">{{ row.percent }}</td>
+                  <td class="px-2 py-2 text-slate-700">{{ row.window }}</td>
+                  <td class="px-2 py-2 text-slate-700">{{ row.start }}</td>
+                  <td class="px-2 py-2 text-slate-700">{{ row.end }}</td>
+                  <td class="px-2 py-2 text-slate-700">{{ row.schedule }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <ng-template #noColumnHeaders>
+            <p class="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600">Upload or paste a CSV with headers to adjust column mapping.</p>
+          </ng-template>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50" [disabled]="vm.stagingHeaders().length === 0" (click)="vm.autoMapMissingStagingColumns()">Auto-map blanks</button>
+            <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50" [disabled]="vm.stagingHeaders().length === 0" (click)="vm.clearStagingColumnMapping()">Clear mapping</button>
+            <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50" [disabled]="vm.stagingHeaders().length === 0" (click)="vm.downloadStagingMappingCsv()">Export mapping</button>
+            <button type="button" class="rounded-md bg-slate-900 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-slate-700 disabled:opacity-50" [disabled]="vm.stagingRows().length === 0" (click)="vm.restageMappedRows()">Apply mapping</button>
+            <span class="self-center text-xs font-semibold text-slate-500">{{ vm.stagingRows().length | number }} imported data row{{ vm.stagingRows().length === 1 ? '' : 's' }}</span>
+          </div>
+        </div>
+      </details>
+
+      <details class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+        <summary class="cursor-pointer text-sm font-bold text-slate-900">Batch edit staged rows</summary>
+        <div class="mt-3 grid gap-2">
+          <div class="grid gap-2 sm:grid-cols-2">
+            <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">Type
+              <select class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="vm.stagingBulkItemType()" (ngModelChange)="vm.stagingBulkItemType.set($event)" [ngModelOptions]="{standalone: true}">
+                <option value="">No change</option>
+                <option *ngFor="let type of vm.editableItemTypes" [value]="type">{{ type }}</option>
+              </select>
+            </label>
+            <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">Complete
+              <input class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="number" min="0" max="100" [ngModel]="vm.stagingBulkPercent()" (ngModelChange)="vm.stagingBulkPercent.set($event === '' ? null : $event)" [ngModelOptions]="{standalone: true}" />
+            </label>
+            <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">Window
+              <select class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="vm.stagingBulkPlanningWindow()" (ngModelChange)="vm.stagingBulkPlanningWindow.set($event)" [ngModelOptions]="{standalone: true}">
+                <option value="">No change</option>
+                <option *ngFor="let type of vm.planningWindowTypes" [value]="type">{{ type }}</option>
+              </select>
+            </label>
+            <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">Schedule
+              <select class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="vm.stagingBulkScheduleMode()" (ngModelChange)="vm.stagingBulkScheduleMode.set($event)" [ngModelOptions]="{standalone: true}">
+                <option value="">No change</option>
+                <option *ngFor="let mode of vm.scheduleSurfaceModes" [value]="mode">{{ vm.scheduleModeLabel(mode) }}</option>
+              </select>
+            </label>
+            <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">Start
+              <input class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm font-normal normal-case text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="date" [ngModel]="vm.stagingBulkStartDate()" (ngModelChange)="vm.stagingBulkStartDate.set($event)" [ngModelOptions]="{standalone: true}" />
+            </label>
+            <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">End
+              <input class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm font-normal normal-case text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="date" [ngModel]="vm.stagingBulkEndDate()" (ngModelChange)="vm.stagingBulkEndDate.set($event)" [ngModelOptions]="{standalone: true}" />
+            </label>
+            <label class="grid gap-1 text-xs font-bold uppercase text-slate-600 sm:col-span-2">Rollover
+              <select class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="vm.stagingBulkRolloverPolicy()" (ngModelChange)="vm.stagingBulkRolloverPolicy.set($event)" [ngModelOptions]="{standalone: true}">
+                <option value="">No change</option>
+                <option *ngFor="let policy of vm.rolloverPolicies" [value]="policy">{{ policy }}</option>
+              </select>
+            </label>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" class="rounded-md bg-slate-900 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-slate-700 disabled:opacity-50" [disabled]="vm.stagedItems().length === 0" (click)="vm.applyStagedBulkEdits()">Apply batch</button>
+            <button type="button" class="rounded-md border border-cyan-200 bg-cyan-50 px-3 py-2 text-sm font-bold text-cyan-900 shadow-sm transition hover:bg-cyan-100 disabled:opacity-50" [disabled]="vm.stagedItems().length === 0" (click)="vm.applyQueueStagingDefaults()">Queue defaults</button>
+            <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50" [disabled]="vm.stagedItems().length === 0" (click)="vm.clearStagedDates()">Clear dates</button>
+          </div>
+        </div>
+      </details>
+
+      <details class="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2">
+        <summary class="cursor-pointer text-sm font-bold text-blue-950">Future-year bulk add</summary>
+        <div class="mt-3 grid gap-3">
+          <div class="grid gap-2 sm:grid-cols-[7rem_minmax(0,1fr)]">
+            <label class="grid gap-1 text-xs font-bold uppercase text-blue-900">Year
+              <input class="rounded-md border border-blue-200 bg-white px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="number" min="1900" max="3000" [ngModel]="vm.futureBulkYear()" (ngModelChange)="vm.futureBulkYear.set($event === '' ? null : +$event)" [ngModelOptions]="{standalone: true}" />
+            </label>
+            <label class="grid gap-1 text-xs font-bold uppercase text-blue-900">Title
+              <input class="rounded-md border border-blue-200 bg-white px-2 py-1.5 text-sm font-normal normal-case text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" maxlength="250" [ngModel]="vm.futureBulkTitle()" (ngModelChange)="vm.futureBulkTitle.set($event)" [ngModelOptions]="{standalone: true}" placeholder="Goals and Plans {{ vm.futureBulkYear() || '' }}" />
+            </label>
+          </div>
+
+          <div class="flex flex-wrap gap-2">
+            <button type="button" class="rounded-md border border-blue-300 bg-white px-3 py-2 text-sm font-bold text-blue-900 shadow-sm transition hover:bg-blue-100 disabled:opacity-50" [disabled]="vm.futurePlanCreating() || !!vm.futureBulkPlan()" (click)="vm.createFutureBulkPlan()">{{ vm.futurePlanCreating() ? 'Creating' : 'Create draft year' }}</button>
+            <button type="button" class="rounded-md border border-blue-300 bg-white px-3 py-2 text-sm font-bold text-blue-900 shadow-sm transition hover:bg-blue-100 disabled:opacity-50" [disabled]="!vm.futureBulkPlan() || vm.selectedFutureBulkPlan()" (click)="vm.selectFutureBulkPlan()">Select year</button>
+            <span class="self-center text-xs font-bold" [class.text-emerald-700]="vm.selectedFutureBulkPlan()" [class.text-blue-800]="!vm.selectedFutureBulkPlan()">
+              {{ vm.futureBulkPlan() ? (vm.selectedFutureBulkPlan() ? 'Selected' : 'Plan exists') : 'No plan for this year yet' }}
+            </span>
+          </div>
+
+          <div class="grid gap-2 sm:grid-cols-2">
+            <label class="grid gap-1 text-xs font-bold uppercase text-blue-900">Preset
+              <select class="rounded-md border border-blue-200 bg-white px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="vm.futureBulkPreset()" (ngModelChange)="vm.setFutureBulkPreset($event)" [ngModelOptions]="{standalone: true}">
+                <option *ngFor="let preset of vm.futureBulkPresets" [value]="preset.value">{{ preset.label }}</option>
+              </select>
+            </label>
+            <label class="grid gap-1 text-xs font-bold uppercase text-blue-900">Section
+              <input class="rounded-md border border-blue-200 bg-white px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" maxlength="100" [ngModel]="vm.futureBulkSection()" (ngModelChange)="vm.futureBulkSection.set($event)" [ngModelOptions]="{standalone: true}" />
+            </label>
+          </div>
+
+          <label class="grid gap-1 text-xs font-bold uppercase text-blue-900">Future item titles
+            <textarea class="min-h-36 rounded-md border border-blue-200 bg-white px-2 py-1.5 text-sm font-normal normal-case text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="vm.futureBulkText()" (ngModelChange)="vm.futureBulkText.set($event)" [ngModelOptions]="{standalone: true}" placeholder="One book/show/mini per line"></textarea>
+          </label>
+
+          <section *ngIf="vm.futureBulkLines().length" class="grid gap-3">
+            <div class="grid gap-2 sm:grid-cols-2">
+              <div *ngFor="let card of vm.futureBulkCards()" class="rounded-md border px-3 py-2" [ngClass]="vm.futureBulkCardClass(card.tone)">
+                <p class="text-xs font-bold uppercase tracking-wide opacity-75">{{ card.label }}</p>
+                <p class="mt-1 text-lg font-bold">{{ card.value | number }}</p>
+                <p class="text-xs font-semibold opacity-80">{{ card.detail }}</p>
+              </div>
+            </div>
+
+            <div *ngIf="vm.futureBulkDuplicateTitles().length" class="rounded-md border border-amber-200 bg-amber-50 px-3 py-2">
+              <p class="text-sm font-bold text-amber-950">Repeated future titles</p>
+              <p class="text-xs font-semibold text-amber-900">{{ vm.futureBulkDuplicateTitles().slice(0, 8).join(', ') }}{{ vm.futureBulkDuplicateTitles().length > 8 ? ', ...' : '' }}</p>
+            </div>
+
+            <div class="overflow-x-auto rounded-md border border-blue-100 bg-white">
+              <table class="min-w-full divide-y divide-blue-100 text-left text-xs">
+                <thead class="bg-blue-50 uppercase tracking-wide text-blue-900">
+                  <tr>
+                    <th class="px-2 py-2 font-bold">Row</th>
+                    <th class="px-2 py-2 font-bold">Year</th>
+                    <th class="px-2 py-2 font-bold">Section</th>
+                    <th class="px-2 py-2 font-bold">Title</th>
+                    <th class="px-2 py-2 font-bold">Status</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-blue-50">
+                  <tr *ngFor="let row of vm.futureBulkPreviewRows()">
+                    <td class="px-2 py-2 font-bold text-slate-700">{{ row.row }}</td>
+                    <td class="px-2 py-2 text-slate-700">{{ row.planYear || '-' }}</td>
+                    <td class="px-2 py-2 text-slate-700">{{ row.section }}</td>
+                    <td class="px-2 py-2 font-semibold text-slate-900">{{ row.title }}</td>
+                    <td class="px-2 py-2 font-bold" [class.text-emerald-700]="row.status === 'Ready'" [class.text-amber-700]="row.status !== 'Ready'">{{ row.status }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <div class="flex flex-wrap gap-2">
+            <button type="button" class="rounded-md border border-blue-300 bg-white px-3 py-2 text-sm font-bold text-blue-900 shadow-sm transition hover:bg-blue-100 disabled:opacity-50" [disabled]="vm.futureBulkPreviewRows().length === 0" (click)="vm.downloadFutureBulkPreviewCsv()">Preview CSV</button>
+            <button type="button" class="rounded-md bg-blue-700 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-800 disabled:opacity-50" [disabled]="!vm.selectedFutureBulkPlan() || vm.futureBulkText().trim().length === 0" (click)="vm.stageFutureBulkItems()">Stage future items</button>
+          </div>
+        </div>
+      </details>
+
+      <label class="grid gap-1 text-sm font-semibold text-slate-700">
+        Paste titles
+        <textarea class="min-h-52 rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="vm.stagingText()" (ngModelChange)="vm.stagingText.set($event)" [ngModelOptions]="{standalone: true}" placeholder="Book one&#10;Book two&#10;Book three"></textarea>
+      </label>
+
+      <label class="grid gap-1 rounded-lg border border-dashed border-slate-300 p-3 text-sm font-semibold text-slate-700" title="CSV headers: Title, Type, PercentComplete, Window, Start, End, Schedule, RolloverPolicy, Notes">
+        Upload CSV or TXT
+        <input class="text-sm font-normal text-slate-600 file:me-3 file:rounded-md file:border-0 file:bg-slate-900 file:px-3 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-slate-700" type="file" accept=".csv,.txt,text/csv,text/plain" (change)="vm.stageUpload($event)" />
+        <span class="font-normal text-slate-500">{{ vm.stagingFileName() || 'No file selected' }}</span>
+      </label>
+
+      <div class="flex flex-wrap gap-2">
+        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="vm.stagePastedItems()">Stage pasted rows</button>
+        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="vm.downloadStagingTemplate()">CSV template</button>
+        <button type="button" class="rounded-md border border-amber-300 bg-white px-3 py-2 text-sm font-bold text-amber-800 shadow-sm transition hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="vm.stagedValidation().length === 0" (click)="vm.downloadStagingValidationCsv()">Export validation</button>
+        <button type="button" class="rounded-md bg-blue-600 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="vm.selectedPlanArchived() || vm.stagedItems().length === 0 || vm.bulkAdding()" (click)="vm.bulkAddStagedItems()">{{ vm.bulkAdding() ? 'Adding' : 'Add staged' }}</button>
+        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="vm.stagedItems().length === 0 || vm.bulkAdding()" (click)="vm.clearStagedItems()">Clear</button>
+      </div>
+    </div>
+
+    <div class="min-w-0">
+      <div class="flex items-center justify-between gap-3">
+        <h3 class="text-base font-bold text-slate-950">Staged Rows</h3>
+        <span class="text-sm font-semibold text-slate-600">{{ vm.stagedItems().length | number }} ready</span>
+      </div>
+
+      <section *ngIf="vm.stagedValidation().length" class="mt-3 grid gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <p class="text-sm font-bold text-amber-950">Staging validation</p>
+          <div class="flex flex-wrap gap-1 text-xs font-bold">
+            <span *ngIf="vm.stagedErrors().length" class="rounded bg-red-100 px-2 py-1 text-red-800">{{ vm.stagedErrors().length | number }} errors</span>
+            <span *ngIf="vm.stagedWarnings().length" class="rounded bg-amber-100 px-2 py-1 text-amber-800">{{ vm.stagedWarnings().length | number }} warnings</span>
+          </div>
+        </div>
+        <div class="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+          <div *ngFor="let card of vm.stagedValidationCards()" class="rounded-md border px-3 py-2" [ngClass]="vm.validationCardClass(card.tone)">
+            <p class="text-xs font-bold uppercase tracking-wide opacity-75">{{ card.label }}</p>
+            <p class="mt-1 text-lg font-bold">{{ card.value | number }}</p>
+            <p class="text-xs font-semibold opacity-80">{{ card.detail }}</p>
+          </div>
+        </div>
+        <div class="max-h-40 overflow-y-auto rounded-md border border-amber-200 bg-white">
+          <div *ngFor="let entry of vm.stagedValidation()" class="grid gap-1 border-b border-amber-100 px-3 py-2 last:border-b-0">
+            <p class="text-xs font-bold uppercase tracking-wide" [class.text-red-700]="entry.severity === 'Error'" [class.text-amber-700]="entry.severity === 'Warning'">
+              {{ entry.severity }} {{ entry.row ? 'row ' + entry.row : '' }}
+            </p>
+            <p class="text-sm font-semibold text-slate-900">{{ entry.title }} - {{ entry.message }}</p>
+          </div>
+        </div>
+      </section>
+
+      <div class="mt-3 overflow-x-auto rounded-lg border border-slate-200">
+        <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
+          <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+            <tr>
+              <th class="px-3 py-3 font-bold">Title</th>
+              <th class="px-3 py-3 font-bold">Outline</th>
+              <th class="px-3 py-3 font-bold">Type</th>
+              <th class="px-3 py-3 font-bold">Complete</th>
+              <th class="px-3 py-3 font-bold">Window</th>
+              <th class="px-3 py-3 font-bold">Start</th>
+              <th class="px-3 py-3 font-bold">End</th>
+              <th class="px-3 py-3 font-bold">Schedule</th>
+              <th class="px-3 py-3 font-bold">Notes</th>
+              <th class="px-3 py-3 font-bold"></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 bg-white">
+            <tr *ngFor="let item of vm.stagedItems(); let rowIndex = index" class="align-top" [class.bg-red-50]="vm.stagedRowSeverity(rowIndex + 1) === 'Error'" [class.bg-amber-50]="vm.stagedRowSeverity(rowIndex + 1) === 'Warning'">
+              <td class="min-w-64 px-3 py-2">
+                <div *ngIf="vm.stagedRowSeverity(rowIndex + 1) as severity" class="mb-2 grid gap-1">
+                  <span class="w-fit rounded px-2 py-1 text-xs font-bold" [class.bg-red-100]="severity === 'Error'" [class.text-red-800]="severity === 'Error'" [class.bg-amber-100]="severity === 'Warning'" [class.text-amber-800]="severity === 'Warning'">{{ severity }} row {{ rowIndex + 1 }}</span>
+                  <span *ngFor="let message of vm.stagedRowValidationMessages(rowIndex + 1).slice(0, 3)" class="text-xs font-semibold text-slate-600">{{ message }}</span>
+                </div>
+                <input class="w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm font-semibold text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" [ngModel]="item.title" (ngModelChange)="vm.updateStagedItem(item.key, { title: $event })" [ngModelOptions]="{standalone: true}" aria-label="Staged title" />
+                <div *ngIf="item.importWarnings?.length" class="mt-2 grid gap-1">
+                  <span *ngFor="let warning of item.importWarnings" class="rounded bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-800">{{ warning }}</span>
+                </div>
+              </td>
+              <td class="min-w-32 px-3 py-2">
+                <div class="grid gap-1">
+                  <input class="w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm font-semibold text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="number" min="1" max="50" [ngModel]="item.outlineLevel" (ngModelChange)="vm.updateStagedItem(item.key, { outlineLevel: $event === '' ? null : +$event })" [ngModelOptions]="{standalone: true}" aria-label="Staged outline level" placeholder="Level" />
+                  <input class="w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" [ngModel]="item.outlineNumber" (ngModelChange)="vm.updateStagedItem(item.key, { outlineNumber: $event })" [ngModelOptions]="{standalone: true}" aria-label="Staged WBS" placeholder="WBS" />
+                </div>
+              </td>
+              <td class="min-w-36 px-3 py-2">
+                <select class="w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm font-semibold text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="item.itemType" (ngModelChange)="vm.updateStagedItem(item.key, { itemType: $event })" [ngModelOptions]="{standalone: true}">
+                  <option *ngFor="let type of vm.editableItemTypes" [value]="type">{{ type }}</option>
+                </select>
+              </td>
+              <td class="min-w-28 px-3 py-2">
+                <input class="w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm font-semibold text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="number" min="0" max="100" [ngModel]="item.percentComplete" (ngModelChange)="vm.updateStagedPercent(item.key, $event)" [ngModelOptions]="{standalone: true}" aria-label="Staged percent complete" />
+              </td>
+              <td class="min-w-40 px-3 py-2">
+                <select class="w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm font-semibold text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="item.planningWindowType" (ngModelChange)="vm.updateStagedItem(item.key, { planningWindowType: $event })" [ngModelOptions]="{standalone: true}">
+                  <option *ngFor="let type of vm.planningWindowTypes" [value]="type">{{ type }}</option>
+                </select>
+              </td>
+              <td class="min-w-40 px-3 py-2">
+                <input class="w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="date" [ngModel]="item.targetStartDate" (ngModelChange)="vm.updateStagedItem(item.key, { targetStartDate: $event })" [ngModelOptions]="{standalone: true}" aria-label="Staged target start date" />
+              </td>
+              <td class="min-w-40 px-3 py-2">
+                <input class="w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="date" [ngModel]="item.targetEndDate" (ngModelChange)="vm.updateStagedItem(item.key, { targetEndDate: $event })" [ngModelOptions]="{standalone: true}" aria-label="Staged target end date" />
+              </td>
+              <td class="min-w-48 px-3 py-2">
+                <select class="w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm font-semibold text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="item.scheduleSurfaceMode" (ngModelChange)="vm.updateStagedItem(item.key, { scheduleSurfaceMode: $event })" [ngModelOptions]="{standalone: true}">
+                  <option *ngFor="let mode of vm.scheduleSurfaceModes" [value]="mode">{{ vm.scheduleModeLabel(mode) }}</option>
+                </select>
+              </td>
+              <td class="min-w-64 px-3 py-2">
+                <textarea class="min-h-20 w-full resize-y rounded-md border border-slate-300 px-2 py-1.5 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="item.notes" (ngModelChange)="vm.updateStagedItem(item.key, { notes: $event })" [ngModelOptions]="{standalone: true}" aria-label="Staged notes"></textarea>
+              </td>
+              <td class="px-3 py-2">
+                <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="vm.removeStagedItem(item.key)">Remove</button>
+              </td>
+            </tr>
+            <tr *ngIf="vm.stagedItems().length === 0">
+              <td colspan="10" class="px-3 py-8 text-center text-sm text-slate-500">No staged rows.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+  </details>

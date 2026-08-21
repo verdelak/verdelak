@@ -1,0 +1,104 @@
+<section class="grid gap-4">
+  <header class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+      <div>
+        <p class="text-xs font-bold uppercase tracking-wider text-blue-600">Administration</p>
+        <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">Blog</h1>
+        <p class="mt-1 max-w-3xl text-sm text-slate-600 sm:text-base">Create and maintain blog entries, publishing dates, and tags.</p>
+      </div>
+      <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="newPost()">New entry</button>
+    </div>
+  </header>
+
+  <div *ngIf="error()" class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800">{{ error() }}</div>
+  <div *ngIf="message()" class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">{{ message() }}</div>
+
+  <div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_32rem]">
+    <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <form class="grid gap-3 md:grid-cols-[minmax(0,1fr)_12rem_auto]" (ngSubmit)="applyFilters()">
+        <input class="rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="search" name="search" [ngModel]="search()" (ngModelChange)="search.set($event)" placeholder="Search admin entries" />
+        <select class="rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="statusFilter" [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)">
+          <option value="">All statuses</option>
+          <option *ngFor="let status of statuses()" [value]="status">{{ status }}</option>
+        </select>
+        <button type="submit" class="rounded-md bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700">Apply</button>
+      </form>
+
+      <div class="mt-4 overflow-x-auto rounded-lg border border-slate-200">
+        <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
+          <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+            <tr>
+              <th class="px-3 py-3 font-bold">Title</th>
+              <th class="px-3 py-3 font-bold">Status</th>
+              <th class="px-3 py-3 font-bold">Visibility</th>
+              <th class="px-3 py-3 font-bold">Posted</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 bg-white">
+            <tr *ngFor="let post of posts()" class="cursor-pointer transition hover:bg-blue-50" [class.bg-blue-50]="form().id === post.id" (click)="selectPost(post)">
+              <td class="px-3 py-3">
+                <p class="font-semibold text-slate-950">{{ post.title }}</p>
+                <p class="mt-1 text-xs text-slate-500">{{ post.tags.length }} tags</p>
+              </td>
+              <td class="whitespace-nowrap px-3 py-3"><span class="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-bold text-indigo-700">{{ post.status }}</span></td>
+              <td class="whitespace-nowrap px-3 py-3"><span class="rounded-full px-2.5 py-1 text-xs font-bold" [class.bg-emerald-50]="post.isPublic" [class.text-emerald-700]="post.isPublic" [class.bg-slate-100]="!post.isPublic" [class.text-slate-600]="!post.isPublic">{{ post.isPublic ? 'Public' : 'Private' }}</span></td>
+              <td class="whitespace-nowrap px-3 py-3 text-slate-600">{{ post.postedDate | date:'shortDate' }}</td>
+            </tr>
+            <tr *ngIf="posts().length === 0 && !loading()">
+              <td colspan="4" class="px-3 py-6 text-center text-sm text-slate-500">No entries found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-3 flex items-center justify-between">
+        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50" (click)="previousPage()" [disabled]="page() <= 1">Previous</button>
+        <span class="text-sm font-semibold text-slate-600">Page {{ page() }} of {{ totalPages() || 1 }} · {{ totalCount() }} entries</span>
+        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50" (click)="nextPage()" [disabled]="page() >= totalPages()">Next</button>
+      </div>
+    </section>
+
+    <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <h2 class="text-lg font-bold text-slate-950">{{ form().id ? 'Edit Entry' : 'New Entry' }}</h2>
+      <form class="mt-4 grid gap-4" (ngSubmit)="save()">
+        <label class="grid gap-1 text-sm font-semibold text-slate-700">
+          Title
+          <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" name="title" [ngModel]="form().title" (ngModelChange)="setFormField('title', $event)" />
+        </label>
+        <label class="grid gap-1 text-sm font-semibold text-slate-700">
+          Slug
+          <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" name="slug" [ngModel]="form().slug" (ngModelChange)="setFormField('slug', $event)" placeholder="Generated from title if blank" />
+        </label>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <label class="grid gap-1 text-sm font-semibold text-slate-700">
+            Posted date
+            <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="datetime-local" name="postedDate" [ngModel]="form().postedDate" (ngModelChange)="setFormField('postedDate', $event)" />
+          </label>
+          <label class="grid gap-1 text-sm font-semibold text-slate-700">
+            Status
+            <select class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="status" [ngModel]="form().status" (ngModelChange)="setFormField('status', $event)">
+              <option *ngFor="let status of statuses()" [value]="status">{{ status }}</option>
+            </select>
+          </label>
+        </div>
+        <label class="flex items-center gap-3 rounded-md border border-slate-200 bg-slate-50 px-3 py-3 text-sm font-semibold text-slate-900">
+          <input class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" type="checkbox" name="isPublic" [ngModel]="form().isPublic" (ngModelChange)="setFormField('isPublic', $event)" />
+          Public entry
+        </label>
+        <label class="grid gap-1 text-sm font-semibold text-slate-700">
+          Tags
+          <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" name="tags" [ngModel]="form().tags" (ngModelChange)="setFormField('tags', $event)" placeholder="Personal, Books, Updates" />
+        </label>
+        <label class="grid gap-1 text-sm font-semibold text-slate-700">
+          Text
+          <textarea class="min-h-80 rounded-md border border-slate-300 px-3 py-2 font-mono text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" rows="16" name="bodyMarkdown" [ngModel]="form().bodyMarkdown" (ngModelChange)="setFormField('bodyMarkdown', $event)" placeholder="# Heading&#10;&#10;Write with Markdown."></textarea>
+        </label>
+        <div class="flex flex-col gap-2 sm:flex-row">
+          <button type="submit" class="rounded-md bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60" [disabled]="loading()">Save entry</button>
+          <button type="button" class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="newPost()">Clear</button>
+          <button type="button" class="rounded-md border border-red-200 bg-white px-4 py-2 text-sm font-bold text-red-700 shadow-sm transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50" (click)="deleteSelected()" [disabled]="loading() || !form().id">Delete</button>
+        </div>
+      </form>
+    </section>
+  </div>
+</section>

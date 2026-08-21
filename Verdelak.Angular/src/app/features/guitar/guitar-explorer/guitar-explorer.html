@@ -1,0 +1,172 @@
+<section class="guitar-page mx-auto grid w-full max-w-7xl gap-4 px-4 py-4">
+  <header class="guitar-controls rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+      <div>
+        <p class="text-xs font-bold uppercase tracking-wider text-blue-600">Personal</p>
+        <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">Scale & Fretboard Explorer</h1>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 disabled:opacity-60" type="button" (click)="printPracticeSheet()" [disabled]="!result()">Print practice sheet</button>
+        <button class="rounded-md bg-slate-900 px-3 py-2 text-sm font-semibold text-white disabled:opacity-60" type="button" (click)="generate()" [disabled]="loading()">Generate</button>
+      </div>
+    </div>
+  </header>
+
+  <div *ngIf="error()" class="guitar-controls rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">{{ error() }}</div>
+
+  <ng-container *ngIf="options() as opts">
+    <section class="guitar-controls grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      <app-scale-selector
+        [rootNotes]="opts.rootNotes"
+        [scales]="opts.scales"
+        [rootNote]="rootNote()"
+        [scaleType]="scaleType()"
+        [displayMode]="displayMode()"
+        (rootNoteChange)="setRootNote($event)"
+        (scaleTypeChange)="setScaleType($event)"
+        (displayModeChange)="setDisplayMode($event)"
+      ></app-scale-selector>
+
+      <app-tuning-selector
+        [tunings]="opts.tunings"
+        [tuningName]="tuningName()"
+        [stringCount]="stringCount()"
+        [fretCount]="fretCount()"
+        [customTuning]="customTuning()"
+        (tuningNameChange)="setTuningName($event)"
+        (stringCountChange)="setStringCount($event)"
+        (fretCountChange)="setFretCount($event)"
+        (customTuningChange)="setCustomTuning($event)"
+        (presetSelected)="setPreset($event)"
+      ></app-tuning-selector>
+    </section>
+  </ng-container>
+
+  <ng-container *ngIf="result() as data">
+    <section class="guitar-screen grid gap-3 lg:grid-cols-3">
+      <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <p class="text-xs font-bold uppercase text-slate-500">Formula</p>
+        <p class="mt-2 text-lg font-bold text-slate-950">{{ data.scale.formula.join(' - ') }}</p>
+        <p class="mt-1 text-sm text-slate-600">{{ data.scale.description }}</p>
+      </article>
+      <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <p class="text-xs font-bold uppercase text-slate-500">Notes in {{ data.rootNote }} {{ data.scale.name }}</p>
+        <p class="mt-2 text-lg font-bold text-blue-700">{{ data.scaleNotes.join(' - ') }}</p>
+      </article>
+      <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <p class="text-xs font-bold uppercase text-slate-500">Tuning</p>
+        <p class="mt-2 text-lg font-bold text-slate-950">{{ data.tuning.name }}</p>
+        <p class="mt-1 text-sm font-semibold text-slate-600">{{ tuningSummary() }}</p>
+      </article>
+    </section>
+
+    <div class="guitar-screen grid gap-4">
+      <app-fretboard-diagram [fretboard]="data.fretboard" title="Full Fretboard"></app-fretboard-diagram>
+      <app-position-viewer [positions]="data.positions"></app-position-viewer>
+      <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p class="text-xs font-bold uppercase text-slate-500">CAGED Practice</p>
+            <h2 class="mt-1 text-lg font-bold text-slate-950">{{ data.rootNote }} {{ data.scale.name }} chord-shape map</h2>
+          </div>
+          <span class="rounded border border-blue-200 bg-blue-50 px-2 py-1 text-xs font-bold text-blue-800">C A G E D</span>
+        </div>
+        <div class="mt-3 grid gap-2 lg:grid-cols-5">
+          <article *ngFor="let shape of cagedShapes()" class="rounded-md border border-slate-200 bg-slate-50 p-3">
+            <p class="text-2xl font-bold text-blue-700">{{ shape.shape }}</p>
+            <p class="mt-1 text-sm font-bold text-slate-950">{{ shape.anchor }}</p>
+            <p class="mt-2 text-xs font-semibold text-slate-600">{{ shape.positionFocus }}</p>
+            <p class="mt-2 rounded bg-white px-2 py-1.5 text-xs font-semibold text-slate-700">{{ shape.practicePrompt }}</p>
+          </article>
+        </div>
+      </section>
+      <app-chord-viewer [chords]="data.chords" [arpeggios]="data.arpeggios" [progressions]="data.suggestedProgressions"></app-chord-viewer>
+      <app-practice-routine-viewer [routines]="data.practiceRoutine"></app-practice-routine-viewer>
+    </div>
+
+    <section class="guitar-print-sheet hidden">
+      <header class="guitar-print-header">
+        <div>
+          <p class="guitar-print-eyebrow">Verdelak Guitar Practice Sheet</p>
+          <h1>{{ practiceSheetTitle() }}</h1>
+        </div>
+        <div class="guitar-print-meta">
+          <span>{{ printDate() }}</span>
+          <span>{{ data.tuning.notes.length }} strings</span>
+          <span>{{ data.fretboard[0].frets.length - 1 }} frets</span>
+        </div>
+      </header>
+
+      <section class="guitar-print-grid">
+        <article>
+          <h2>Scale</h2>
+          <p><strong>Formula:</strong> {{ data.scale.formula.join(' - ') }}</p>
+          <p><strong>Notes:</strong> {{ data.scaleNotes.join(' - ') }}</p>
+          <p>{{ data.scale.description }}</p>
+        </article>
+        <article>
+          <h2>Tuning</h2>
+          <p><strong>{{ data.tuning.name }}</strong></p>
+          <p>{{ data.tuning.notes.join(' - ') }}</p>
+          <p>{{ data.tuning.description }}</p>
+        </article>
+      </section>
+
+      <section>
+        <h2>Primary Position</h2>
+        <app-fretboard-diagram *ngIf="data.positions[0] as position" [title]="'Position ' + position.positionNumber + ': frets ' + position.startFret + '-' + position.endFret" [fretboard]="position.strings"></app-fretboard-diagram>
+      </section>
+
+      <section class="guitar-print-grid">
+        <article>
+          <h2>Progressions</h2>
+          <ul>
+            <li *ngFor="let progression of data.suggestedProgressions">{{ progression }}</li>
+          </ul>
+        </article>
+        <article>
+          <h2>Chord Tones</h2>
+          <ul>
+            <li *ngFor="let chord of data.chords.slice(0, 7)">
+              <strong>{{ chord.degree }} {{ chord.triad }}:</strong> {{ chord.triadNotes.join(' - ') }}
+            </li>
+          </ul>
+        </article>
+      </section>
+
+      <section>
+        <h2>CAGED Map</h2>
+        <div class="guitar-print-arpeggios">
+          <article *ngFor="let shape of cagedShapes()">
+            <h3>{{ shape.shape }} Shape</h3>
+            <p>{{ shape.anchor }}</p>
+            <p>{{ shape.practicePrompt }}</p>
+          </article>
+        </div>
+      </section>
+
+      <section>
+        <h2>Arpeggio Targets</h2>
+        <div class="guitar-print-arpeggios">
+          <article *ngFor="let arpeggio of data.arpeggios.slice(0, 8)">
+            <h3>{{ arpeggio.degree }} {{ arpeggio.chordName }}</h3>
+            <p>{{ arpeggio.notes.join(' - ') }}</p>
+            <p>{{ arpeggio.intervals.join(' - ') }}</p>
+          </article>
+        </div>
+      </section>
+
+      <section>
+        <h2>Practice Routine</h2>
+        <div class="guitar-print-routines">
+          <article *ngFor="let routine of data.practiceRoutine">
+            <h3>{{ routine.title }}</h3>
+            <ol>
+              <li *ngFor="let step of routine.steps">{{ step }}</li>
+            </ol>
+          </article>
+        </div>
+      </section>
+    </section>
+  </ng-container>
+</section>

@@ -1,0 +1,31 @@
+<div *ngIf="!item()">No item selected.</div>
+<!-- View Mode -->
+<div *ngIf="item() && !editMode()" class="item-detail">
+  <h2>{{ item()!.item }}</h2>
+  <p><strong>Room:</strong> {{ roomNameFor(item()!.roomId) }}</p>
+  <p><strong>Description:</strong> {{ item()!.description || '(none)' }}</p>
+  <p><strong>Make/Model:</strong> {{ item()!.makeModel || '(unknown)' }}</p>
+  <p><strong>Serial Number:</strong> {{ item()!.serialNumber || '(unknown)' }}</p>
+  <p><strong>Purchase Date:</strong> {{ item()!.purchaseDate | date }}</p>
+  <p><strong>Purchase Location:</strong> {{ item()!.purchaseLocation }}</p>
+  <p><strong>Purchase Price:</strong> ${{ item()!.purchasePrice ?? 0 | number:'1.0-2' }}</p>
+  <p><strong>Estimated Value:</strong> ${{ item()!.estimatedValue ?? 0 | number:'1.0-2' }}</p>
+
+  <div class="actions">
+    <button (click)="enableEdit()">Edit</button>
+    <button (click)="delete()">Delete</button>
+  </div>
+
+  <app-item-image-gallery [itemId]="item()!.id" />
+  <app-item-notes *ngIf="item()" [itemId]="item()!.id" />
+</div>
+
+<!-- Edit Mode -->
+<ng-container *ngIf="(item() && editMode()) || newItemMode()">
+    <app-item-form
+        [item]="item()!"
+        [rooms]="inventory.rooms()"
+        (save)="saveItem($event)"
+        (cancel)="cancelEdit()"
+    />
+</ng-container>

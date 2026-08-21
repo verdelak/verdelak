@@ -1,0 +1,12 @@
+<div class="item-card">
+  <div class="item-header">
+    <h3>{{ item.item }}</h3>
+    <span class="item-room"> {{ roomNameFor(item.roomId) }}</span>
+  </div>
+
+  <div class="item-body">
+    <p *ngIf="item.makeModel"><strong>Model:</strong> {{ item.makeModel }}</p>
+    <p *ngIf="item.estimatedValue != null"><strong>Value:</strong> ${{ item.estimatedValue | number:'1.0-2' }}</p>
+    <p *ngIf="item.purchaseDate"><strong>Purchased:</strong> {{ item.purchaseDate | date }}</p>
+  </div>
+</div>

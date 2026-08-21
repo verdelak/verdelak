@@ -1,0 +1,57 @@
+<h2>Add New Board Game</h2>
+
+<form (ngSubmit)="save()">
+  <label>
+    Title:
+    <input [(ngModel)]="model()!.title" name="title" required />
+  </label><br>
+
+  <label>
+    <input type="checkbox" [(ngModel)]="model()!.owns" name="owns" />
+    Owned
+  </label>
+
+  <label>
+    <input type="checkbox" [(ngModel)]="model()!.wishlist" name="wishlist" />
+    Wishlist
+  </label><br>
+
+  <label>
+    My Rating:
+    <input type="number" step="0.1" min="0" max="10"
+           [(ngModel)]="model()!.personalRating"
+           name="rating" />
+  </label><br>
+
+  <label>
+    BGG Rating:
+    <input type="number" step="0.001" min="0" max="10"
+           [(ngModel)]="model()!.bgg_Rating"
+           name="bggRating" />
+  </label><br>
+
+  <label>
+    <input type="checkbox" [(ngModel)]="model()!.isExpansion" name="isExpansion" />
+    Is Expansion
+  </label><br>
+
+  <div *ngIf="model()!.isExpansion">
+    <label>
+      Base Game:
+      <select [(ngModel)]="model()!.baseGameID" name="baseGameID">
+        <option [ngValue]="null">-- None Selected --</option>
+        <option *ngFor="let base of baseGameOptions" [ngValue]="base.gameID">
+          {{ base.title }}
+        </option>
+      </select>
+    </label><br>
+  </div>
+
+  <label>
+    Notes:<br>
+    <textarea [(ngModel)]="model()!.notes" name="notes" rows="4"></textarea>
+  </label><br>
+
+  <button type="submit">Save Game</button>
+  <button type="button" [routerLink]="['/boardgames']">Cancel</button>
+</form>

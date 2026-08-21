@@ -1,0 +1,109 @@
+<ng-container *ngIf="mode === 'desktop'; else mobileMenuItem">
+  <div class="relative">
+    <a
+      *ngIf="!item.children && item.externalUrl"
+      [href]="item.externalUrl"
+      [target]="item.openInNewTab ? '_blank' : '_self'"
+      rel="noopener"
+      class="nav-link rounded-md px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 hover:text-slate-950"
+      (click)="onNavigate()"
+    >
+      {{ item.text }}
+    </a>
+
+    <a
+      *ngIf="!item.children && !item.externalUrl && item.link"
+      [routerLink]="item.link"
+      class="nav-link rounded-md px-3 py-2 text-sm font-semibold transition hover:bg-slate-100 hover:text-slate-950"
+      [ngClass]="isActive() ? 'bg-slate-900 text-white hover:bg-slate-800 hover:text-white' : 'text-slate-700'"
+      (click)="onNavigate()"
+    >
+      {{ item.text }}
+    </a>
+
+    <span
+      *ngIf="!item.children && !item.link && !item.externalUrl"
+      class="nav-link disabled rounded-md px-3 py-2 text-sm font-semibold text-slate-400"
+    >
+      {{ item.text }}
+    </span>
+
+    <div
+      *ngIf="item.children"
+      class="relative"
+    >
+      <button type="button" class="nav-link d-flex w-100 cursor-pointer list-none align-items-center justify-content-between gap-2 rounded-md px-3 py-2 text-sm font-semibold transition hover:bg-slate-100 hover:text-slate-950" [ngClass]="isActive() ? 'active bg-slate-900 text-white hover:bg-slate-800 hover:text-white' : isOpen() ? 'bg-slate-100 text-slate-950' : 'text-slate-700'" [attr.aria-expanded]="isOpen()" (click)="toggle($event)">
+        {{ item.text }}
+        <span class="text-xs" [ngClass]="isActive() ? 'text-white/70' : 'text-slate-400'">{{ depth === 0 ? 'v' : '>' }}</span>
+      </button>
+
+      <div
+        *ngIf="isOpen()"
+        class="dropdown-menu show absolute z-50 min-w-56 rounded-lg border border-slate-200 bg-white p-2 shadow-xl"
+        [class.left-0]="depth === 0"
+        [class.top-full]="depth === 0"
+        [class.left-full]="depth > 0"
+        [class.top-0]="depth > 0"
+      >
+        <ng-container *ngFor="let child of item.children; let index = index">
+          <app-menu-button [item]="child" mode="desktop" [depth]="depth + 1" [path]="childPath(index)" [openPath]="openPath" (openPathChange)="openPathChange.emit($event)" (navigate)="navigate.emit()"></app-menu-button>
+          <div *ngIf="child.dividerAfter" class="my-1 border-t border-slate-200"></div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+<ng-template #mobileMenuItem>
+  <a
+    *ngIf="!item.children && item.externalUrl"
+    [href]="item.externalUrl"
+    [target]="item.openInNewTab ? '_blank' : '_self'"
+    rel="noopener"
+    class="block rounded-md px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+    [class.ms-4]="depth > 0"
+    (click)="onNavigate()"
+  >
+    {{ item.text }}
+  </a>
+
+  <a
+    *ngIf="!item.children && !item.externalUrl && item.link"
+    [routerLink]="item.link"
+    class="block rounded-md px-3 py-2 text-sm font-semibold transition hover:bg-slate-100"
+    [ngClass]="isActive() ? 'bg-slate-900 text-white hover:bg-slate-800' : 'text-slate-700'"
+    [class.ms-4]="depth > 0"
+    (click)="onNavigate()"
+  >
+    {{ item.text }}
+  </a>
+
+  <span
+    *ngIf="!item.children && !item.link && !item.externalUrl"
+    class="block cursor-not-allowed rounded-md px-3 py-2 text-sm font-semibold text-slate-400"
+    [class.ms-4]="depth > 0"
+  >
+    {{ item.text }}
+  </span>
+
+  <div *ngIf="item.children" class="rounded-md">
+    <button
+      type="button"
+      class="flex w-full cursor-pointer list-none items-center justify-between rounded-md px-3 py-2 text-sm font-semibold transition hover:bg-slate-100"
+      [ngClass]="isActive() ? 'bg-slate-900 text-white hover:bg-slate-800' : isOpen() ? 'bg-slate-100 text-slate-950' : 'text-slate-700'"
+      [class.ms-4]="depth > 0"
+      [attr.aria-expanded]="isOpen()"
+      (click)="toggle($event)"
+    >
+      {{ item.text }}
+      <span class="text-xs" [ngClass]="isActive() ? 'text-white/70' : 'text-slate-400'">v</span>
+    </button>
+
+    <div *ngIf="isOpen()" class="mt-1 grid gap-1 border-l border-slate-200 ps-2">
+      <ng-container *ngFor="let child of item.children; let index = index">
+        <app-menu-button [item]="child" mode="mobile" [depth]="depth + 1" [path]="childPath(index)" [openPath]="openPath" (openPathChange)="openPathChange.emit($event)" (navigate)="navigate.emit()"></app-menu-button>
+        <div *ngIf="child.dividerAfter" class="my-1 border-t border-slate-200"></div>
+      </ng-container>
+    </div>
+  </div>
+</ng-template>

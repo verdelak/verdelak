@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+
+# Build output
+bin/
+obj/
+dist/
+out/
+publish/
+
+# Angular
+.angular/
+.cache/
+
+# Local IDE/editor files
+.vs/
+.vscode/
+.git.backup/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Logs and temporary files
+tmp/
+*.log
+*.tmp
+*.temp
+
+# Local development secrets/settings
+appsettings.Development.json
+appsettings.*.local.json
+
+# OS files
+Thumbs.db
+.DS_Store

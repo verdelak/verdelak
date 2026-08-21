@@ -1,0 +1,55 @@
+<form (submit)="onSave(); $event.preventDefault()">
+  <label>
+    Item Name:
+    <input [value]="itemName()" (input)="itemName.set($any($event.target).value)" required />
+  </label>
+
+  <label>
+    Description:
+    <textarea [value]="description()" (input)="description.set($any($event.target).value)"></textarea>
+  </label>
+
+  <label for="roomId">Room</label>
+    <select
+    id="roomId"
+    [value]="roomId()"
+    (change)="onRoomChange($event)"
+    >
+    <option *ngFor="let room of rooms" [value]="room.id">{{ room.location }}</option>
+    </select>
+
+  <label>
+    Make/Model:
+    <input [value]="makeModel()" (input)="makeModel.set($any($event.target).value)" />
+  </label>
+
+  <label>
+    Serial Number:
+    <input [value]="serialNumber()" (input)="serialNumber.set($any($event.target).value)" />
+  </label>
+
+  <label>
+    Purchase Date:
+    <input type="date" [value]="purchaseDate()" (input)="purchaseDate.set($any($event.target).value)" />
+  </label>
+
+  <label>
+    Purchase Location:
+    <input [value]="purchaseLocation()" (input)="purchaseLocation.set($any($event.target).value)" />
+  </label>
+
+  <label>
+    Purchase Price:
+    <input type="number"  step="any" min="0"  [value]="purchasePrice()" (input)="purchasePrice.set($any($event.target).valueAsNumber)" />
+  </label>
+
+  <label>
+    Estimated Value:
+    <input type="number"  step="any" min="0" [value]="estimatedValue()" (input)="estimatedValue.set($any($event.target).valueAsNumber)" />
+  </label>
+
+  <div class="actions">
+    <button type="submit">Save</button>
+    <button type="button" (click)="cancel.emit()">Cancel</button>
+  </div>
+</form>

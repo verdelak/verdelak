@@ -1,0 +1,151 @@
+@model DinoIndexViewModel
+
+@{
+    ViewData["Title"] = "Dino Archive";
+    var featured = Model.Dinosaurs.FirstOrDefault(item => !string.IsNullOrWhiteSpace(item.PrimaryImageUrl)) ?? Model.Dinosaurs.FirstOrDefault();
+    var taxonomyFilters = Model.Taxonomy
+        .Where(item => item.EntryCount > 0)
+        .OrderBy(item => item.Rank)
+        .ThenBy(item => item.Name)
+        .ToList();
+}
+
+<section class="dino-hero border rounded-3 bg-white overflow-hidden mb-4">
+    <div class="row g-0 align-items-stretch">
+        <div class="col-lg-7 p-4 p-lg-5">
+            <p class="text-uppercase fw-semibold text-success mb-2">Verdelak Dino Archive</p>
+            <h1 class="display-5 fw-semibold mb-3">Browse published dinosaurs by name, taxonomy, and discovery notes.</h1>
+            <p class="lead text-secondary mb-4">
+                Explore the public Dino records maintained in Verdelak, including scientific classification, notes, text sections, and illustrations.
+            </p>
+            <form class="row g-2" asp-controller="Dino" asp-action="Index" method="get">
+                <div class="col-md-7">
+                    <label class="visually-hidden" for="search">Search Dino archive</label>
+                    <input class="form-control form-control-lg" id="search" name="search" value="@Model.SearchTerm" placeholder="Search name, clade, discovery" />
+                </div>
+                <div class="col-md-3">
+                    <label class="visually-hidden" for="taxonomy">Taxonomy</label>
+                    <input class="form-control form-control-lg" id="taxonomy" name="taxonomy" value="@Model.TaxonomyFilter" placeholder="Taxonomy" />
+                </div>
+                <div class="col-md-2 d-grid">
+                    <button class="btn btn-success btn-lg" type="submit">Search</button>
+                </div>
+            </form>
+            @if (Model.HasSearch || Model.HasTaxonomyFilter)
+            {
+                <a class="btn btn-outline-secondary mt-3" asp-controller="Dino" asp-action="Index">Clear filters</a>
+            }
+        </div>
+        <div class="col-lg-5">
+            @if (featured is not null && !string.IsNullOrWhiteSpace(featured.PrimaryImageUrl))
+            {
+                <img class="dino-hero-image" src="@featured.PrimaryImageUrl" alt="@(featured.PrimaryImageCaption ?? featured.CommonName)" />
+            }
+            else
+            {
+                <div class="dino-hero-empty h-100 d-flex align-items-center justify-content-center p-4 text-center">
+                    <div>
+                        <div class="display-6 fw-semibold">@Model.Dinosaurs.Count</div>
+                        <p class="text-secondary mb-0">Published entries</p>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+{
+    <div class="alert alert-warning" role="alert">@Model.ErrorMessage</div>
+}
+
+<section class="row g-4 align-items-start">
+    <aside class="col-lg-3">
+        <div class="position-lg-sticky">
+            <div class="border rounded-3 bg-white p-3 shadow-sm mb-3">
+                <p class="text-secondary mb-1">Archive snapshot</p>
+                <div class="row g-2">
+                    <div class="col-6">
+                        <div class="h3 fw-semibold mb-0">@Model.Dinosaurs.Count</div>
+                        <div class="small text-secondary">Entries</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="h3 fw-semibold mb-0">@Model.WithImagesCount</div>
+                        <div class="small text-secondary">With images</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="h3 fw-semibold mb-0">@Model.WithDescriptionsCount</div>
+                        <div class="small text-secondary">Summaries</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="h3 fw-semibold mb-0">@taxonomyFilters.Count</div>
+                        <div class="small text-secondary">Taxonomy</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border rounded-3 bg-white p-3 shadow-sm">
+                <h2 class="h5 mb-2">Taxonomy Filters</h2>
+                <div class="d-flex flex-wrap gap-2">
+                    @foreach (var node in taxonomyFilters.Take(24))
+                    {
+                        <a class="badge rounded-pill text-decoration-none @(string.Equals(Model.TaxonomyFilter, node.Name, StringComparison.OrdinalIgnoreCase) ? "text-bg-success" : "text-bg-light")"
+                           asp-controller="Dino"
+                           asp-action="Index"
+                           asp-route-search="@Model.SearchTerm"
+                           asp-route-taxonomy="@node.Name">
+                            @node.Name <span class="opacity-75">@node.EntryCount</span>
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <div class="col-lg-9">
+        <div class="d-flex align-items-end justify-content-between gap-3 mb-3">
+            <div>
+                <h2 class="h3 mb-1">Published Dino Entries</h2>
+                <p class="text-secondary mb-0">Showing @Model.Dinosaurs.Count entries from @Model.ApiBaseUrl</p>
+            </div>
+        </div>
+
+        @if (Model.Dinosaurs.Count == 0 && string.IsNullOrWhiteSpace(Model.ErrorMessage))
+        {
+            <div class="border rounded-3 bg-white p-4 text-secondary">No published dinosaurs matched those filters.</div>
+        }
+        else
+        {
+            <div class="row g-3">
+                @foreach (var item in Model.Dinosaurs)
+                {
+                    <div class="col-md-6 col-xxl-4">
+                        <article class="dino-card h-100 border rounded-3 bg-white overflow-hidden">
+                            <div class="dino-card-image-wrap">
+                                @if (!string.IsNullOrWhiteSpace(item.PrimaryImageUrl))
+                                {
+                                    <img class="dino-card-image" src="@item.PrimaryImageUrl" alt="@(item.PrimaryImageCaption ?? item.CommonName)" />
+                                }
+                            </div>
+                            <div class="p-3">
+                                <h3 class="h5 mb-1">@item.CommonName</h3>
+                                <p class="fst-italic text-secondary small mb-2">@item.ScientificName</p>
+                                <p class="small text-secondary mb-2">@item.ClassificationLabel</p>
+                                @if (!string.IsNullOrWhiteSpace(item.Description))
+                                {
+                                    <p class="dino-summary small mb-3">@item.Description</p>
+                                }
+                                <a class="btn btn-outline-success w-100"
+                                   asp-controller="Dino"
+                                   asp-action="Detail"
+                                   asp-route-id="@(string.IsNullOrWhiteSpace(item.Slug) ? item.Id : item.Slug)">
+                                    View entry
+                                </a>
+                            </div>
+                        </article>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</section>

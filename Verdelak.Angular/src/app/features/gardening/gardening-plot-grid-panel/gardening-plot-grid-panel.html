@@ -1,0 +1,324 @@
+  <section class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
+    <article class="overflow-hidden rounded border border-slate-200 bg-white shadow-sm">
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3">
+        <div>
+          <h2 class="text-lg font-bold text-slate-950">{{ vm.selectedPlotName() }}</h2>
+          <p class="text-sm text-slate-600">
+            <ng-container *ngIf="vm.selectedPlot()?.dimensions as dimensions; else noPlotDimensions">
+              {{ dimensions.slotsDeep }} rows x {{ dimensions.traySlotsWide }} columns
+            </ng-container>
+            <ng-template #noPlotDimensions>No bed dimensions yet.</ng-template>
+          </p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="rounded border border-lime-200 bg-white px-2 py-1 text-xs font-bold text-lime-800">{{ vm.selectedPlotPlanningLabel() }}</span>
+          <button type="button" class="rounded border px-2 py-1 text-xs font-bold transition" [ngClass]="vm.plotCellFilter() === 'all' ? 'border-slate-700 bg-slate-900 text-white' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'" (click)="vm.setPlotCellFilter('all')">All {{ vm.selectedPlotPlantCount() }}</button>
+          <button type="button" class="rounded border px-2 py-1 text-xs font-bold transition" [ngClass]="vm.plotCellFilter() === 'planned' ? 'border-amber-400 bg-amber-100 text-amber-950' : 'border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100'" (click)="vm.setPlotCellFilter('planned')">{{ vm.selectedPlotPlannedCount() }} planned</button>
+          <button type="button" class="rounded border px-2 py-1 text-xs font-bold transition" [ngClass]="vm.plotCellFilter() === 'planted' ? 'border-sky-400 bg-sky-100 text-sky-950' : 'border-sky-200 bg-sky-50 text-sky-800 hover:bg-sky-100'" (click)="vm.setPlotCellFilter('planted')">{{ vm.selectedPlotStartedCount() }} planted</button>
+          <button type="button" class="rounded border px-2 py-1 text-xs font-bold transition" [ngClass]="vm.plotCellFilter() === 'success' ? 'border-emerald-400 bg-emerald-100 text-emerald-950' : 'border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100'" (click)="vm.setPlotCellFilter('success')">{{ vm.selectedPlotSuccessCount() }} success</button>
+          <button type="button" class="rounded border px-2 py-1 text-xs font-bold transition" [ngClass]="vm.plotCellFilter() === 'empty' ? 'border-slate-500 bg-slate-100 text-slate-950' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'" (click)="vm.setPlotCellFilter('empty')">{{ vm.selectedPlotEmptyCount() }} open</button>
+          <div class="flex rounded border border-slate-300 bg-white p-1">
+            <button type="button" class="rounded px-3 py-1.5 text-xs font-black transition" [ngClass]="vm.plotAssignmentMode() === 'select' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'" (click)="vm.setPlotAssignmentMode('select')">Select</button>
+            <button type="button" class="rounded px-3 py-1.5 text-xs font-black transition" [ngClass]="vm.plotAssignmentMode() === 'paint' ? 'bg-lime-800 text-white' : 'text-slate-600 hover:bg-slate-100'" (click)="vm.setPlotAssignmentMode('paint')">Paint</button>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="vm.plotRows().length; else emptyPlot" class="overflow-auto p-4">
+        <div class="mb-3 grid gap-3 rounded border border-lime-100 bg-lime-50 p-3 lg:grid-cols-[minmax(0,1fr)_18rem]">
+          <div>
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="rounded border border-lime-200 bg-white px-2 py-1 text-xs font-black text-lime-900">{{ vm.selectedPlotPlanningLabel() }}</span>
+              <span class="rounded border border-slate-200 bg-white px-2 py-1 text-xs font-black text-slate-700">Qty {{ vm.selectedPlotTotalQty() }}</span>
+              <span class="rounded border border-amber-200 bg-white px-2 py-1 text-xs font-black text-amber-800">Planned qty {{ vm.selectedPlotPlannedQty() }}</span>
+              <span class="rounded border border-fuchsia-200 bg-white px-2 py-1 text-xs font-black text-fuchsia-800">Showing {{ vm.selectedPlotFilterCount() }} cells</span>
+            </div>
+            <div *ngIf="vm.selectedPlotWarnings().length" class="mt-3 grid gap-1">
+              <p *ngFor="let warning of vm.selectedPlotWarnings()" class="rounded border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-black text-amber-900">{{ warning }}</p>
+            </div>
+            <p class="mt-2 text-sm font-semibold text-lime-900">{{ vm.selectedPlot().description || 'No area description yet.' }}</p>
+            <p *ngIf="vm.selectedPlot().dimensions?.notes" class="mt-1 text-xs font-semibold text-lime-800">{{ vm.selectedPlot().dimensions?.notes }}</p>
+          </div>
+          <div class="grid content-center gap-1">
+            <div class="h-3 overflow-hidden rounded-full bg-white">
+              <div class="h-full rounded-full bg-lime-700" [style.width.%]="vm.selectedPlotCoveragePercent()"></div>
+            </div>
+            <div class="flex justify-between text-xs font-black text-lime-900">
+              <span>{{ vm.selectedPlotPlantCount() }} assigned</span>
+              <span>{{ vm.selectedPlotCoveragePercent() }}%</span>
+            </div>
+          </div>
+          <div class="lg:col-span-2 grid gap-2 border-t border-lime-100 pt-3 sm:grid-cols-2 xl:grid-cols-4">
+            <button *ngFor="let row of vm.plotRowSummaries()" type="button" class="rounded border border-lime-200 bg-white px-3 py-2 text-left text-xs font-black text-slate-700 transition hover:border-lime-400 hover:bg-lime-50" (click)="row.firstSlotId && vm.selectPlotSlot(row.firstSlotId)">
+              <span class="block text-lime-900">Row {{ row.row }} / {{ row.coveragePercent }}%</span>
+              <span class="mt-1 block text-slate-500">{{ row.assigned }} assigned / {{ row.open }} open / Qty {{ row.qty }}</span>
+              <span class="mt-1 block text-amber-700">{{ row.planned }} planned / {{ row.planted }} planted / {{ row.success }} success</span>
+            </button>
+          </div>
+        </div>
+        <div *ngIf="vm.plotAssignmentMode() === 'paint'" class="mb-3 rounded border border-lime-200 bg-lime-50 px-3 py-2 text-sm font-semibold text-lime-900">
+          Painting {{ vm.selectedPlotPlantSeedName() }}. Click bed cells to apply the current seed, date, status, and quantity.
+        </div>
+        <div class="garden-tray-grid" [style.--garden-columns]="vm.selectedPlotColumnCount()">
+          <div class="garden-header-cell"></div>
+          <div *ngFor="let cell of vm.plotRows()[0]" class="garden-header-cell">{{ cell.column }}</div>
+
+          <ng-container *ngFor="let row of vm.plotRows()">
+            <div class="garden-header-cell">{{ row[0].row }}</div>
+            <button *ngFor="let cell of row" type="button" class="garden-cell rounded border p-2 text-left transition hover:ring-2 hover:ring-lime-200" [ngClass]="vm.plotCellTone(cell)" [title]="cell.plant ? (cell.label + ' ' + (cell.plant.seedName || 'Unknown seed')) : cell.label + ' empty'" (click)="vm.selectPlotCell(cell)">
+              <span class="block text-[0.65rem] font-bold uppercase text-slate-500">{{ cell.label }}</span>
+              <span class="mt-1 block text-sm font-black">{{ cell.plant?.qty || '-' }}</span>
+              <span *ngIf="cell.plant" class="mt-1 block truncate text-xs font-semibold">{{ cell.plant.seedName || 'Unknown seed' }}</span>
+            </button>
+          </ng-container>
+        </div>
+      </div>
+
+      <ng-template #emptyPlot>
+        <div class="p-8 text-center text-sm text-slate-500">
+          {{ vm.loading() ? 'Loading garden area.' : 'No garden bed grid is ready yet. Add a garden area and dimensions through the API/Admin flow next.' }}
+        </div>
+      </ng-template>
+    </article>
+
+    <aside class="grid content-start gap-4">
+      <section class="rounded border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="mb-3 flex items-center justify-between gap-2">
+          <h2 class="text-lg font-bold text-slate-950">{{ vm.plotForm().id ? 'Edit Area' : 'New Area' }}</h2>
+          <button type="button" class="rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700" (click)="vm.newPlot()">New</button>
+        </div>
+        <div class="grid gap-3">
+          <label class="grid gap-1 text-sm font-bold text-slate-700">
+            Name
+            <input class="rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="vm.plotForm().gardenName" (ngModelChange)="vm.patchPlotForm({ gardenName: $event })">
+          </label>
+          <label class="grid gap-1 text-sm font-bold text-slate-700">
+            Description
+            <textarea rows="3" class="rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="vm.plotForm().description" (ngModelChange)="vm.patchPlotForm({ description: $event })"></textarea>
+          </label>
+          <button type="button" class="rounded bg-lime-800 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" [disabled]="vm.savingPlot()" (click)="vm.savePlot()">Save Area</button>
+        </div>
+
+        <div class="mt-4 rounded border border-lime-200 bg-lime-50 p-3">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <h3 class="text-sm font-black uppercase text-lime-900">Bed Grid</h3>
+              <p class="mt-1 text-xs font-semibold text-lime-800">Set the planning grid used by garden area cells.</p>
+            </div>
+            <span class="rounded border border-lime-200 bg-white px-2 py-1 text-xs font-black text-lime-900">{{ vm.selectedPlotGridLabel() }}</span>
+          </div>
+          <div class="mt-3 grid grid-cols-2 gap-2">
+            <label class="grid gap-1 text-sm font-bold text-slate-700">
+              Columns
+              <input type="number" min="1" max="100" class="rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="vm.plotDimensionForm().traySlotsWide" (ngModelChange)="vm.patchPlotDimensionForm({ traySlotsWide: $event })">
+            </label>
+            <label class="grid gap-1 text-sm font-bold text-slate-700">
+              Rows
+              <input type="number" min="1" max="100" class="rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="vm.plotDimensionForm().slotsDeep" (ngModelChange)="vm.patchPlotDimensionForm({ slotsDeep: $event })">
+            </label>
+          </div>
+          <label class="mt-3 grid gap-1 text-sm font-bold text-slate-700">
+            Grid notes
+            <textarea rows="2" class="rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="vm.plotDimensionForm().notes" (ngModelChange)="vm.patchPlotDimensionForm({ notes: $event })"></textarea>
+          </label>
+          <button type="button" class="mt-3 w-full rounded bg-lime-800 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" [disabled]="vm.savingPlotDimension()" (click)="vm.savePlotDimensions()">
+            {{ vm.savingPlotDimension() ? 'Saving grid.' : 'Save Bed Grid' }}
+          </button>
+        </div>
+
+        <div class="mt-4 grid gap-2">
+          <button *ngFor="let plot of vm.plots()" type="button" class="rounded border px-3 py-2 text-left text-sm font-bold" [ngClass]="vm.selectedPlotId() === plot.id ? 'border-lime-400 bg-lime-50 text-lime-900' : 'border-slate-200 bg-white text-slate-700'" (click)="vm.editPlot(plot)">
+            <span class="block">{{ plot.gardenName }}</span>
+            <span class="mt-1 block text-xs font-semibold" [ngClass]="vm.selectedPlotId() === plot.id ? 'text-lime-800' : 'text-slate-500'">
+              {{ plot.dimensions ? (plot.dimensions.slotsDeep + ' x ' + plot.dimensions.traySlotsWide + ' grid') : 'No grid' }}
+            </span>
+            <span *ngIf="plot.description" class="mt-1 block truncate text-xs font-semibold" [ngClass]="vm.selectedPlotId() === plot.id ? 'text-lime-700' : 'text-slate-500'">{{ plot.description }}</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="rounded border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="mb-3 flex items-center justify-between gap-2">
+          <h2 class="text-lg font-bold text-slate-950">Bed Cell</h2>
+          <span class="rounded border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-black text-slate-700">{{ vm.selectedPlotCell()?.label || '-' }}</span>
+        </div>
+
+        <ng-container *ngIf="vm.selectedPlotCell(); else choosePlotCell">
+          <div class="grid gap-3">
+            <div class="rounded border border-lime-200 bg-lime-50 p-3">
+              <div class="text-xs font-black uppercase text-lime-700">Bed Brush</div>
+              <div class="mt-1 text-sm font-bold text-lime-950">{{ vm.selectedPlotPlantSeedName() }}</div>
+              <div class="mt-1 text-xs font-semibold text-lime-800">{{ vm.plotAssignmentMode() === 'paint' ? 'Paint mode applies this brush when a bed cell is clicked.' : 'Select mode edits the highlighted bed cell.' }}</div>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <button type="button" class="rounded border border-lime-300 bg-white px-2 py-1 text-xs font-black text-lime-800 disabled:opacity-50" [disabled]="!vm.plotPlantForm().seedId" (click)="vm.useSelectedPlotSeedDefaultDate()">Use seed date</button>
+                <button type="button" class="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-black text-slate-700" (click)="vm.clearPlotBrush()">Clear brush</button>
+              </div>
+            </div>
+
+            <label class="grid gap-1 text-sm font-bold text-slate-700">
+              Seed
+              <select class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="vm.plotPlantForm().seedId" (ngModelChange)="vm.setPlotPlantSeed($event)">
+                <option [ngValue]="null">Choose seed</option>
+                <option *ngFor="let seed of vm.sortedSeeds()" [ngValue]="seed.id">{{ seed.name }}</option>
+              </select>
+            </label>
+  
+          <div class="grid grid-cols-2 gap-2">
+              <label class="grid gap-1 text-sm font-bold text-slate-700">
+                Plant date
+                <input type="date" class="rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="vm.plotPlantForm().plantDate" (ngModelChange)="vm.patchPlotPlantForm({ plantDate: $event })">
+              </label>
+              <label class="grid gap-1 text-sm font-bold text-slate-700">
+                Qty
+                <input type="number" min="0" class="rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="vm.plotPlantForm().qty" (ngModelChange)="vm.patchPlotPlantForm({ qty: $event })">
+              </label>
+            </div>
+
+            <div class="flex flex-wrap gap-2">
+              <button type="button" class="rounded border px-3 py-2 text-xs font-black transition" [ngClass]="vm.plotPlantForm().planning ? 'border-amber-300 bg-amber-50 text-amber-900' : 'border-slate-200 bg-white text-slate-700'" (click)="vm.setPlotPlantStatus('planned')">Planned</button>
+              <button type="button" class="rounded border px-3 py-2 text-xs font-black transition" [ngClass]="!vm.plotPlantForm().planning && !vm.plotPlantForm().success ? 'border-sky-300 bg-sky-50 text-sky-900' : 'border-slate-200 bg-white text-slate-700'" (click)="vm.setPlotPlantStatus('planted')">Planted</button>
+              <button type="button" class="rounded border px-3 py-2 text-xs font-black transition" [ngClass]="vm.plotPlantForm().success ? 'border-emerald-300 bg-emerald-50 text-emerald-900' : 'border-slate-200 bg-white text-slate-700'" (click)="vm.setPlotPlantStatus('success')">Success</button>
+            </div>
+
+  
+          <div class="grid grid-cols-2 gap-2">
+              <label class="flex items-center gap-2 rounded border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-bold text-slate-700">
+                <input type="checkbox" class="h-4 w-4" [ngModel]="vm.plotPlantForm().planning" (ngModelChange)="vm.patchPlotPlantForm({ planning: $event })">
+                Planned
+              </label>
+              <label class="flex items-center gap-2 rounded border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-bold text-slate-700">
+                <input type="checkbox" class="h-4 w-4" [ngModel]="vm.plotPlantForm().success" (ngModelChange)="vm.patchPlotPlantForm({ success: $event })">
+                Success
+              </label>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" class="rounded bg-lime-800 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" [disabled]="vm.savingPlotPlant()" (click)="vm.savePlotPlant()">
+                {{ vm.selectedPlotAssignment() ? 'Save Cell' : 'Assign Seed' }}
+              </button>
+              <button type="button" class="rounded border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 disabled:opacity-50" [disabled]="vm.savingPlotPlant()" (click)="vm.clearPlotPlant()">Clear</button>
+            </div>
+
+            <div class="rounded border border-slate-200 bg-white p-3">
+              <div class="text-xs font-black uppercase text-slate-500">Bed Planning Actions</div>
+              <div class="mt-2 flex flex-wrap gap-2">
+                <button type="button" class="rounded border border-lime-200 bg-lime-50 px-3 py-2 text-xs font-black text-lime-800 disabled:opacity-50" [disabled]="vm.savingPlotPlant() || !vm.plotPlantForm().seedId" (click)="vm.fillSelectedPlotRow()">Fill Row</button>
+                <button type="button" class="rounded border border-lime-200 bg-white px-3 py-2 text-xs font-black text-lime-800 disabled:opacity-50" [disabled]="vm.savingPlotPlant() || !vm.plotPlantForm().seedId" (click)="vm.fillSelectedPlotRowEmpty()">Fill Empty Row</button>
+                <button type="button" class="rounded border border-rose-200 bg-white px-3 py-2 text-xs font-black text-rose-700 disabled:opacity-50" [disabled]="vm.savingPlotPlant()" (click)="vm.clearSelectedPlotRow()">Clear Row</button>
+                <button type="button" class="rounded border border-lime-200 bg-lime-50 px-3 py-2 text-xs font-black text-lime-800 disabled:opacity-50" [disabled]="vm.savingPlotPlant() || !vm.plotPlantForm().seedId" (click)="vm.fillSelectedPlotColumn()">Fill Column</button>
+                <button type="button" class="rounded border border-lime-200 bg-white px-3 py-2 text-xs font-black text-lime-800 disabled:opacity-50" [disabled]="vm.savingPlotPlant() || !vm.plotPlantForm().seedId" (click)="vm.fillSelectedPlotColumnEmpty()">Fill Empty Column</button>
+                <button type="button" class="rounded border border-rose-200 bg-white px-3 py-2 text-xs font-black text-rose-700 disabled:opacity-50" [disabled]="vm.savingPlotPlant()" (click)="vm.clearSelectedPlotColumn()">Clear Column</button>
+                <button type="button" class="rounded border border-fuchsia-200 bg-fuchsia-50 px-3 py-2 text-xs font-black text-fuchsia-800 disabled:opacity-50" [disabled]="vm.savingPlotPlant() || !(vm.plotPlantForm().seedId || vm.selectedPlotLegendSeedId())" (click)="vm.clearSelectedSeedFromPlot()">Clear Seed</button>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-template #choosePlotCell>
+          <div class="grid gap-3">
+            <p class="text-sm text-slate-500">Select a garden bed cell to edit it, or choose a seed brush and paint cells directly.</p>
+            <label class="grid gap-1 text-sm font-bold text-slate-700">
+              Seed brush
+              <select class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="vm.plotPlantForm().seedId" (ngModelChange)="vm.setPlotPlantSeed($event)">
+                <option [ngValue]="null">Choose seed</option>
+                <option *ngFor="let seed of vm.sortedSeeds()" [ngValue]="seed.id">{{ seed.name }}</option>
+              </select>
+            </label>
+  
+          <div class="grid grid-cols-2 gap-2">
+              <button type="button" class="rounded bg-lime-800 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" [disabled]="!vm.plotPlantForm().seedId" (click)="vm.setPlotAssignmentMode('paint')">Start Painting</button>
+              <button type="button" class="rounded border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700" (click)="vm.clearPlotBrush()">Clear Brush</button>
+            </div>
+          </div>
+        </ng-template>
+        <p *ngIf="vm.plotMessage()" class="mt-3 rounded border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700">{{ vm.plotMessage() }}</p>
+      </section>
+
+      <section class="rounded border border-teal-100 bg-teal-50 p-4 shadow-sm">
+        <div class="mb-3">
+          <h2 class="text-lg font-bold text-teal-950">Copy Bed Year</h2>
+          <p class="text-xs font-semibold text-teal-800">Copy bed assignments into another year as planned cells.</p>
+        </div>
+        <div class="grid gap-3">
+
+          <div class="flex flex-wrap gap-2">
+            <button type="button" class="rounded border border-teal-200 bg-white px-2 py-1 text-xs font-black text-teal-900" (click)="vm.useNextYearForPlotCopy()">Use {{ vm.selectedYear() }} to {{ vm.selectedYear() + 1 }}</button>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <label class="grid gap-1 text-sm font-bold text-slate-700">
+              From
+              <input type="number" min="2000" max="2100" class="rounded border border-teal-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="vm.plotCopyFromYear()" (ngModelChange)="vm.setPlotCopyFromYear($event)">
+            </label>
+            <label class="grid gap-1 text-sm font-bold text-slate-700">
+              To
+              <input type="number" min="2000" max="2100" class="rounded border border-teal-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="vm.plotCopyToYear()" (ngModelChange)="vm.setPlotCopyToYear($event)">
+            </label>
+          </div>
+          <select class="rounded border border-teal-200 bg-white px-3 py-2 text-sm font-bold text-slate-700" [ngModel]="vm.plotCopyScope()" (ngModelChange)="vm.setPlotCopyScope($event)">
+            <option value="selected">Selected garden area only</option>
+            <option value="all">All garden areas</option>
+          </select>
+          <label class="flex items-center gap-2 rounded border border-teal-200 bg-white px-3 py-2 text-xs font-black text-teal-900">
+            <input type="checkbox" class="h-4 w-4" [ngModel]="vm.plotCopyOverwrite()" (ngModelChange)="vm.setPlotCopyOverwrite($event)">
+            Replace existing target-year bed cells
+          </label>
+          <div *ngIf="vm.plotCopyPreview() as preview" class="grid grid-cols-2 gap-2 rounded border border-teal-200 bg-white p-3 text-xs font-black text-slate-700">
+            <span class="rounded bg-teal-50 px-2 py-1 text-teal-800">Source {{ preview.sourceCount }}</span>
+            <span class="rounded bg-slate-50 px-2 py-1 text-slate-700">Target {{ preview.existingTargetCount }}</span>
+            <span class="rounded bg-emerald-50 px-2 py-1 text-emerald-800">Will copy {{ preview.willCopy }}</span>
+            <span class="rounded bg-amber-50 px-2 py-1 text-amber-800">Will skip {{ preview.willSkip }}</span>
+            <span *ngIf="preview.willDelete > 0" class="col-span-2 rounded bg-rose-50 px-2 py-1 text-rose-700">Will delete {{ preview.willDelete }} target rows before copying</span>
+          </div>
+          <div *ngIf="vm.plotCopyResult() as result" class="grid grid-cols-3 gap-2 rounded border border-teal-200 bg-white p-3 text-xs font-black text-slate-700">
+            <span class="rounded bg-emerald-50 px-2 py-1 text-emerald-800">Copied {{ result.copied }}</span>
+            <span class="rounded bg-amber-50 px-2 py-1 text-amber-800">Skipped {{ result.skipped }}</span>
+            <span class="rounded bg-rose-50 px-2 py-1 text-rose-700">Replaced {{ result.deletedExisting }}</span>
+          </div>
+          <div class="grid gap-2 sm:grid-cols-3">
+            <button type="button" class="rounded border border-teal-700 bg-white px-4 py-2 text-sm font-black text-teal-900 disabled:opacity-50" [disabled]="vm.previewingPlotCopy() || vm.copyingPlotYear()" (click)="vm.previewPlotYear()">
+              {{ vm.previewingPlotCopy() ? 'Previewing.' : 'Preview Copy' }}
+            </button>
+            <button type="button" class="rounded bg-teal-800 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" [disabled]="vm.copyingPlotYear() || vm.previewingPlotCopy()" (click)="vm.copyPlotYear()">
+              {{ vm.copyingPlotYear() ? 'Copying.' : 'Copy Bed Assignments' }}
+            </button>
+            <button type="button" class="rounded border border-teal-200 bg-white px-4 py-2 text-sm font-black text-teal-900 disabled:opacity-50" [disabled]="!vm.plotCopyPreview() && !vm.plotCopyResult()" (click)="vm.downloadPlotCopyReportCsv()">Report CSV</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="rounded border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="mb-3 flex items-center justify-between gap-2">
+          <h2 class="text-lg font-bold text-slate-950">Bed Legend</h2>
+          <div class="flex items-center gap-2">
+            <button *ngIf="vm.selectedPlotLegendSeedId()" type="button" class="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-black text-slate-700 hover:bg-slate-50" (click)="vm.clearPlotLegendFocus()">Show All</button>
+            <span class="text-xs font-bold uppercase text-slate-500">{{ vm.filteredPlotLegend().length }} of {{ vm.plotLegend().length }} seeds</span>
+          </div>
+        </div>
+        <div class="grid gap-2">
+          <article *ngFor="let item of vm.filteredPlotLegend()" class="rounded border p-3 transition" [ngClass]="vm.selectedPlotLegendSeedId() === item.seedId ? 'border-fuchsia-300 bg-fuchsia-50 shadow-sm' : 'border-slate-200 bg-slate-50'">
+            <div class="flex items-start justify-between gap-3">
+              <button type="button" class="min-w-0 text-left" (click)="vm.filterPlotByLegendSeed(item)" title="Highlight this seed in the bed grid">
+                <div class="truncate font-bold text-slate-950">{{ item.seedName }}</div>
+                <div class="mt-1 text-xs font-semibold text-slate-500">First date {{ vm.formatDate(item.firstPlantDate) }}</div>
+              </button>
+              <button type="button" class="rounded border border-lime-200 bg-white px-2 py-1 text-xs font-black text-lime-800 transition hover:bg-lime-50" (click)="vm.useSeedFromPlotLegend(item)" title="Use this seed in the bed cell form">Use</button>
+            </div>
+            <div class="mt-2 grid grid-cols-4 gap-1 text-center text-[0.7rem] font-black text-slate-600">
+              <span class="rounded bg-white px-1.5 py-1">{{ item.count }} cells</span>
+              <span class="rounded bg-lime-50 px-1.5 py-1 text-lime-800">Qty {{ item.totalQty }}</span>
+              <span class="rounded bg-emerald-50 px-1.5 py-1 text-emerald-800">{{ item.successCount }} success</span>
+              <span class="rounded bg-amber-50 px-1.5 py-1 text-amber-800">{{ item.planningCount }} planned</span>
+            </div>
+            <div class="mt-2 flex max-h-24 flex-wrap gap-1 overflow-auto rounded border border-slate-200 bg-white p-2">
+              <button *ngFor="let slotId of item.slotIds; let i = index" type="button" class="rounded border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-black text-slate-700 transition hover:border-lime-300 hover:bg-lime-50" (click)="vm.selectPlotSlot(slotId)" title="Open this bed cell">
+                {{ item.slotLabels[i] }}
+              </button>
+            </div>
+          </article>
+          <p *ngIf="vm.filteredPlotLegend().length === 0" class="text-sm text-slate-500">No bed assignments match the current focus for this year yet.</p>
+        </div>
+      </section>
+
+      
+    </aside>
+  </section>
+

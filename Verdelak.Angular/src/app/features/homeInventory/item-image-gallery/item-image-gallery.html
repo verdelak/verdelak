@@ -1,0 +1,20 @@
+<div class="gallery">
+  <h3>Images</h3>
+
+  <div *ngIf="error() as err" class="error">{{ err }}</div>
+
+  <div class="images">
+    <div class="image-card" *ngFor="let img of images()">
+        <img
+            [src]="'data:' + img.contentType + ';base64,' + img.imageBase64"
+            alt="Item image"
+    style="max-width: 200px; max-height: 200px;"
+  />
+      <p *ngIf="img.description">{{ img.description }}</p>
+      <button (click)="deleteImage(img.id)">Delete</button>
+    </div>
+  </div>
+
+  <label for="upload" class="upload-button">Upload Image</label>
+  <input id="upload" type="file" (change)="uploadFile($event)" hidden />
+</div>

@@ -2,5 +2,7 @@
     .head { display:flex; align-items:center; justify-content:space-between; }
     form { display:grid; gap:12px; }
     .row { display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; }
+    .form-field { display:grid; gap:6px; }
+    .form-field span { color:#475569; font-size:12px; font-weight:700; text-transform:uppercase; }
     @media (max-width: 900px) { .row { grid-template-columns: 1fr; } }
     .actions { display:flex; gap:8px; }

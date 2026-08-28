@@ -1,0 +1,95 @@
+    <details class="mt-4 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+      <summary class="cursor-pointer text-sm font-bold text-slate-900">Reporting</summary>
+      <section *ngIf="yearProgressReport() as report" class="mt-3 grid gap-3">
+        <div class="flex flex-wrap items-center gap-2">
+          <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="downloadYearProgressReport()">Export year CSV</button>
+          <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="downloadSectionProgressReport()">Export sections CSV</button>
+          <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="downloadRolloverPolicyReport()">Export rollover CSV</button>
+        </div>
+        <div class="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+          <div *ngFor="let item of yearReportEntries(report)" class="rounded-md border border-slate-200 bg-white px-3 py-2">
+            <p class="text-xs font-bold uppercase tracking-wide text-slate-500">{{ item.label }}</p>
+            <p class="mt-1 text-2xl font-bold text-slate-950">{{ item.value | number }}{{ item.suffix || '' }}</p>
+          </div>
+        </div>
+
+        <div class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_22rem]">
+          <article class="rounded-md border border-slate-200 bg-white p-3">
+            <div class="flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <p class="app-token-kicker text-xs font-bold uppercase tracking-wide">Year completion</p>
+                <h3 class="mt-1 text-base font-bold text-slate-950">{{ report.completedLeafWorkCount | number }} of {{ report.leafWorkCount | number }} leaf work items complete</h3>
+              </div>
+              <span class="rounded bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-800">{{ report.completionPercent }}%</span>
+            </div>
+            <div class="mt-3 h-3 overflow-hidden rounded-full bg-slate-200">
+              <div class="h-full rounded-full bg-emerald-500" [style.width.%]="report.completionPercent"></div>
+            </div>
+            <div class="mt-3 grid gap-2 text-sm font-semibold text-slate-700 sm:grid-cols-3">
+              <p>{{ report.notStartedCount | number }} not started</p>
+              <p>{{ report.inProgressCount | number }} in progress</p>
+              <p>{{ report.completedLeafWorkCount | number }} complete</p>
+            </div>
+          </article>
+
+          <article class="rounded-md border border-slate-200 bg-white p-3">
+            <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Schedule and archive signals</p>
+            <div class="mt-2 grid grid-cols-2 gap-2 text-sm">
+              <p class="app-token-soft-surface app-token-text-strong rounded px-2 py-1 font-bold">{{ report.activeWeekCount | number }} active this week</p>
+              <p class="app-token-soft-surface app-token-text-strong rounded px-2 py-1 font-bold">{{ report.activeMonthCount | number }} active this month</p>
+              <p class="rounded bg-slate-100 px-2 py-1 font-bold text-slate-700">{{ report.scheduledCount | number }} scheduled</p>
+              <p class="rounded bg-slate-100 px-2 py-1 font-bold text-slate-700">{{ report.notesCount | number }} notes</p>
+              <p class="rounded bg-slate-100 px-2 py-1 font-bold text-slate-700">{{ report.dependencyCount | number }} dependencies</p>
+              <p class="rounded bg-slate-100 px-2 py-1 font-bold text-slate-700">{{ report.totalCount | number }} outline items</p>
+            </div>
+          </article>
+        </div>
+
+        <div *ngIf="sectionSummaries().length" class="flex flex-wrap items-center gap-2">
+          <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Jump to section</p>
+          <button *ngFor="let summary of sectionSummaries()" type="button" class="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="jumpToSectionReport(summary.section)">
+            {{ summary.section }} {{ summary.completionPercent }}%
+          </button>
+        </div>
+
+        <div class="overflow-x-auto rounded-md border border-slate-200 bg-white">
+          <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
+            <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+              <tr>
+                <th class="px-3 py-3 font-bold">Section</th>
+                <th class="px-3 py-3 font-bold">Progress</th>
+                <th class="px-3 py-3 font-bold">Work</th>
+                <th class="px-3 py-3 font-bold">Schedule</th>
+                <th class="px-3 py-3 font-bold">Signals</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr *ngFor="let summary of sectionSummaries()" [attr.id]="sectionReportId(summary.section)" class="align-top">
+                <td class="min-w-56 px-3 py-3">
+                  <button type="button" class="app-token-link text-left font-bold" (click)="focusSection(summary)">{{ summary.section }}</button>
+                  <p class="mt-1 text-xs font-semibold text-slate-500">{{ summary.totalCount | number }} outline items</p>
+                </td>
+                <td class="min-w-56 px-3 py-3">
+                  <div class="h-2 overflow-hidden rounded-full bg-slate-200" [style.background]="sectionProgressTrack(summary)"></div>
+                  <p class="mt-2 text-xs font-bold text-slate-700">{{ summary.completionPercent }}% complete / {{ summary.averagePercentComplete }}% average</p>
+                </td>
+                <td class="min-w-52 px-3 py-3 text-xs font-semibold text-slate-700">
+                  <p>{{ summary.leafWorkCount | number }} leaf / {{ summary.completedLeafWorkCount | number }} complete</p>
+                  <p>{{ summary.openLeafWorkCount | number }} open / {{ summary.inProgressCount | number }} in progress / {{ summary.notStartedCount | number }} not started</p>
+                </td>
+                <td class="min-w-52 px-3 py-3 text-xs font-semibold text-slate-700">
+                  <p>{{ summary.activeCount | number }} active today</p>
+                  <p>{{ summary.scheduledCount | number }} scheduled / {{ summary.unscheduledCount | number }} unscheduled</p>
+                  <p class="text-rose-700">{{ summary.overdueCount | number }} overdue</p>
+                </td>
+                <td class="min-w-52 px-3 py-3 text-xs font-semibold text-slate-700">
+                  <p class="text-amber-800">{{ summary.blockedCount | number }} blocked</p>
+                  <p>{{ summary.dependencyCount | number }} dependencies / {{ summary.notesCount | number }} notes</p>
+                  <p>{{ summary.queueCount | number }} queue / {{ summary.milestoneCount | number }} milestones</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </details>

@@ -2,8 +2,8 @@
   <header class="head">
     <h2>{{ vm()?.productName }}</h2>
     <div class="actions">
-      <a *ngIf="auth.isAdmin()" mat-flat-button color="primary" [routerLink]="['/rpg', vm()?.id, 'edit']">Edit</a>
-      <a mat-stroked-button [routerLink]="['/rpg']">Back</a>
+      <a *ngIf="auth.isAdmin()" class="btn btn-primary btn-sm" [routerLink]="['/rpg', vm()?.id, 'edit']">Edit</a>
+      <a class="btn btn-outline-secondary btn-sm" [routerLink]="['/rpg']">Back</a>
     </div>
   </header>
 

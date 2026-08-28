@@ -2,9 +2,19 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, signal } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { BlogService } from '../blog.service';
+import { BlogAppearanceSettings, BlogService } from '../blog.service';
 import { renderMarkdown } from '../markdown';
 import { BlogPostDetail } from '../models/blog.models';
+
+const defaultBlogAppearance: BlogAppearanceSettings = {
+  brandName: 'Verdelak Blog',
+  tagline: 'Notes, updates, and personal writing.',
+  primaryColor: '#4f46e5',
+  accentColor: '#0f766e',
+  logoUrl: null,
+  heroImageUrl: null,
+  faviconUrl: null
+};
 
 @Component({
   selector: 'app-blog-detail',
@@ -16,6 +26,7 @@ export class BlogDetail implements OnInit {
   readonly post = signal<BlogPostDetail | null>(null);
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
+  readonly appearance = signal<BlogAppearanceSettings>(defaultBlogAppearance);
   readonly bodyHtml = computed<SafeHtml>(() => this.sanitizer.bypassSecurityTrustHtml(renderMarkdown(this.post()?.bodyMarkdown ?? '')));
 
   constructor(
@@ -25,6 +36,11 @@ export class BlogDetail implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.service.getAppearance().subscribe({
+      next: appearance => this.appearance.set(this.normalizeAppearance(appearance)),
+      error: () => this.appearance.set(defaultBlogAppearance)
+    });
+
     const slug = this.route.snapshot.paramMap.get('slug');
 
     if (!slug) {
@@ -38,5 +54,17 @@ export class BlogDetail implements OnInit {
       error: err => this.error.set(err.error ?? err.message ?? 'Blog entry not found.'),
       complete: () => this.loading.set(false)
     });
+  }
+
+  private normalizeAppearance(appearance: BlogAppearanceSettings): BlogAppearanceSettings {
+    return {
+      brandName: appearance.brandName?.trim() || defaultBlogAppearance.brandName,
+      tagline: appearance.tagline?.trim() || defaultBlogAppearance.tagline,
+      primaryColor: appearance.primaryColor?.trim() || defaultBlogAppearance.primaryColor,
+      accentColor: appearance.accentColor?.trim() || defaultBlogAppearance.accentColor,
+      logoUrl: appearance.logoUrl?.trim() || null,
+      heroImageUrl: appearance.heroImageUrl?.trim() || null,
+      faviconUrl: appearance.faviconUrl?.trim() || null
+    };
   }
 }

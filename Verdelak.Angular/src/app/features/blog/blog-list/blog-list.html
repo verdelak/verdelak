@@ -1,10 +1,22 @@
 <section class="grid gap-4">
-  <header class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-    <p class="text-xs font-bold uppercase tracking-wider text-blue-600">Personal</p>
-    <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">Blog</h1>
+  <header class="grid gap-4 overflow-hidden rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-5 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,24rem)] lg:items-stretch">
+    <div class="min-w-0 self-center">
+      <div class="flex items-center gap-3">
+        <img *ngIf="appearance().logoUrl as logoUrl" class="h-10 w-10 rounded-md object-contain" [src]="logoUrl" [alt]="appearance().brandName + ' logo'" />
+        <p class="text-xs font-bold uppercase tracking-wider" [style.color]="appearance().accentColor">{{ appearance().brandName }}</p>
+      </div>
+      <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">{{ appearance().tagline }}</h1>
+      <p class="mt-2 text-sm font-medium text-slate-600">Browse published entries by search, tag, or archive month.</p>
+    </div>
+    <img
+      *ngIf="appearance().heroImageUrl as heroImageUrl"
+      class="h-36 w-full rounded-md object-cover sm:h-44 lg:h-full"
+      [src]="heroImageUrl"
+      [alt]="appearance().brandName + ' hero image'"
+    />
     <form class="mt-4 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto]" (ngSubmit)="applySearch()">
-      <input class="rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="search" name="search" [ngModel]="search()" (ngModelChange)="search.set($event)" placeholder="Search entries" />
-      <button type="submit" class="rounded-md bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700">Search</button>
+      <input class="app-token-control rounded-md border px-3 py-2 text-sm shadow-sm outline-none" type="search" name="search" [ngModel]="search()" (ngModelChange)="search.set($event)" placeholder="Search entries" />
+      <button type="submit" class="rounded-md px-4 py-2 text-sm font-bold text-white shadow-sm transition" [style.background-color]="appearance().primaryColor">Search</button>
       <button type="button" class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="clearFilters()">Clear</button>
     </form>
   </header>
@@ -16,11 +28,11 @@
       <article *ngFor="let post of posts()" class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
         <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <a [routerLink]="['/blog', post.slug]" class="text-xl font-bold text-slate-950 transition hover:text-blue-700">{{ post.title }}</a>
+            <a [routerLink]="['/blog', post.slug]" class="text-xl font-bold text-slate-950 transition" [style.color]="appearance().primaryColor">{{ post.title }}</a>
             <p class="mt-1 text-sm font-medium text-slate-500">{{ post.postedDate | date:'mediumDate' }}</p>
           </div>
           <div class="flex flex-wrap gap-2">
-            <button *ngFor="let tag of post.tags" type="button" class="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-bold text-indigo-700" (click)="setTag(tag.slug)">{{ tag.name }}</button>
+            <button *ngFor="let tag of post.tags" type="button" class="rounded-full px-2.5 py-1 text-xs font-bold" [style.background-color]="appearance().primaryColor + '14'" [style.color]="appearance().primaryColor" (click)="setTag(tag.slug)">{{ tag.name }}</button>
           </div>
         </div>
         <p class="mt-3 text-sm leading-6 text-slate-600">{{ post.excerpt }}</p>
@@ -41,7 +53,7 @@
       <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
         <h2 class="text-base font-bold text-slate-950">Tags</h2>
         <div class="mt-3 flex flex-wrap gap-2">
-          <button *ngFor="let tag of tags()" type="button" class="rounded-full border px-2.5 py-1 text-xs font-bold transition" [class.border-blue-200]="selectedTag() === tag.slug" [class.bg-blue-50]="selectedTag() === tag.slug" [class.text-blue-700]="selectedTag() === tag.slug" [class.border-slate-200]="selectedTag() !== tag.slug" [class.text-slate-600]="selectedTag() !== tag.slug" (click)="setTag(tag.slug)">{{ tag.name }}</button>
+          <button *ngFor="let tag of tags()" type="button" class="rounded-full border px-2.5 py-1 text-xs font-bold transition" [class.border-slate-200]="selectedTag() !== tag.slug" [class.text-slate-600]="selectedTag() !== tag.slug" [style.border-color]="selectedTag() === tag.slug ? appearance().primaryColor : null" [style.background-color]="selectedTag() === tag.slug ? appearance().primaryColor + '14' : null" [style.color]="selectedTag() === tag.slug ? appearance().primaryColor : null" (click)="setTag(tag.slug)">{{ tag.name }}</button>
         </div>
       </section>
 

@@ -12,6 +12,7 @@ public class HomeController(IVerdelakApiClient apiClient, ILogger<HomeController
         const int pageSize = 24;
         string? apiError = null;
         var catalog = new CdCatalogPage();
+        var appearance = await LoadAppearanceAsync(cancellationToken);
 
         try
         {
@@ -25,6 +26,7 @@ public class HomeController(IVerdelakApiClient apiClient, ILogger<HomeController
 
         var model = new CdCatalogViewModel
         {
+            Appearance = appearance,
             SearchTerm = band,
             ApiBaseUrl = apiClient.BaseAddress?.ToString() ?? "Not configured",
             ErrorMessage = apiError,
@@ -36,6 +38,7 @@ public class HomeController(IVerdelakApiClient apiClient, ILogger<HomeController
             PageSize = catalog.PageSize == 0 ? pageSize : catalog.PageSize
         };
 
+        ViewData["Appearance"] = appearance;
         return View(model);
     }
 
@@ -43,6 +46,7 @@ public class HomeController(IVerdelakApiClient apiClient, ILogger<HomeController
     {
         AlbumDetail? album = null;
         string? errorMessage = null;
+        var appearance = await LoadAppearanceAsync(cancellationToken);
 
         try
         {
@@ -58,8 +62,10 @@ public class HomeController(IVerdelakApiClient apiClient, ILogger<HomeController
             errorMessage = "This CD could not be loaded. Start Verdelak.Api and try again.";
         }
 
+        ViewData["Appearance"] = appearance;
         return View(new AlbumDetailViewModel
         {
+            Appearance = appearance,
             Album = album,
             ErrorMessage = errorMessage
         });
@@ -74,5 +80,18 @@ public class HomeController(IVerdelakApiClient apiClient, ILogger<HomeController
     public IActionResult Error()
     {
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+    }
+
+    private async Task<PublicAppearanceSettings> LoadAppearanceAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await apiClient.GetCdSiteAppearanceAsync(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogDebug(ex, "Unable to load CD site appearance settings; using defaults.");
+            return PublicAppearanceSettings.CdSiteDefault;
+        }
     }
 }

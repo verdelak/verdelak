@@ -42,7 +42,7 @@
     </label>
   </div>
 
-  <div *ngIf="selectedTuning() as tuning" class="rounded-md border border-blue-100 bg-blue-50 px-3 py-2 text-sm text-blue-950">
+  <div *ngIf="selectedTuning() as tuning" class="app-token-soft-surface app-token-text-strong rounded-md border px-3 py-2 text-sm">
     <span class="font-bold">{{ tuning.instrument }}:</span>
     <span>{{ tuning.description }}</span>
     <span class="font-semibold"> Low to high: {{ noteList(tuning.notes) }}</span>

@@ -23,7 +23,7 @@
         </div>
         <div class="flex flex-wrap gap-2">
           <button type="button" class="rounded border px-3 py-1.5 text-xs font-black transition" [ngClass]="seedInventoryFilter === 'all' ? 'border-emerald-700 bg-emerald-900 text-white' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'" (click)="seedInventoryFilterChange.emit('all')">All</button>
-          <button type="button" class="rounded border px-3 py-1.5 text-xs font-black transition" [ngClass]="seedInventoryFilter === 'indoor' ? 'border-sky-700 bg-sky-800 text-white' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'" (click)="seedInventoryFilterChange.emit('indoor')">Indoor</button>
+          <button type="button" class="rounded border px-3 py-1.5 text-xs font-black transition" [ngClass]="seedInventoryFilter === 'indoor' ? 'app-primary-action' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'" (click)="seedInventoryFilterChange.emit('indoor')">Indoor</button>
           <button type="button" class="rounded border px-3 py-1.5 text-xs font-black transition" [ngClass]="seedInventoryFilter === 'outdoor' ? 'border-lime-700 bg-lime-800 text-white' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'" (click)="seedInventoryFilterChange.emit('outdoor')">Outdoor</button>
           <button type="button" class="rounded border px-3 py-1.5 text-xs font-black transition" [ngClass]="seedInventoryFilter === 'low' ? 'border-orange-700 bg-orange-500 text-orange-950' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'" (click)="seedInventoryFilterChange.emit('low')">Low</button>
           <button type="button" class="rounded border px-3 py-1.5 text-xs font-black transition" [ngClass]="seedInventoryFilter === 'empty' ? 'border-rose-700 bg-rose-600 text-white' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'" (click)="seedInventoryFilterChange.emit('empty')">Empty</button>
@@ -171,7 +171,7 @@
             <tbody class="divide-y divide-slate-100">
               <tr *ngFor="let row of seedImportPreviewRows">
                 <td class="px-2 py-1 font-bold text-slate-500">{{ row.rowNumber }}</td>
-                <td class="px-2 py-1"><span class="rounded px-1.5 py-0.5 font-bold" [ngClass]="row.action === 'Create' ? 'bg-emerald-50 text-emerald-800' : row.action === 'Update' ? 'bg-sky-50 text-sky-800' : row.action === 'Skip' ? 'bg-slate-100 text-slate-600' : 'bg-amber-50 text-amber-800'">{{ row.action }}</span></td>
+                <td class="px-2 py-1"><span class="rounded px-1.5 py-0.5 font-bold" [ngClass]="row.action === 'Create' ? 'bg-emerald-50 text-emerald-800' : row.action === 'Update' ? 'app-token-soft-surface app-token-text-primary' : row.action === 'Skip' ? 'bg-slate-100 text-slate-600' : 'bg-amber-50 text-amber-800'">{{ row.action }}</span></td>
                 <td class="px-2 py-1 font-bold text-slate-800">{{ row.name || '-' }}</td>
                 <td class="px-2 py-1 text-slate-600">{{ row.plantDate || '-' }}</td>
                 <td class="px-2 py-1 text-slate-600">{{ row.indoor || '-' }}</td>
@@ -192,7 +192,7 @@
       </button>
       <div *ngIf="seedImportResult" class="grid grid-cols-4 gap-2 text-center text-xs font-black">
         <span class="rounded bg-white px-2 py-1 text-emerald-800">{{ seedImportResult.created }} created</span>
-        <span class="rounded bg-white px-2 py-1 text-sky-800">{{ seedImportResult.updated }} updated</span>
+        <span class="app-token-text-primary rounded bg-white px-2 py-1">{{ seedImportResult.updated }} updated</span>
         <span class="rounded bg-white px-2 py-1 text-amber-800">{{ seedImportResult.skipped }} skipped</span>
         <span class="rounded bg-white px-2 py-1 text-slate-700">{{ seedImportResult.rows.length || 0 }} rows</span>
       </div>

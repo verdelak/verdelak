@@ -1,0 +1,70 @@
+<section class="rounded border border-slate-200 bg-white shadow-sm">
+  <div class="flex flex-col gap-3 border-b border-slate-200 p-4 lg:flex-row lg:items-center lg:justify-between">
+    <div>
+      <h2 class="text-lg font-bold text-slate-950">Fish Tasks</h2>
+      <p class="text-sm text-slate-600">{{ visibleTankTasks().length }} shown</p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <select class="rounded border border-slate-300 px-3 py-2 text-sm" [ngModel]="schedulePreviewDays()" (ngModelChange)="schedulePreviewDays.set(+$event)">
+        <option *ngFor="let days of scheduleWindows" [value]="days">{{ days }} days</option>
+      </select>
+      <button type="button" class="app-primary-action rounded px-4 py-2 text-sm font-bold disabled:opacity-60" [disabled]="generatingFishSchedule()" (click)="generateFishSchedule()">
+        {{ generatingFishSchedule() ? 'Generating.' : 'Generate Fish Schedule' }}
+      </button>
+      <span class="app-token-soft-surface app-token-text-primary rounded border px-3 py-2 text-sm font-bold">
+        Preview {{ fishSchedulePreviewCount() | number }}
+      </span>
+      <select class="rounded border border-slate-300 px-3 py-2 text-sm" [ngModel]="taskTankFilter()" (ngModelChange)="taskTankFilter.set($event ? +$event : null)">
+        <option [ngValue]="null">All tanks</option>
+        <option *ngFor="let tank of tanks()" [ngValue]="tank.id">{{ tank.name }}</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-slate-200 text-sm">
+      <thead class="bg-slate-50 text-left text-xs font-bold uppercase text-slate-500">
+        <tr>
+          <th class="px-3 py-2">Tank</th>
+          <th class="px-3 py-2">Task</th>
+          <th class="px-3 py-2">Category</th>
+          <th class="px-3 py-2">Next Due</th>
+          <th class="px-3 py-2">Schedule</th>
+          <th class="px-3 py-2">Status</th>
+          <th class="px-3 py-2 text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        <tr *ngFor="let task of visibleTankTasks()" class="align-top">
+          <td class="px-3 py-3 font-semibold text-slate-950">{{ task.tankName }}</td>
+          <td class="px-3 py-3 text-slate-700">{{ task.title }}</td>
+          <td class="px-3 py-3 text-slate-700">{{ task.taskCategory }}</td>
+          <td class="px-3 py-3 text-slate-600">{{ taskNextDueLabel(task) }}</td>
+          <td class="px-3 py-3 text-slate-600">{{ task.recurrencePattern }}</td>
+          <td class="px-3 py-3">
+            <span class="rounded border px-2 py-1 text-xs font-bold" [ngClass]="task.isActive ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-slate-200 bg-slate-50 text-slate-700'">{{ task.isActive ? 'Active' : 'Inactive' }}</span>
+          </td>
+          <td class="px-3 py-3">
+            <div class="flex flex-wrap justify-end gap-2">
+              <button
+                type="button"
+                class="app-primary-soft-action rounded border px-3 py-1.5 text-xs font-bold disabled:cursor-not-allowed disabled:opacity-50"
+                [disabled]="!hasCompletableOccurrence(task) || isCompletingTask(task)"
+                (click)="completeNextTaskOccurrence(task)">
+                {{ isCompletingTask(task) ? 'Completing.' : 'Complete' }}
+              </button>
+              <button type="button" class="rounded border border-slate-300 px-3 py-1.5 text-xs font-bold text-slate-700" (click)="editTankTask(task)">Edit</button>
+              <button type="button" class="rounded border border-rose-200 px-3 py-1.5 text-xs font-bold text-rose-700" (click)="deleteTankTask(task)">Delete</button>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="!tasksLoading() && visibleTankTasks().length === 0">
+          <td colspan="7" class="px-3 py-8 text-center text-sm text-slate-500">No fish tasks found.</td>
+        </tr>
+        <tr *ngIf="tasksLoading()">
+          <td colspan="7" class="px-3 py-8 text-center text-sm text-slate-500">Loading fish tasks.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>

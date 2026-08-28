@@ -14,7 +14,7 @@
           <span class="rounded border border-lime-200 bg-white px-2 py-1 text-xs font-bold text-lime-800">{{ vm.selectedPlotPlanningLabel() }}</span>
           <button type="button" class="rounded border px-2 py-1 text-xs font-bold transition" [ngClass]="vm.plotCellFilter() === 'all' ? 'border-slate-700 bg-slate-900 text-white' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'" (click)="vm.setPlotCellFilter('all')">All {{ vm.selectedPlotPlantCount() }}</button>
           <button type="button" class="rounded border px-2 py-1 text-xs font-bold transition" [ngClass]="vm.plotCellFilter() === 'planned' ? 'border-amber-400 bg-amber-100 text-amber-950' : 'border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100'" (click)="vm.setPlotCellFilter('planned')">{{ vm.selectedPlotPlannedCount() }} planned</button>
-          <button type="button" class="rounded border px-2 py-1 text-xs font-bold transition" [ngClass]="vm.plotCellFilter() === 'planted' ? 'border-sky-400 bg-sky-100 text-sky-950' : 'border-sky-200 bg-sky-50 text-sky-800 hover:bg-sky-100'" (click)="vm.setPlotCellFilter('planted')">{{ vm.selectedPlotStartedCount() }} planted</button>
+          <button type="button" class="rounded border px-2 py-1 text-xs font-bold transition" [ngClass]="vm.plotCellFilter() === 'planted' ? 'app-token-soft-surface app-token-text-strong' : 'app-token-soft-surface app-token-text-primary'" (click)="vm.setPlotCellFilter('planted')">{{ vm.selectedPlotStartedCount() }} planted</button>
           <button type="button" class="rounded border px-2 py-1 text-xs font-bold transition" [ngClass]="vm.plotCellFilter() === 'success' ? 'border-emerald-400 bg-emerald-100 text-emerald-950' : 'border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100'" (click)="vm.setPlotCellFilter('success')">{{ vm.selectedPlotSuccessCount() }} success</button>
           <button type="button" class="rounded border px-2 py-1 text-xs font-bold transition" [ngClass]="vm.plotCellFilter() === 'empty' ? 'border-slate-500 bg-slate-100 text-slate-950' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'" (click)="vm.setPlotCellFilter('empty')">{{ vm.selectedPlotEmptyCount() }} open</button>
           <div class="flex rounded border border-slate-300 bg-white p-1">
@@ -31,7 +31,7 @@
               <span class="rounded border border-lime-200 bg-white px-2 py-1 text-xs font-black text-lime-900">{{ vm.selectedPlotPlanningLabel() }}</span>
               <span class="rounded border border-slate-200 bg-white px-2 py-1 text-xs font-black text-slate-700">Qty {{ vm.selectedPlotTotalQty() }}</span>
               <span class="rounded border border-amber-200 bg-white px-2 py-1 text-xs font-black text-amber-800">Planned qty {{ vm.selectedPlotPlannedQty() }}</span>
-              <span class="rounded border border-fuchsia-200 bg-white px-2 py-1 text-xs font-black text-fuchsia-800">Showing {{ vm.selectedPlotFilterCount() }} cells</span>
+              <span class="app-token-border-accent app-token-text-primary rounded border bg-white px-2 py-1 text-xs font-black">Showing {{ vm.selectedPlotFilterCount() }} cells</span>
             </div>
             <div *ngIf="vm.selectedPlotWarnings().length" class="mt-3 grid gap-1">
               <p *ngFor="let warning of vm.selectedPlotWarnings()" class="rounded border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-black text-amber-900">{{ warning }}</p>
@@ -176,7 +176,7 @@
 
             <div class="flex flex-wrap gap-2">
               <button type="button" class="rounded border px-3 py-2 text-xs font-black transition" [ngClass]="vm.plotPlantForm().planning ? 'border-amber-300 bg-amber-50 text-amber-900' : 'border-slate-200 bg-white text-slate-700'" (click)="vm.setPlotPlantStatus('planned')">Planned</button>
-              <button type="button" class="rounded border px-3 py-2 text-xs font-black transition" [ngClass]="!vm.plotPlantForm().planning && !vm.plotPlantForm().success ? 'border-sky-300 bg-sky-50 text-sky-900' : 'border-slate-200 bg-white text-slate-700'" (click)="vm.setPlotPlantStatus('planted')">Planted</button>
+              <button type="button" class="rounded border px-3 py-2 text-xs font-black transition" [ngClass]="!vm.plotPlantForm().planning && !vm.plotPlantForm().success ? 'app-token-soft-surface app-token-text-strong' : 'border-slate-200 bg-white text-slate-700'" (click)="vm.setPlotPlantStatus('planted')">Planted</button>
               <button type="button" class="rounded border px-3 py-2 text-xs font-black transition" [ngClass]="vm.plotPlantForm().success ? 'border-emerald-300 bg-emerald-50 text-emerald-900' : 'border-slate-200 bg-white text-slate-700'" (click)="vm.setPlotPlantStatus('success')">Success</button>
             </div>
 
@@ -207,7 +207,7 @@
                 <button type="button" class="rounded border border-lime-200 bg-lime-50 px-3 py-2 text-xs font-black text-lime-800 disabled:opacity-50" [disabled]="vm.savingPlotPlant() || !vm.plotPlantForm().seedId" (click)="vm.fillSelectedPlotColumn()">Fill Column</button>
                 <button type="button" class="rounded border border-lime-200 bg-white px-3 py-2 text-xs font-black text-lime-800 disabled:opacity-50" [disabled]="vm.savingPlotPlant() || !vm.plotPlantForm().seedId" (click)="vm.fillSelectedPlotColumnEmpty()">Fill Empty Column</button>
                 <button type="button" class="rounded border border-rose-200 bg-white px-3 py-2 text-xs font-black text-rose-700 disabled:opacity-50" [disabled]="vm.savingPlotPlant()" (click)="vm.clearSelectedPlotColumn()">Clear Column</button>
-                <button type="button" class="rounded border border-fuchsia-200 bg-fuchsia-50 px-3 py-2 text-xs font-black text-fuchsia-800 disabled:opacity-50" [disabled]="vm.savingPlotPlant() || !(vm.plotPlantForm().seedId || vm.selectedPlotLegendSeedId())" (click)="vm.clearSelectedSeedFromPlot()">Clear Seed</button>
+                <button type="button" class="app-primary-soft-action rounded border px-3 py-2 text-xs font-black disabled:opacity-50" [disabled]="vm.savingPlotPlant() || !(vm.plotPlantForm().seedId || vm.selectedPlotLegendSeedId())" (click)="vm.clearSelectedSeedFromPlot()">Clear Seed</button>
               </div>
             </div>
           </div>
@@ -233,54 +233,54 @@
         <p *ngIf="vm.plotMessage()" class="mt-3 rounded border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700">{{ vm.plotMessage() }}</p>
       </section>
 
-      <section class="rounded border border-teal-100 bg-teal-50 p-4 shadow-sm">
+      <section class="app-token-soft-surface rounded border p-4 shadow-sm">
         <div class="mb-3">
-          <h2 class="text-lg font-bold text-teal-950">Copy Bed Year</h2>
-          <p class="text-xs font-semibold text-teal-800">Copy bed assignments into another year as planned cells.</p>
+          <h2 class="app-token-text-strong text-lg font-bold">Copy Bed Year</h2>
+          <p class="app-token-text-primary text-xs font-semibold">Copy bed assignments into another year as planned cells.</p>
         </div>
         <div class="grid gap-3">
 
           <div class="flex flex-wrap gap-2">
-            <button type="button" class="rounded border border-teal-200 bg-white px-2 py-1 text-xs font-black text-teal-900" (click)="vm.useNextYearForPlotCopy()">Use {{ vm.selectedYear() }} to {{ vm.selectedYear() + 1 }}</button>
+            <button type="button" class="app-primary-soft-action rounded border px-2 py-1 text-xs font-black" (click)="vm.useNextYearForPlotCopy()">Use {{ vm.selectedYear() }} to {{ vm.selectedYear() + 1 }}</button>
           </div>
           <div class="grid grid-cols-2 gap-2">
             <label class="grid gap-1 text-sm font-bold text-slate-700">
               From
-              <input type="number" min="2000" max="2100" class="rounded border border-teal-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="vm.plotCopyFromYear()" (ngModelChange)="vm.setPlotCopyFromYear($event)">
+              <input type="number" min="2000" max="2100" class="app-token-control rounded border bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="vm.plotCopyFromYear()" (ngModelChange)="vm.setPlotCopyFromYear($event)">
             </label>
             <label class="grid gap-1 text-sm font-bold text-slate-700">
               To
-              <input type="number" min="2000" max="2100" class="rounded border border-teal-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="vm.plotCopyToYear()" (ngModelChange)="vm.setPlotCopyToYear($event)">
+              <input type="number" min="2000" max="2100" class="app-token-control rounded border bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="vm.plotCopyToYear()" (ngModelChange)="vm.setPlotCopyToYear($event)">
             </label>
           </div>
-          <select class="rounded border border-teal-200 bg-white px-3 py-2 text-sm font-bold text-slate-700" [ngModel]="vm.plotCopyScope()" (ngModelChange)="vm.setPlotCopyScope($event)">
+          <select class="app-token-control rounded border bg-white px-3 py-2 text-sm font-bold text-slate-700" [ngModel]="vm.plotCopyScope()" (ngModelChange)="vm.setPlotCopyScope($event)">
             <option value="selected">Selected garden area only</option>
             <option value="all">All garden areas</option>
           </select>
-          <label class="flex items-center gap-2 rounded border border-teal-200 bg-white px-3 py-2 text-xs font-black text-teal-900">
-            <input type="checkbox" class="h-4 w-4" [ngModel]="vm.plotCopyOverwrite()" (ngModelChange)="vm.setPlotCopyOverwrite($event)">
+          <label class="app-token-border-accent app-token-text-strong flex items-center gap-2 rounded border bg-white px-3 py-2 text-xs font-black">
+            <input type="checkbox" class="app-token-checkbox h-4 w-4" [ngModel]="vm.plotCopyOverwrite()" (ngModelChange)="vm.setPlotCopyOverwrite($event)">
             Replace existing target-year bed cells
           </label>
-          <div *ngIf="vm.plotCopyPreview() as preview" class="grid grid-cols-2 gap-2 rounded border border-teal-200 bg-white p-3 text-xs font-black text-slate-700">
-            <span class="rounded bg-teal-50 px-2 py-1 text-teal-800">Source {{ preview.sourceCount }}</span>
+          <div *ngIf="vm.plotCopyPreview() as preview" class="app-token-border-accent grid grid-cols-2 gap-2 rounded border bg-white p-3 text-xs font-black text-slate-700">
+            <span class="app-token-soft-surface app-token-text-primary rounded px-2 py-1">Source {{ preview.sourceCount }}</span>
             <span class="rounded bg-slate-50 px-2 py-1 text-slate-700">Target {{ preview.existingTargetCount }}</span>
             <span class="rounded bg-emerald-50 px-2 py-1 text-emerald-800">Will copy {{ preview.willCopy }}</span>
             <span class="rounded bg-amber-50 px-2 py-1 text-amber-800">Will skip {{ preview.willSkip }}</span>
             <span *ngIf="preview.willDelete > 0" class="col-span-2 rounded bg-rose-50 px-2 py-1 text-rose-700">Will delete {{ preview.willDelete }} target rows before copying</span>
           </div>
-          <div *ngIf="vm.plotCopyResult() as result" class="grid grid-cols-3 gap-2 rounded border border-teal-200 bg-white p-3 text-xs font-black text-slate-700">
+          <div *ngIf="vm.plotCopyResult() as result" class="app-token-border-accent grid grid-cols-3 gap-2 rounded border bg-white p-3 text-xs font-black text-slate-700">
             <span class="rounded bg-emerald-50 px-2 py-1 text-emerald-800">Copied {{ result.copied }}</span>
             <span class="rounded bg-amber-50 px-2 py-1 text-amber-800">Skipped {{ result.skipped }}</span>
             <span class="rounded bg-rose-50 px-2 py-1 text-rose-700">Replaced {{ result.deletedExisting }}</span>
           </div>
           <div class="grid gap-2 sm:grid-cols-3">
-            <button type="button" class="rounded border border-teal-700 bg-white px-4 py-2 text-sm font-black text-teal-900 disabled:opacity-50" [disabled]="vm.previewingPlotCopy() || vm.copyingPlotYear()" (click)="vm.previewPlotYear()">
+            <button type="button" class="app-primary-soft-action rounded border px-4 py-2 text-sm font-black disabled:opacity-50" [disabled]="vm.previewingPlotCopy() || vm.copyingPlotYear()" (click)="vm.previewPlotYear()">
               {{ vm.previewingPlotCopy() ? 'Previewing.' : 'Preview Copy' }}
             </button>
-            <button type="button" class="rounded bg-teal-800 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" [disabled]="vm.copyingPlotYear() || vm.previewingPlotCopy()" (click)="vm.copyPlotYear()">
+            <button type="button" class="app-primary-action rounded px-4 py-2 text-sm font-bold disabled:opacity-50" [disabled]="vm.copyingPlotYear() || vm.previewingPlotCopy()" (click)="vm.copyPlotYear()">
               {{ vm.copyingPlotYear() ? 'Copying.' : 'Copy Bed Assignments' }}
             </button>
-            <button type="button" class="rounded border border-teal-200 bg-white px-4 py-2 text-sm font-black text-teal-900 disabled:opacity-50" [disabled]="!vm.plotCopyPreview() && !vm.plotCopyResult()" (click)="vm.downloadPlotCopyReportCsv()">Report CSV</button>
+            <button type="button" class="app-primary-soft-action rounded border px-4 py-2 text-sm font-black disabled:opacity-50" [disabled]="!vm.plotCopyPreview() && !vm.plotCopyResult()" (click)="vm.downloadPlotCopyReportCsv()">Report CSV</button>
           </div>
         </div>
       </section>
@@ -294,7 +294,7 @@
           </div>
         </div>
         <div class="grid gap-2">
-          <article *ngFor="let item of vm.filteredPlotLegend()" class="rounded border p-3 transition" [ngClass]="vm.selectedPlotLegendSeedId() === item.seedId ? 'border-fuchsia-300 bg-fuchsia-50 shadow-sm' : 'border-slate-200 bg-slate-50'">
+          <article *ngFor="let item of vm.filteredPlotLegend()" class="rounded border p-3 transition" [ngClass]="vm.selectedPlotLegendSeedId() === item.seedId ? 'app-token-border-accent app-token-selected-row app-token-ring shadow-sm' : 'border-slate-200 bg-slate-50'">
             <div class="flex items-start justify-between gap-3">
               <button type="button" class="min-w-0 text-left" (click)="vm.filterPlotByLegendSeed(item)" title="Highlight this seed in the bed grid">
                 <div class="truncate font-bold text-slate-950">{{ item.seedName }}</div>
@@ -321,4 +321,3 @@
       
     </aside>
   </section>
-

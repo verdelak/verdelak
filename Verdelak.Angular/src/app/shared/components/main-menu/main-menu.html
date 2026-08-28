@@ -1,7 +1,8 @@
 <header class="sticky-top z-40 border-bottom border-slate-200 bg-white shadow-sm">
   <nav class="navbar navbar-expand-lg app-navbar-container gap-3 py-2 py-lg-3">
-    <a routerLink="/" class="navbar-brand mb-0 shrink-0 text-lg font-bold tracking-tight text-slate-950">
-      Verdelak
+    <a routerLink="/" class="navbar-brand mb-0 d-inline-flex shrink-0 align-items-center gap-2 text-lg font-bold tracking-tight text-slate-950">
+      <img *ngIf="appearance.settings().logoUrl as logoUrl" class="h-8 w-8 rounded object-contain" [src]="logoUrl" [alt]="appearance.settings().brandName + ' logo'" />
+      <span [style.color]="'var(--verd-primary)'">{{ appearance.settings().brandName }}</span>
     </a>
 
     <div class="min-w-0 flex-wrap justify-content-end gap-1 d-none d-lg-flex">

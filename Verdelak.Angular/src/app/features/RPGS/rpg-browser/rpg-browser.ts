@@ -2,11 +2,6 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { MatSelectModule } from '@angular/material/select';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatIconModule } from '@angular/material/icon';
 import { RpgService } from '../rpg-service';
 import { IdName, ProductListItem, RpgStatusFilter } from '../models/rpg.models';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -30,8 +25,7 @@ interface RpgReportRow {
 @Component({
   selector: 'app-rpg-browser',
   imports: [
-    CommonModule, FormsModule, RouterLink,
-    MatSelectModule, MatInputModule, MatButtonModule, MatProgressSpinnerModule, MatIconModule
+    CommonModule, FormsModule, RouterLink
   ],
   templateUrl: './rpg-browser.html',
   styleUrl: './rpg-browser.scss'

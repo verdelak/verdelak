@@ -1,17 +1,16 @@
 
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { RpgService } from '../rpg-service';
 import { ProductDetail } from '../models/rpg.models';
-import { MatButtonModule } from '@angular/material/button';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map, switchMap } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-rpg-detail',
-  imports: [CommonModule, RouterLink, MatButtonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './rpg-detail.html',
   styleUrl: './rpg-detail.scss'
 })

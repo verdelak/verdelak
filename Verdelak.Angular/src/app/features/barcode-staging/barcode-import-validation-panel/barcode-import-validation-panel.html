@@ -4,7 +4,7 @@
         </summary>
         <div class="mt-3 grid gap-3">
           <div class="flex flex-wrap items-center gap-2">
-            <button type="button" class="rounded-md border border-blue-200 bg-white px-3 py-2 text-sm font-bold text-blue-700 shadow-sm transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="loadingImportPreview() || selectedCount() === 0" (click)="previewSelectedImport()">
+            <button type="button" class="app-primary-soft-action px-3 py-2 text-sm" [disabled]="loadingImportPreview() || selectedCount() === 0" (click)="previewSelectedImport()">
               {{ loadingImportPreview() ? 'Checking.' : 'Preview selected' }}
             </button>
             <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="loadingImportPreview() || !batchFilter()" (click)="previewCurrentBatchImport()">
@@ -165,7 +165,7 @@
                   <div class="rounded border border-white/80 bg-white/80 p-2">
                     <p class="text-xs font-black uppercase text-slate-500">Trace fields</p>
                     <div class="mt-2 flex flex-wrap gap-1">
-                      <span *ngFor="let field of panel.traceFields" class="rounded bg-blue-50 px-2 py-0.5 text-xs font-bold text-blue-800">{{ field }}</span>
+                      <span *ngFor="let field of panel.traceFields" class="app-token-soft-surface app-token-text-strong rounded px-2 py-0.5 text-xs font-bold">{{ field }}</span>
                     </div>
                   </div>
                 </div>
@@ -177,9 +177,9 @@
                       <span *ngFor="let field of panel.commitFields" class="rounded bg-emerald-50 px-2 py-0.5 text-xs font-bold text-emerald-800">{{ field }}</span>
                     </div>
                   </div>
-                  <div class="rounded border border-blue-100 bg-white/80 p-2">
-                    <p class="text-xs font-black uppercase text-blue-700">Trace behavior</p>
-                    <ul class="mt-2 grid gap-1 text-xs font-semibold text-blue-900">
+                  <div class="app-token-soft-surface rounded border p-2">
+                    <p class="app-token-text-strong text-xs font-black uppercase">Trace behavior</p>
+                    <ul class="app-token-text-primary mt-2 grid gap-1 text-xs font-semibold">
                       <li *ngFor="let behavior of panel.traceBehavior">{{ behavior }}</li>
                     </ul>
                   </div>

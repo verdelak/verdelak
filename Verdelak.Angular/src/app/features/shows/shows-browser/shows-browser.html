@@ -72,8 +72,8 @@
             <span>{{ item.seasonCount }} seasons</span>
             <span>{{ item.ownedSeasonCount }} owned</span>
             <span>{{ item.wantedSeasonCount }} wanted</span>
-            <span *ngIf="item.wantToWatch" class="rounded bg-sky-100 px-1.5 py-0.5 text-sky-700">watch</span>
-            <span *ngIf="item.wantToRewatch" class="rounded bg-violet-100 px-1.5 py-0.5 text-violet-700">rewatch</span>
+            <span *ngIf="item.wantToWatch" class="app-token-soft-surface app-token-text-primary rounded px-1.5 py-0.5">watch</span>
+            <span *ngIf="item.wantToRewatch" class="app-token-soft-surface app-token-text-primary rounded px-1.5 py-0.5">rewatch</span>
           </span>
         </button>
         <p *ngIf="!loading() && series().length === 0" class="px-4 py-8 text-center text-sm font-semibold text-slate-500">No shows match the current filters.</p>
@@ -122,7 +122,7 @@
               <span class="rounded bg-emerald-50 px-2.5 py-1 text-emerald-800">{{ ownershipCoveragePercent() }}% covered</span>
               <span class="rounded bg-amber-50 px-2.5 py-1 text-amber-800">{{ wantedSeasonCount() }} wanted</span>
               <span class="rounded bg-rose-50 px-2.5 py-1 text-rose-800">{{ missingOwnedSeasonCount() }} ownership gaps</span>
-              <span class="rounded bg-sky-50 px-2.5 py-1 text-sky-800">{{ goalCandidateSeasons().length }} watch candidates</span>
+              <span class="app-token-soft-surface app-token-text-primary rounded px-2.5 py-1">{{ goalCandidateSeasons().length }} watch candidates</span>
             </div>
           </div>
           <div *ngIf="canManage()" class="flex flex-wrap gap-2">
@@ -250,13 +250,13 @@
           </div>
         </form>
 
-        <section *ngIf="canCreateGoals()" class="mb-4 rounded-lg border border-indigo-200 bg-indigo-50 p-3">
+        <section *ngIf="canCreateGoals()" class="app-token-soft-surface mb-4 rounded-lg border p-3">
           <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
             <div>
-              <h3 class="font-bold text-indigo-950">Add Seasons to Goals</h3>
-              <p class="mt-1 text-sm text-indigo-800">Create queue items under the Watch section for a future yearly plan.</p>
+              <h3 class="app-token-text-strong font-bold">Add Seasons to Goals</h3>
+              <p class="app-token-text-primary mt-1 text-sm">Create queue items under the Watch section for a future yearly plan.</p>
             </div>
-            <a routerLink="/goals-plans" class="rounded border border-indigo-200 bg-white px-3 py-2 text-sm font-bold text-indigo-800 hover:bg-indigo-100">Open Goals</a>
+            <a routerLink="/goals-plans" class="app-primary-soft-action rounded px-3 py-2 text-sm font-bold">Open Goals</a>
           </div>
 
           <div class="mt-3 grid gap-3 md:grid-cols-[7rem_11rem_10rem_9rem_9rem]">
@@ -287,20 +287,20 @@
           </div>
 
           <div class="mt-3 flex flex-wrap gap-2 text-xs font-bold">
-            <button type="button" class="rounded border border-indigo-200 bg-white px-2.5 py-1.5 text-indigo-800 hover:bg-indigo-100" (click)="setGoalYear(goalPlanForm().year - 1)">Prior year</button>
-            <button type="button" class="rounded border border-indigo-200 bg-white px-2.5 py-1.5 text-indigo-800 hover:bg-indigo-100" (click)="setGoalYear(goalPlanForm().year + 1)">Next year</button>
-            <button type="button" class="rounded border border-indigo-200 bg-white px-2.5 py-1.5 text-indigo-800 hover:bg-indigo-100" (click)="setGoalYear(goalPlanForm().year + 2)">Following year</button>
+            <button type="button" class="app-primary-soft-action rounded px-2.5 py-1.5" (click)="setGoalYear(goalPlanForm().year - 1)">Prior year</button>
+            <button type="button" class="app-primary-soft-action rounded px-2.5 py-1.5" (click)="setGoalYear(goalPlanForm().year + 1)">Next year</button>
+            <button type="button" class="app-primary-soft-action rounded px-2.5 py-1.5" (click)="setGoalYear(goalPlanForm().year + 2)">Following year</button>
           </div>
 
           <div class="mt-3 flex flex-wrap gap-2 text-xs font-bold">
-            <button type="button" class="rounded border border-indigo-200 bg-white px-2.5 py-1.5 text-indigo-800 hover:bg-indigo-100" (click)="selectGoalCandidateSeasons()">Watch candidates</button>
+            <button type="button" class="app-primary-soft-action rounded px-2.5 py-1.5" (click)="selectGoalCandidateSeasons()">Watch candidates</button>
             <button type="button" class="rounded border border-emerald-200 bg-white px-2.5 py-1.5 text-emerald-800 hover:bg-emerald-50" (click)="selectOwnedGoalSeasons()">Owned seasons</button>
-            <button type="button" class="rounded border border-sky-200 bg-white px-2.5 py-1.5 text-sky-800 hover:bg-sky-50" (click)="selectUnwatchedGoalSeasons()">Unwatched</button>
+            <button type="button" class="app-primary-soft-action rounded px-2.5 py-1.5" (click)="selectUnwatchedGoalSeasons()">Unwatched</button>
             <button type="button" class="rounded border border-rose-200 bg-white px-2.5 py-1.5 text-rose-800 hover:bg-rose-50" (click)="selectOwnershipGapSeasons()">Ownership gaps</button>
             <button type="button" class="rounded border border-slate-300 bg-white px-2.5 py-1.5 text-slate-700 hover:bg-slate-50" (click)="clearGoalSeasons()">Clear</button>
           </div>
 
-          <div class="mt-3 max-h-44 overflow-auto rounded border border-indigo-100 bg-white p-2">
+          <div class="app-token-border-accent mt-3 max-h-44 overflow-auto rounded border bg-white p-2">
             <label *ngFor="let season of detail.seasons" class="flex items-center justify-between gap-3 border-b border-slate-100 px-2 py-1.5 text-sm last:border-b-0">
               <span class="font-semibold text-slate-700">{{ season.seasonLabel }}</span>
               <span class="flex items-center gap-2">
@@ -310,7 +310,7 @@
             </label>
           </div>
 
-          <button type="button" class="mt-3 rounded bg-indigo-700 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-800 disabled:opacity-50" [disabled]="creatingGoalItems() || selectedGoalSeasonIds().length === 0" (click)="createGoalItems()">
+          <button type="button" class="app-primary-action mt-3 rounded px-4 py-2 text-sm font-bold disabled:opacity-50" [disabled]="creatingGoalItems() || selectedGoalSeasonIds().length === 0" (click)="createGoalItems()">
             Add {{ selectedGoalSeasonIds().length }} to Goals
           </button>
         </section>
@@ -332,7 +332,7 @@
               <p class="mt-2 text-xs font-semibold text-slate-600">{{ row.sourceLabel }}</p>
               <div class="mt-2 flex flex-wrap gap-1.5 text-[0.7rem] font-bold">
                 <span class="rounded bg-slate-100 px-2 py-1 text-slate-700">{{ row.watchLabel }}</span>
-                <span *ngIf="row.isGoalCandidate" class="rounded bg-indigo-50 px-2 py-1 text-indigo-700">Goals candidate</span>
+                <span *ngIf="row.isGoalCandidate" class="app-token-soft-surface app-token-text-primary rounded px-2 py-1">Goals candidate</span>
                 <span *ngIf="row.season.lastWatchedDate" class="rounded bg-slate-100 px-2 py-1 text-slate-700">{{ row.season.lastWatchedDate }}</span>
               </div>
             </article>

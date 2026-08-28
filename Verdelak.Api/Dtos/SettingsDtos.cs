@@ -56,6 +56,16 @@ public record ExternalSitesSettingsDto(
     IReadOnlyList<ExternalSiteSettingDto> Sites
 );
 
+public record MainAppearanceSettingsDto(
+    string BrandName,
+    string Tagline,
+    string PrimaryColor,
+    string AccentColor,
+    string? LogoUrl,
+    string? HeroImageUrl,
+    string? FaviconUrl
+);
+
 public record SteamImporterSettingsDto(
     string? ApiKey,
     string? SteamId,
@@ -68,6 +78,10 @@ public record BoardGameGeekImporterSettingsDto(
     bool IncludeOwned,
     bool IncludeWishlist,
     bool IncludeExpansions
+);
+
+public record MusicFolderImporterSettingsDto(
+    string RootPath
 );
 
 public record SoftwarePlatformUsageDto(

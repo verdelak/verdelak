@@ -77,7 +77,7 @@ export class SiteMap {
   statusClass(status: SiteMapStatus): string {
     return {
       Working: 'bg-emerald-50 text-emerald-700',
-      Planned: 'bg-blue-50 text-blue-700',
+      Planned: 'app-token-soft-surface app-token-text-strong',
       Placeholder: 'bg-slate-100 text-slate-600',
       External: 'bg-amber-50 text-amber-700'
     }[status];

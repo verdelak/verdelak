@@ -357,11 +357,11 @@ export class ExternalImportWorkbench implements OnInit {
       case 'MissingPlatform':
         return 'bg-rose-50 text-rose-800 ring-rose-200';
       case 'OwnedOnBoth':
-        return 'bg-indigo-50 text-indigo-800 ring-indigo-200';
+        return 'app-token-soft-surface app-token-text-primary app-token-ring';
       case 'OwnedOnSteamOnly':
-        return 'bg-blue-50 text-blue-800 ring-blue-200';
+        return 'app-token-soft-surface app-token-text-primary app-token-ring';
       case 'OwnedOnGogOnly':
-        return 'bg-violet-50 text-violet-800 ring-violet-200';
+        return 'app-token-soft-surface app-token-text-primary app-token-ring';
       case 'AlreadyInDatabase':
       case 'AlreadyImported':
         return 'bg-slate-100 text-slate-700 ring-slate-200';
@@ -369,7 +369,7 @@ export class ExternalImportWorkbench implements OnInit {
       case 'PossibleDuplicate':
         return 'bg-amber-50 text-amber-800 ring-amber-200';
       default:
-        return 'bg-blue-50 text-blue-800 ring-blue-200';
+        return 'app-token-soft-surface app-token-text-strong';
     }
   }
 

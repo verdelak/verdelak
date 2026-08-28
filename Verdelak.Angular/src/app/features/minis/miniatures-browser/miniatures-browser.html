@@ -1,7 +1,7 @@
 <main class="mx-auto grid w-full max-w-screen-2xl gap-4 px-4 py-5 sm:px-6 lg:px-8">
   <header class="flex flex-col gap-3 border-b border-slate-200 pb-4 lg:flex-row lg:items-end lg:justify-between">
     <div>
-      <p class="text-xs font-bold uppercase tracking-wide text-indigo-700">Gaming Inventory</p>
+      <p class="app-token-kicker text-xs font-bold uppercase tracking-wide">Gaming Inventory</p>
       <h1 class="text-3xl font-bold text-slate-950">Miniatures</h1>
       <p class="mt-1 text-sm text-slate-600">Browse Dreamblade, World of Warcraft, Bones, and other miniature collections with normalized owned and want-list counts.</p>
     </div>
@@ -38,7 +38,7 @@
     </select>
 
     <div class="flex gap-2">
-      <button type="button" class="rounded bg-indigo-900 px-3 py-2 text-sm font-bold text-white" (click)="applyFilters()">Apply</button>
+      <button type="button" class="app-primary-action rounded px-3 py-2 text-sm font-bold" (click)="applyFilters()">Apply</button>
       <button type="button" class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700" (click)="clearFilters()">Clear</button>
     </div>
   </section>
@@ -78,14 +78,14 @@
         </label>
         <button type="button" class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="parseImport()">Preview</button>
         <button type="button" class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50" [disabled]="importRows().length === 0" (click)="exportImportPreviewCsv()">Export Preview</button>
-        <button type="button" class="rounded bg-indigo-900 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-indigo-800 disabled:cursor-wait disabled:opacity-60" [disabled]="importCommitting() || importRows().length === 0 || validImportRows().length !== importRows().length" (click)="commitImport()">
+        <button type="button" class="app-primary-action rounded px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-wait disabled:opacity-60" [disabled]="importCommitting() || importRows().length === 0 || validImportRows().length !== importRows().length" (click)="commitImport()">
           {{ importCommitting() ? 'Importing.' : 'Commit Import' }}
         </button>
         <button type="button" class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="clearImport()">Clear</button>
       </div>
     </div>
 
-    <textarea class="min-h-28 w-full rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800 shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100" [ngModel]="importText()" (ngModelChange)="importText.set($event)" placeholder="Wizards of the Coast,Dreamblade,Base Set,001,Abyssal Maw,Main Set,Rare,Large,Aberration,1,0"></textarea>
+    <textarea class="app-token-control min-h-28 w-full rounded border px-3 py-2 text-sm font-semibold text-slate-800 shadow-sm outline-none" [ngModel]="importText()" (ngModelChange)="importText.set($event)" placeholder="Wizards of the Coast,Dreamblade,Base Set,001,Abyssal Maw,Main Set,Rare,Large,Aberration,1,0"></textarea>
 
     <div *ngIf="importRows().length > 0" class="overflow-auto rounded border border-slate-200">
       <table class="min-w-full divide-y divide-slate-200 text-sm">
@@ -153,7 +153,7 @@
           <tbody class="divide-y divide-slate-100">
             <tr *ngFor="let row of systemReportRows()" class="align-top hover:bg-slate-50">
               <td class="px-4 py-3">
-                <button type="button" class="text-left font-bold text-indigo-800 hover:text-indigo-950" (click)="applySystemReport(row)">{{ row.systemName }}</button>
+                <button type="button" class="app-token-link text-left font-bold" (click)="applySystemReport(row)">{{ row.systemName }}</button>
                 <div class="text-xs font-semibold text-slate-500">{{ row.zeroOwnedRows | number }} zero-owned rows</div>
               </td>
               <td class="whitespace-nowrap px-4 py-3 font-semibold text-slate-700">{{ row.itemCount | number }}</td>
@@ -213,7 +213,7 @@
           <p class="text-sm text-slate-600">Update identity, set metadata, and have/want quantities.</p>
         </div>
         <div class="flex flex-wrap gap-2">
-          <button type="submit" class="rounded bg-indigo-900 px-4 py-2 text-sm font-bold text-white disabled:cursor-wait disabled:opacity-60" [disabled]="saving()">{{ saving() ? 'Saving.' : 'Save' }}</button>
+          <button type="submit" class="app-primary-action rounded px-4 py-2 text-sm font-bold disabled:cursor-wait disabled:opacity-60" [disabled]="saving()">{{ saving() ? 'Saving.' : 'Save' }}</button>
           <button type="button" class="rounded border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700" (click)="cancelEdit()">Cancel</button>
         </div>
       </div>
@@ -308,7 +308,7 @@
           <p class="text-sm text-slate-600">{{ selectedItem()?.system || '-' }} | {{ selectedItem()?.series || '-' }}</p>
         </div>
         <div class="flex flex-wrap gap-2">
-          <button type="button" class="rounded bg-indigo-900 px-4 py-2 text-sm font-bold text-white" (click)="editSelected()">Edit</button>
+          <button type="button" class="app-primary-action rounded px-4 py-2 text-sm font-bold" (click)="editSelected()">Edit</button>
           <button type="button" class="rounded border border-rose-200 bg-white px-4 py-2 text-sm font-bold text-rose-700" (click)="deleteSelected()">Delete</button>
         </div>
       </div>

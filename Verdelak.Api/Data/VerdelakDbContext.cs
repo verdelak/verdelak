@@ -128,6 +128,15 @@ namespace Verdelak.Api.Data
         public DbSet<Magazine> Magazines => Set<Magazine>();
         public DbSet<MovieInventoryItem> MovieInventoryItems => Set<MovieInventoryItem>();
         public DbSet<AlcoholItem> AlcoholItems => Set<AlcoholItem>();
+        public DbSet<AlcoholProduct> AlcoholProducts => Set<AlcoholProduct>();
+        public DbSet<AlcoholCategory> AlcoholCategories => Set<AlcoholCategory>();
+        public DbSet<AlcoholType> AlcoholTypes => Set<AlcoholType>();
+        public DbSet<AlcoholStyle> AlcoholStyles => Set<AlcoholStyle>();
+        public DbSet<AlcoholRegion> AlcoholRegions => Set<AlcoholRegion>();
+        public DbSet<AlcoholLocation> AlcoholLocations => Set<AlcoholLocation>();
+        public DbSet<AlcoholCount> AlcoholCounts => Set<AlcoholCount>();
+        public DbSet<AlcoholRating> AlcoholRatings => Set<AlcoholRating>();
+        public DbSet<AlcoholValue> AlcoholValues => Set<AlcoholValue>();
         public DbSet<DinoTaxonomyNode> DinoTaxonomyNodes => Set<DinoTaxonomyNode>();
         public DbSet<DinosaurEntry> DinosaurEntries => Set<DinosaurEntry>();
         public DbSet<DinoContentSection> DinoContentSections => Set<DinoContentSection>();
@@ -338,7 +347,7 @@ namespace Verdelak.Api.Data
                 e.Property(x => x.VintageOrYear).HasMaxLength(50);
                 e.Property(x => x.Size).HasMaxLength(50);
                 e.Property(x => x.Price).HasPrecision(18, 2);
-                e.Property(x => x.Rating).HasPrecision(4, 2);
+                e.Property(x => x.Rating).HasPrecision(6, 2);
                 e.Property(x => x.QuantityOnHand).HasPrecision(10, 2);
                 e.Property(x => x.Location).HasMaxLength(100);
                 e.Property(x => x.StatusID).IsRequired().HasMaxLength(5).HasDefaultValue("H");
@@ -350,6 +359,142 @@ namespace Verdelak.Api.Data
                 e.HasIndex(x => x.Location);
                 e.HasIndex(x => x.StatusID);
                 e.HasIndex(x => x.SourceSheet);
+            });
+
+            modelBuilder.Entity<AlcoholProduct>(e =>
+            {
+                e.ToTable("AlcoholProducts");
+                e.HasKey(x => x.ID);
+                e.Property(x => x.Product).IsRequired().HasMaxLength(200);
+                e.Property(x => x.Producer).HasMaxLength(200);
+                e.Property(x => x.Variety).HasMaxLength(150);
+                e.Property(x => x.Color).HasMaxLength(50);
+                e.Property(x => x.Country).HasMaxLength(100);
+                e.Property(x => x.VintageOrYear).HasMaxLength(50);
+                e.Property(x => x.Size).HasMaxLength(50);
+                e.Property(x => x.Notes).HasMaxLength(2000);
+                e.Property(x => x.SourceSheet).HasMaxLength(100);
+                e.Property(x => x.SourceRowLabel).HasMaxLength(100);
+                e.HasOne(x => x.Category)
+                    .WithMany(x => x.Products)
+                    .HasForeignKey(x => x.CategoryID)
+                    .OnDelete(DeleteBehavior.SetNull);
+                e.HasOne(x => x.Type)
+                    .WithMany(x => x.Products)
+                    .HasForeignKey(x => x.TypeID)
+                    .OnDelete(DeleteBehavior.SetNull);
+                e.HasOne(x => x.Style)
+                    .WithMany(x => x.Products)
+                    .HasForeignKey(x => x.StyleID)
+                    .OnDelete(DeleteBehavior.SetNull);
+                e.HasOne(x => x.Region)
+                    .WithMany(x => x.Products)
+                    .HasForeignKey(x => x.RegionID)
+                    .OnDelete(DeleteBehavior.SetNull);
+                e.HasIndex(x => x.Product);
+                e.HasIndex(x => x.CategoryID);
+                e.HasIndex(x => x.TypeID);
+                e.HasIndex(x => x.StyleID);
+                e.HasIndex(x => x.RegionID);
+            });
+
+            modelBuilder.Entity<AlcoholCategory>(e =>
+            {
+                e.ToTable("AlcoholCategory");
+                e.HasKey(x => x.ID);
+                e.Property(x => x.Category).IsRequired().HasMaxLength(50);
+                e.HasIndex(x => x.Category).IsUnique();
+            });
+
+            modelBuilder.Entity<AlcoholType>(e =>
+            {
+                e.ToTable("AlcoholType");
+                e.HasKey(x => x.ID);
+                e.Property(x => x.Type).IsRequired().HasMaxLength(50);
+                e.HasOne(x => x.Category)
+                    .WithMany(x => x.Types)
+                    .HasForeignKey(x => x.CategoryID)
+                    .OnDelete(DeleteBehavior.SetNull);
+                e.HasIndex(x => new { x.CategoryID, x.Type }).IsUnique();
+            });
+
+            modelBuilder.Entity<AlcoholStyle>(e =>
+            {
+                e.ToTable("AlcoholStyle");
+                e.HasKey(x => x.ID);
+                e.Property(x => x.Name).IsRequired().HasMaxLength(250);
+                e.Property(x => x.Description).HasMaxLength(2000);
+                e.HasOne(x => x.Type)
+                    .WithMany(x => x.Styles)
+                    .HasForeignKey(x => x.TypeID)
+                    .OnDelete(DeleteBehavior.SetNull);
+                e.HasIndex(x => new { x.TypeID, x.Name }).IsUnique();
+            });
+
+            modelBuilder.Entity<AlcoholRegion>(e =>
+            {
+                e.ToTable("AlcoholRegion");
+                e.HasKey(x => x.ID);
+                e.Property(x => x.Region).IsRequired().HasMaxLength(150);
+                e.Property(x => x.Country).HasMaxLength(100);
+                e.HasIndex(x => new { x.Country, x.Region }).IsUnique();
+            });
+
+            modelBuilder.Entity<AlcoholLocation>(e =>
+            {
+                e.ToTable("AlcoholLocation");
+                e.HasKey(x => x.ID);
+                e.Property(x => x.Location).IsRequired().HasMaxLength(100);
+                e.Property(x => x.Notes).HasMaxLength(1000);
+                e.HasIndex(x => x.Location).IsUnique();
+            });
+
+            modelBuilder.Entity<AlcoholCount>(e =>
+            {
+                e.ToTable("AlcoholCount");
+                e.HasKey(x => x.ID);
+                e.Property(x => x.Qty).HasColumnType("decimal(10,2)");
+                e.Property(x => x.StatusID).HasColumnName("wantStatusID").IsRequired().HasColumnType("char(1)").HasDefaultValue("H");
+                e.Property(x => x.Notes).HasMaxLength(1000);
+                e.HasOne(x => x.Alcohol)
+                    .WithMany(x => x.Counts)
+                    .HasForeignKey(x => x.AlcoholID)
+                    .OnDelete(DeleteBehavior.Cascade);
+                e.HasOne(x => x.Location)
+                    .WithMany(x => x.Counts)
+                    .HasForeignKey(x => x.LocationID)
+                    .OnDelete(DeleteBehavior.SetNull);
+                e.HasIndex(x => x.AlcoholID);
+                e.HasIndex(x => x.LocationID);
+                e.HasIndex(x => x.StatusID);
+                e.HasIndex(x => new { x.AlcoholID, x.LocationID, x.StatusID });
+            });
+
+            modelBuilder.Entity<AlcoholRating>(e =>
+            {
+                e.ToTable("AlcoholRating");
+                e.HasKey(x => x.ID);
+                e.Property(x => x.Rating).HasPrecision(6, 2);
+                e.Property(x => x.Notes).HasMaxLength(1000);
+                e.HasOne(x => x.Alcohol)
+                    .WithMany(x => x.Ratings)
+                    .HasForeignKey(x => x.AlcoholID)
+                    .OnDelete(DeleteBehavior.Cascade);
+                e.HasIndex(x => x.AlcoholID);
+            });
+
+            modelBuilder.Entity<AlcoholValue>(e =>
+            {
+                e.ToTable("AlcoholValue");
+                e.HasKey(x => x.ID);
+                e.Property(x => x.Price).HasColumnType("money");
+                e.Property(x => x.Notes).HasMaxLength(1000);
+                e.HasOne(x => x.Alcohol)
+                    .WithMany(x => x.Values)
+                    .HasForeignKey(x => x.AlcoholID)
+                    .OnDelete(DeleteBehavior.Cascade);
+                e.HasIndex(x => x.AlcoholID);
+                e.HasIndex(x => x.StoreID);
             });
 
             modelBuilder.Entity<GardenSeed>(e =>

@@ -72,15 +72,21 @@ jobs:
         working-directory: Verdelak.Angular
         run: npm ci
 
-      - name: Build Angular
+      - name: Build Angular and check bundle thresholds
         working-directory: Verdelak.Angular
-        run: npm run build
+        run: npm run bundle:check
 
       - name: Upload Angular artifact
         uses: actions/upload-artifact@v4
         with:
           name: verdelak-angular
           path: Verdelak.Angular/dist
+
+      - name: Upload Angular bundle report
+        uses: actions/upload-artifact@v4
+        with:
+          name: verdelak-angular-bundle-report
+          path: artifacts/bundle/angular-bundle-report.md
 
   build-site:
     name: Build Public Site

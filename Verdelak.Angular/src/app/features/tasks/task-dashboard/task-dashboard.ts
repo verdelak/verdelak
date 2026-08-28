@@ -394,11 +394,11 @@ export class TaskDashboard  {
 
   sourceTone(source: string): string {
     return source === 'Goals'
-      ? 'border-indigo-200 bg-indigo-50 text-indigo-800'
+      ? 'app-token-soft-surface app-token-text-primary'
       : source === 'Backups'
-        ? 'border-cyan-200 bg-cyan-50 text-cyan-800'
-        : source === 'Fish'
-          ? 'border-blue-200 bg-blue-50 text-blue-800'
+        ? 'app-token-soft-surface app-token-text-primary'
+      : source === 'Fish'
+          ? 'app-token-soft-surface app-token-text-primary'
           : source === 'Gardening'
             ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
             : 'border-slate-200 bg-slate-50 text-slate-700';
@@ -410,9 +410,9 @@ export class TaskDashboard  {
     }
 
     return item.source === 'Backups'
-      ? 'border-cyan-300 bg-cyan-50 text-cyan-900'
+      ? 'app-token-soft-surface app-token-text-primary'
       : item.source === 'Fish'
-        ? 'border-blue-300 bg-blue-50 text-blue-900'
+        ? 'app-token-soft-surface app-token-text-primary'
         : item.source === 'Gardening'
           ? 'border-emerald-300 bg-emerald-50 text-emerald-900'
           : item.source === 'Chores'
@@ -590,7 +590,7 @@ export class TaskDashboard  {
         label: 'Actionable',
         count: actionable,
         detail: 'Can be completed, moved, skipped, or reopened',
-        tone: 'border-blue-200 bg-blue-50 text-blue-900'
+        tone: 'app-token-soft-surface app-token-text-strong'
       },
       {
         label: 'Completed',
@@ -728,7 +728,7 @@ export class TaskDashboard  {
   private goalCategoryTone(category: string): string {
     const normalized = category.toLowerCase();
     if (normalized.includes('listen') || normalized.includes('music')) {
-      return 'border-violet-300 bg-violet-50 text-violet-900';
+      return 'border-pink-300 bg-pink-50 text-pink-900';
     }
 
     if (normalized.includes('read') || normalized.includes('book')) {
@@ -740,7 +740,7 @@ export class TaskDashboard  {
     }
 
     if (normalized.includes('gaming') || normalized.includes('game') || normalized.includes('warhammer') || normalized.includes('rpg')) {
-      return 'border-fuchsia-300 bg-fuchsia-50 text-fuchsia-900';
+      return 'border-rose-300 bg-rose-50 text-rose-900';
     }
 
     if (normalized.includes('house') || normalized.includes('yard') || normalized.includes('garage')) {
@@ -748,7 +748,7 @@ export class TaskDashboard  {
     }
 
     if (normalized.includes('learn') || normalized.includes('program') || normalized.includes('mcse') || normalized.includes('cert')) {
-      return 'border-sky-300 bg-sky-50 text-sky-900';
+      return 'border-emerald-300 bg-emerald-50 text-emerald-900';
     }
 
     if (normalized.includes('fitness') || normalized.includes('workout') || normalized.includes('health')) {
@@ -760,7 +760,7 @@ export class TaskDashboard  {
     }
 
     if (normalized.includes('write') || normalized.includes('blog')) {
-      return 'border-teal-300 bg-teal-50 text-teal-900';
+      return 'border-slate-300 bg-slate-50 text-slate-800';
     }
 
     if (normalized.includes('personal') || normalized.includes('family')) {
@@ -774,9 +774,9 @@ export class TaskDashboard  {
     return category === 'Medical'
       ? 'border-rose-300 bg-rose-50 text-rose-900'
       : category === 'Pets'
-        ? 'border-sky-300 bg-sky-50 text-sky-900'
-        : category === 'Cleaning'
-          ? 'border-teal-300 bg-teal-50 text-teal-900'
+        ? 'border-pink-300 bg-pink-50 text-pink-900'
+      : category === 'Cleaning'
+          ? 'border-lime-300 bg-lime-50 text-lime-900'
           : category === 'Errands'
             ? 'border-amber-300 bg-amber-50 text-amber-900'
             : 'border-orange-300 bg-orange-50 text-orange-900';

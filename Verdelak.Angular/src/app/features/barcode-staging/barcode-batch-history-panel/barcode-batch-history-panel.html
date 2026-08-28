@@ -1,0 +1,288 @@
+      <details class="mt-4 rounded-lg border border-slate-200 bg-white p-3">
+        <summary class="cursor-pointer text-sm font-bold text-slate-900">
+          Batch history / reporting {{ batchReports().length ? '(' + batchReports().length + ' batches)' : '' }}
+        </summary>
+        <div class="mt-3 grid gap-3">
+          <div class="flex flex-wrap items-center gap-2">
+            <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="loadingBatchReports()" (click)="loadBatchReports()">
+              {{ loadingBatchReports() ? 'Loading.' : 'Load batch reports' }}
+            </button>
+            <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="batchReports().length === 0" (click)="downloadBatchReportsCsv()">
+              Download CSV
+            </button>
+            <span class="text-sm text-slate-500">Summarizes staged, import-ready, imported, provider health, and retry candidates by batch and source.</span>
+          </div>
+
+          <div *ngIf="batchReportHealthSummaries().length" class="grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
+            <span *ngFor="let summary of batchReportHealthSummaries()" class="rounded-full px-3 py-1.5 text-xs font-black ring-1" [ngClass]="summary.tone">
+              {{ summary.label }}: {{ summary.value }}
+            </span>
+          </div>
+
+          <div *ngIf="batchProviderHealthCards().length" class="grid gap-3 xl:grid-cols-3">
+            <article *ngFor="let card of batchProviderHealthCards()" class="rounded-lg border p-3 shadow-sm" [ngClass]="card.tone">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <h4 class="text-sm font-black text-slate-950">{{ card.title }}</h4>
+                  <p class="mt-1 text-xs font-semibold text-slate-600">{{ card.subtitle }}</p>
+                </div>
+                <span class="rounded-full bg-white/80 px-2 py-1 text-xs font-black text-slate-700">{{ card.retryLabel }}</span>
+              </div>
+
+              <div class="mt-3 grid gap-2 text-xs">
+                <div>
+                  <div class="font-black uppercase text-slate-500">Matches found</div>
+                  <div class="mt-1 flex flex-wrap gap-1">
+                    <span *ngIf="card.matchParts.length === 0" class="rounded bg-white/70 px-2 py-0.5 font-bold text-slate-500">None</span>
+                    <span *ngFor="let part of card.matchParts" class="rounded bg-white/80 px-2 py-0.5 font-bold text-slate-800">{{ part }}</span>
+                  </div>
+                </div>
+                <div>
+                  <div class="font-black uppercase text-slate-500">Selected providers</div>
+                  <div class="mt-1 flex flex-wrap gap-1">
+                    <span *ngIf="card.selectedParts.length === 0" class="rounded bg-white/70 px-2 py-0.5 font-bold text-slate-500">None selected</span>
+                    <span *ngFor="let part of card.selectedParts" class="rounded bg-white/80 px-2 py-0.5 font-bold text-slate-800">{{ part }}</span>
+                  </div>
+                </div>
+                <div>
+                  <div class="font-black uppercase text-slate-500">Failures / timeouts</div>
+                  <div class="mt-1 flex flex-wrap gap-1">
+                    <span *ngIf="card.failureParts.length === 0" class="rounded bg-white/70 px-2 py-0.5 font-bold text-emerald-700">No provider failures</span>
+                    <span *ngFor="let part of card.failureParts" class="rounded bg-white/80 px-2 py-0.5 font-bold text-rose-700">{{ part }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-3 flex flex-wrap gap-2">
+                <button type="button" class="app-primary-soft-action rounded border px-2 py-1 text-xs font-bold" (click)="previewReportBatch(card.report)">Preview</button>
+                <button type="button" class="rounded border border-amber-200 bg-white px-2 py-1 text-xs font-bold text-amber-700 disabled:opacity-50" [disabled]="loading() || card.report.noCandidateCount === 0" (click)="retryReportMissing(card.report)">Retry missing</button>
+                <button type="button" class="app-primary-soft-action rounded border px-2 py-1 text-xs font-bold" [disabled]="loading() || (card.report.noCandidateCount === 0 && !card.report.providerFailureSummary)" (click)="retryReportFallback(card.report)">Retry fallbacks</button>
+              </div>
+            </article>
+          </div>
+
+          <div *ngIf="batchReports().length" class="max-h-96 overflow-auto rounded-lg border border-slate-200">
+            <table class="min-w-full divide-y divide-slate-200 text-left text-xs">
+              <thead class="bg-slate-50 font-bold uppercase text-slate-500">
+                <tr>
+                  <th class="px-3 py-2">Batch</th>
+                  <th class="px-3 py-2">Source</th>
+                  <th class="px-3 py-2">Total</th>
+                  <th class="px-3 py-2">Health</th>
+                  <th class="px-3 py-2">Types</th>
+                  <th class="px-3 py-2">Ready</th>
+                  <th class="px-3 py-2">Review</th>
+                  <th class="px-3 py-2">Imported</th>
+                  <th class="px-3 py-2">Imported types</th>
+                  <th class="px-3 py-2">Lookup health</th>
+                  <th class="px-3 py-2">Provider matches</th>
+                  <th class="px-3 py-2">Selected provider</th>
+                  <th class="px-3 py-2">Provider failures</th>
+                  <th class="px-3 py-2">Last import</th>
+                  <th class="px-3 py-2">Duplicates</th>
+                  <th class="px-3 py-2">Action</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <tr *ngFor="let report of batchReports()">
+                  <td class="px-3 py-2 font-semibold text-slate-900">{{ report.batchName }}</td>
+                  <td class="px-3 py-2 text-slate-700">{{ report.source }}</td>
+                  <td class="px-3 py-2 text-slate-700">{{ report.totalCount }}</td>
+                  <td class="px-3 py-2"><span class="rounded-full px-2 py-1 font-black ring-1" [ngClass]="reportHealthTone(report)">{{ reportHealthLabel(report) }}</span></td>
+                  <td class="px-3 py-2 text-slate-700">{{ reportTypeSummary(report) }}</td>
+                  <td class="px-3 py-2 text-emerald-700">{{ report.readyToImportCount }}</td>
+                  <td class="px-3 py-2 text-amber-700">{{ report.needsReviewCount }}</td>
+                  <td class="px-3 py-2 text-slate-700">{{ report.importedCount }}</td>
+                  <td class="px-3 py-2 text-slate-700">{{ reportImportedSummary(report) }}</td>
+                  <td class="px-3 py-2 text-slate-700">{{ reportLookupSummary(report) }}</td>
+                  <td class="px-3 py-2 text-slate-700">{{ reportProviderMatchSummary(report) }}</td>
+                  <td class="px-3 py-2 text-slate-700">{{ reportSelectedProviderSummary(report) }}</td>
+                  <td class="px-3 py-2" [ngClass]="report.providerFailureSummary ? 'font-semibold text-rose-700' : 'text-slate-500'">{{ reportProviderFailureSummary(report) }}</td>
+                  <td class="px-3 py-2 text-slate-700">{{ report.lastImportedAtUtc ? (report.lastImportedAtUtc | date:'M/d/yyyy h:mm a') : '-' }}</td>
+                  <td class="px-3 py-2 text-slate-700">{{ report.duplicateCodeCount }}</td>
+                  <td class="px-3 py-2">
+                    <div class="flex flex-wrap gap-2">
+                      <button type="button" class="app-primary-soft-action rounded border px-2 py-1 font-bold" (click)="previewReportBatch(report)">Preview</button>
+                      <button type="button" class="rounded border border-amber-200 px-2 py-1 font-bold text-amber-700 disabled:opacity-50" [disabled]="loading() || report.noCandidateCount === 0" (click)="retryReportMissing(report)">Retry missing</button>
+                      <button type="button" class="app-primary-soft-action rounded border px-2 py-1 font-bold" [disabled]="loading() || report.noCandidateCount === 0" (click)="retryReportFallback(report)">Retry fallbacks</button>
+                      <span class="rounded bg-slate-100 px-2 py-1 font-bold text-slate-600">{{ reportRetryRecommendation(report) }}</span>
+                      <button type="button" class="rounded border border-emerald-200 px-2 py-1 font-bold text-emerald-700 disabled:opacity-50" [disabled]="report.importedCount === 0" (click)="showImportedReportBatch(report)">Imported</button>
+                      <button type="button" class="rounded border border-slate-300 px-2 py-1 font-bold text-slate-700 disabled:opacity-50" [disabled]="report.importedCount === 0" (click)="showImportHistoryForReport(report)">History</button>
+                      <button type="button" class="rounded border border-slate-300 px-2 py-1 font-bold text-slate-700 disabled:opacity-50" [disabled]="report.importedCount === 0 || loadingImportHistory()" (click)="downloadImportHistoryForReport(report)">History CSV</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <details class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+            <summary class="cursor-pointer text-sm font-bold text-slate-900">
+              Import history {{ importHistoryRows().length ? '(' + importHistoryRows().length + ' rows)' : '' }}
+            </summary>
+            <div class="mt-3 grid gap-3">
+              <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-7">
+                <label class="grid gap-1 text-sm font-semibold text-slate-700">
+                  Batch
+                  <select class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-normal shadow-sm outline-none" [ngModel]="importHistoryBatchFilter()" (ngModelChange)="importHistoryBatchFilter.set($event)">
+                    <option value="">All batches</option>
+                    <option *ngFor="let batch of batches()" [value]="batch">{{ batch || 'No batch' }}</option>
+                  </select>
+                </label>
+                <label class="grid gap-1 text-sm font-semibold text-slate-700">
+                  Source
+                  <select class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-normal shadow-sm outline-none" [ngModel]="importHistorySourceFilter()" (ngModelChange)="importHistorySourceFilter.set($event)">
+                    <option value="">All sources</option>
+                    <option *ngFor="let source of sources()" [value]="source">{{ source }}</option>
+                  </select>
+                </label>
+                <label class="grid gap-1 text-sm font-semibold text-slate-700">
+                  Item type
+                  <select class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-normal shadow-sm outline-none" [ngModel]="importHistoryTypeFilter()" (ngModelChange)="importHistoryTypeFilter.set($event)">
+                    <option value="">All types</option>
+                    <option *ngFor="let type of itemTypes" [value]="type">{{ type }}</option>
+                  </select>
+                </label>
+                <label class="grid gap-1 text-sm font-semibold text-slate-700">
+                  Destination
+                  <select class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-normal shadow-sm outline-none" [ngModel]="importHistoryEntityFilter()" (ngModelChange)="importHistoryEntityFilter.set($event)">
+                    <option value="">All destinations</option>
+                    <option *ngFor="let entityType of importedEntityTypes" [value]="entityType">{{ entityType }}</option>
+                  </select>
+                </label>
+                <label class="grid gap-1 text-sm font-semibold text-slate-700">
+                  From
+                  <input class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-normal shadow-sm outline-none" type="date" [ngModel]="importHistoryFromDate()" (ngModelChange)="importHistoryFromDate.set($event)" />
+                </label>
+                <label class="grid gap-1 text-sm font-semibold text-slate-700">
+                  To
+                  <input class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-normal shadow-sm outline-none" type="date" [ngModel]="importHistoryToDate()" (ngModelChange)="importHistoryToDate.set($event)" />
+                </label>
+                <label class="grid gap-1 text-sm font-semibold text-slate-700">
+                  Max rows
+                  <input class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-normal shadow-sm outline-none" type="number" min="1" max="1000" step="25" [ngModel]="importHistoryTake()" (ngModelChange)="importHistoryTake.set($event)" />
+                </label>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-2">
+                <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="loadingImportHistory()" (click)="loadImportHistory()">
+                  {{ loadingImportHistory() ? 'Loading.' : 'Load history' }}
+                </button>
+                <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="loadingImportHistory()" (click)="clearImportHistoryFilters()">
+                  Clear filters
+                </button>
+                <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="importHistoryRows().length === 0" (click)="downloadImportHistoryCsv()">
+                  Download history CSV
+                </button>
+                <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="importHistoryRows().length === 0" (click)="downloadImportHistorySummaryCsv()">
+                  Download summary CSV
+                </button>
+                <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50" [disabled]="loadingImportHistory()" (click)="setImportHistoryPreset(1)">Today</button>
+                <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50" [disabled]="loadingImportHistory()" (click)="setImportHistoryPreset(7)">7 days</button>
+                <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50" [disabled]="loadingImportHistory()" (click)="setImportHistoryPreset(30)">30 days</button>
+                <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50" [disabled]="loadingImportHistory()" (click)="setImportHistoryPreset(90)">90 days</button>
+                <span class="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200">Types: {{ importHistoryTypeSummary() }}</span>
+                <span class="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200">Destinations: {{ importHistoryDestinationSummary() }}</span>
+                <span class="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200">Providers: {{ importHistoryProviderSummary() }}</span>
+              </div>
+
+              <div *ngIf="importHistorySummaryCards().length" class="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+                <article *ngFor="let card of importHistorySummaryCards()" class="rounded-lg p-3 ring-1" [ngClass]="card.tone">
+                  <h4 class="text-sm font-black">{{ card.label }}</h4>
+                  <p class="mt-1 text-xs font-semibold">{{ importHistoryTopSummary(card) }}</p>
+                  <div class="mt-2 flex flex-wrap gap-1">
+                    <span *ngFor="let row of card.rows.slice(0, 6)" class="rounded-full bg-white/80 px-2 py-0.5 text-[11px] font-bold ring-1 ring-black/5">{{ row.key }} {{ row.count }}</span>
+                  </div>
+                </article>
+              </div>
+
+              <div *ngIf="importHistoryTraceCards().length" class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                <article *ngFor="let card of importHistoryTraceCards()" class="rounded-lg p-3 ring-1" [ngClass]="card.tone">
+                  <div class="flex items-center justify-between gap-2">
+                    <h4 class="text-sm font-black">{{ card.label }}</h4>
+                    <span class="rounded-full bg-white/80 px-2.5 py-1 text-xs font-black ring-1 ring-black/5">{{ card.count }}</span>
+                  </div>
+                  <p class="mt-2 text-xs font-semibold">{{ card.helper }}</p>
+                </article>
+              </div>
+
+              <div *ngIf="importHistoryRows().length" class="max-h-96 overflow-auto rounded-lg border border-slate-200 bg-white">
+                <table class="min-w-full divide-y divide-slate-200 text-left text-xs">
+                  <thead class="bg-slate-50 font-bold uppercase text-slate-500">
+                    <tr>
+                      <th class="px-3 py-2">Imported</th>
+                      <th class="px-3 py-2">Batch</th>
+                      <th class="px-3 py-2">Source</th>
+                      <th class="px-3 py-2">Code</th>
+                      <th class="px-3 py-2">Type</th>
+                      <th class="px-3 py-2">Title</th>
+                      <th class="px-3 py-2">Creator</th>
+                      <th class="px-3 py-2">Format</th>
+                      <th class="px-3 py-2">Provider</th>
+                      <th class="px-3 py-2">Year</th>
+                      <th class="px-3 py-2">Destination</th>
+                      <th class="px-3 py-2">Trace</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100">
+                    <tr *ngFor="let row of importHistoryRows()" class="align-top">
+                      <td class="px-3 py-2 text-slate-700">{{ row.importedAtUtc | date:'M/d/yyyy h:mm a' }}</td>
+                      <td class="px-3 py-2 font-semibold text-slate-900">{{ row.batchName || 'No batch' }}</td>
+                      <td class="px-3 py-2 text-slate-700">{{ row.source }}</td>
+                      <td class="px-3 py-2 font-mono text-slate-800">{{ row.normalizedCode }}</td>
+                      <td class="px-3 py-2 text-slate-700">{{ row.itemType }}</td>
+                      <td class="px-3 py-2 text-slate-900">{{ row.suggestedTitle || '-' }}</td>
+                      <td class="px-3 py-2 text-slate-700">{{ row.suggestedCreator || '-' }}</td>
+                      <td class="px-3 py-2 text-slate-700">{{ row.suggestedFormat || '-' }}</td>
+                      <td class="px-3 py-2 text-slate-700">{{ row.lookupProvider || '-' }}<span *ngIf="row.confidence !== null && row.confidence !== undefined"> ({{ row.confidence }}%)</span></td>
+                      <td class="px-3 py-2 text-slate-700">{{ row.suggestedYear || '-' }}</td>
+                      <td class="px-3 py-2 text-emerald-700">{{ importHistoryDestinationKey(row) }}</td>
+                      <td class="px-3 py-2">
+                        <span class="rounded-full px-2 py-0.5 font-black ring-1" [ngClass]="importHistoryTraceTone(row)">{{ importHistoryTraceStatus(row) }}</span>
+                        <p class="mt-1 min-w-64 text-[11px] font-semibold text-slate-600">{{ importHistoryTraceSummary(row) }}</p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <p *ngIf="!importHistoryRows().length && !loadingImportHistory()" class="rounded-lg border border-dashed border-slate-300 bg-white p-3 text-sm text-slate-500">
+                No imported barcode rows match the current history filters.
+              </p>
+            </div>
+          </details>
+          <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+            <div class="grid gap-3 lg:grid-cols-[9rem_auto_auto_auto_auto] lg:items-end">
+              <label class="grid gap-1 text-sm font-semibold text-slate-700">
+                Older than
+                <input class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-normal shadow-sm outline-none" type="number" min="1" step="1" [ngModel]="cleanupDays()" (ngModelChange)="cleanupDays.set($event)" />
+              </label>
+              <label class="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                <input type="checkbox" [ngModel]="cleanupImported()" (ngModelChange)="cleanupImported.set($event)" />
+                Imported
+              </label>
+              <label class="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                <input type="checkbox" [ngModel]="cleanupRejected()" (ngModelChange)="cleanupRejected.set($event)" />
+                Rejected
+              </label>
+              <button type="button" class="rounded-md border border-amber-200 bg-white px-3 py-2 text-sm font-bold text-amber-800 shadow-sm transition hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="loadingCleanup()" (click)="previewCleanup()">
+                {{ loadingCleanup() ? 'Checking.' : 'Preview cleanup' }}
+              </button>
+              <button type="button" class="rounded-md border border-rose-200 bg-white px-3 py-2 text-sm font-bold text-rose-700 shadow-sm transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="loadingCleanup() || !cleanupPreview() || cleanupPreview()!.matchedCount === 0" (click)="runCleanup()">
+                Delete previewed
+              </button>
+            </div>
+            <p class="mt-2 text-xs text-slate-500">Uses the current Batch and Source filters when selected.</p>
+            <div *ngIf="cleanupPreview() as cleanup" class="mt-3 rounded border border-slate-200 bg-white p-3 text-sm text-slate-700">
+              <span class="font-bold text-slate-950">{{ cleanup.matchedCount }}</span>
+              rows matched before {{ cleanup.cutoffUtc | date:'M/d/yyyy h:mm a' }}.
+              <span *ngIf="cleanup.deletedCount" class="font-bold text-rose-700">{{ cleanup.deletedCount }} deleted.</span>
+              <div *ngIf="cleanup.items.length" class="mt-2 max-h-32 overflow-auto text-xs">
+                <div *ngFor="let cleanupItem of cleanup.items" class="border-t border-slate-100 py-1">
+                  {{ cleanupItem.status }} - {{ cleanupItem.itemType }} - {{ cleanupItem.suggestedTitle || cleanupItem.normalizedCode }} - {{ cleanupItem.batchName || 'No batch' }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </details>

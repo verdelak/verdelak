@@ -8,15 +8,31 @@
     <div class="flex flex-wrap gap-2">
       <button *ngIf="canManage()" type="button" class="rounded-md bg-slate-900 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-slate-800" (click)="newItem()">New item</button>
       <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="downloadCurrentPageCsv()">Export Page</button>
-      <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="loadReport(); load()">Refresh</button>
+      <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="loadReport(); loadLookupCleanup(); loadProductDuplicates(); loadInventoryDuplicateKeys(); load()">Refresh</button>
     </div>
   </header>
 
-  <section class="grid gap-3 rounded-md border border-slate-200 bg-white p-4 shadow-sm xl:grid-cols-[minmax(16rem,1.5fr)_repeat(4,minmax(9rem,1fr))_auto]">
+  <section class="grid gap-3 rounded-md border border-slate-200 bg-white p-4 shadow-sm xl:grid-cols-[minmax(14rem,1.5fr)_repeat(8,minmax(8rem,1fr))_auto]">
     <input type="search" class="rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" placeholder="Search name, maker, style, region, notes" [ngModel]="query()" (ngModelChange)="query.set($event)">
     <select class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="category()" (ngModelChange)="category.set($event)">
       <option value="">All categories</option>
       <option *ngFor="let value of categories()" [value]="value">{{ value }}</option>
+    </select>
+    <select class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="type()" (ngModelChange)="type.set($event)">
+      <option value="">All types</option>
+      <option *ngFor="let value of types()" [value]="value">{{ value }}</option>
+    </select>
+    <select class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="style()" (ngModelChange)="style.set($event)">
+      <option value="">All styles</option>
+      <option *ngFor="let value of styles()" [value]="value">{{ value }}</option>
+    </select>
+    <select class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="country()" (ngModelChange)="country.set($event)">
+      <option value="">All countries</option>
+      <option *ngFor="let value of countries()" [value]="value">{{ value }}</option>
+    </select>
+    <select class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="region()" (ngModelChange)="region.set($event)">
+      <option value="">All regions</option>
+      <option *ngFor="let value of regions()" [value]="value">{{ value }}</option>
     </select>
     <select class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="location()" (ngModelChange)="location.set($event)">
       <option value="">All locations</option>
@@ -50,6 +66,10 @@
         <button type="button" class="rounded border border-emerald-300 bg-white px-3 py-2 text-sm font-bold text-emerald-900" (click)="downloadReportCsv()">Export Summary</button>
         <button type="button" class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700" (click)="downloadWantedCsv()">Export Wants</button>
         <button type="button" class="rounded border border-amber-300 bg-white px-3 py-2 text-sm font-bold text-amber-900" (click)="downloadCleanupCsv()">Export Cleanup</button>
+        <button type="button" class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700" (click)="downloadLookupCleanupCsv()">Export Lookups</button>
+        <button type="button" class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700" (click)="downloadProductDuplicatesCsv()">Export Duplicates</button>
+        <button type="button" class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700" (click)="downloadPriceReviewCsv()">Export Prices</button>
+        <button type="button" class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700" (click)="downloadRatingReviewCsv()">Export Ratings</button>
       </div>
     </div>
 
@@ -64,10 +84,10 @@
         <div class="text-2xl font-black text-emerald-950">{{ report.ownedItems | number }}</div>
         <div class="text-xs font-semibold text-emerald-700">Have status</div>
       </button>
-      <button type="button" class="rounded border border-sky-200 bg-sky-50 px-3 py-3 text-left" (click)="showWanted()">
-        <div class="text-xs font-black uppercase text-sky-700">Wanted</div>
-        <div class="text-2xl font-black text-sky-950">{{ report.wantedItems | number }}</div>
-        <div class="text-xs font-semibold text-sky-700">Want list</div>
+      <button type="button" class="app-token-soft-surface rounded border px-3 py-3 text-left" (click)="showWanted()">
+        <div class="app-token-text-primary text-xs font-black uppercase">Wanted</div>
+        <div class="app-token-text-strong text-2xl font-black">{{ report.wantedItems | number }}</div>
+        <div class="app-token-text-primary text-xs font-semibold">Want list</div>
       </button>
       <button type="button" class="rounded border border-amber-200 bg-amber-50 px-3 py-3 text-left" (click)="showCleanup()">
         <div class="text-xs font-black uppercase text-amber-700">Cleanup</div>
@@ -79,18 +99,50 @@
         <div class="text-2xl font-black text-rose-950">{{ report.missingLocationItems | number }}</div>
         <div class="text-xs font-semibold text-rose-700">Storage missing</div>
       </div>
-      <div class="rounded border border-indigo-200 bg-indigo-50 px-3 py-3">
-        <div class="text-xs font-black uppercase text-indigo-700">Est. Value</div>
-        <div class="text-2xl font-black text-indigo-950">{{ reportValueLabel() }}</div>
-        <div class="text-xs font-semibold text-indigo-700">Price x qty</div>
+      <div class="app-token-soft-surface rounded border px-3 py-3">
+        <div class="app-token-text-primary text-xs font-black uppercase">Est. Value</div>
+        <div class="app-token-text-strong text-2xl font-black">{{ reportValueLabel() }}</div>
+        <div class="app-token-text-primary text-xs font-semibold">Price x qty</div>
       </div>
     </div>
 
-    <div class="grid gap-3 xl:grid-cols-3">
+    <div class="grid gap-3 xl:grid-cols-4 2xl:grid-cols-7">
       <article class="rounded border border-slate-200 bg-slate-50 p-3">
         <h3 class="text-sm font-black uppercase text-slate-700">By Category</h3>
         <div class="mt-2 grid gap-1">
           <button *ngFor="let row of report.categoryBreakdown.slice(0, 8)" type="button" class="flex items-center justify-between rounded bg-white px-2 py-1 text-left text-xs font-bold text-slate-700" (click)="category.set(row.label === 'Uncategorized' ? '' : row.label); load(1)">
+            <span>{{ row.label }}</span><span>{{ row.count | number }} / Qty {{ row.quantity | number:'1.0-2' }}</span>
+          </button>
+        </div>
+      </article>
+      <article class="rounded border border-slate-200 bg-slate-50 p-3">
+        <h3 class="text-sm font-black uppercase text-slate-700">By Type</h3>
+        <div class="mt-2 grid gap-1">
+          <button *ngFor="let row of report.typeBreakdown.slice(0, 8)" type="button" class="flex items-center justify-between rounded bg-white px-2 py-1 text-left text-xs font-bold text-slate-700" (click)="type.set(row.label === 'No type' ? '' : row.label); load(1)">
+            <span>{{ row.label }}</span><span>{{ row.count | number }} / Qty {{ row.quantity | number:'1.0-2' }}</span>
+          </button>
+        </div>
+      </article>
+      <article class="rounded border border-slate-200 bg-slate-50 p-3">
+        <h3 class="text-sm font-black uppercase text-slate-700">By Style</h3>
+        <div class="mt-2 grid gap-1">
+          <button *ngFor="let row of report.styleBreakdown.slice(0, 8)" type="button" class="flex items-center justify-between rounded bg-white px-2 py-1 text-left text-xs font-bold text-slate-700" (click)="style.set(row.label === 'No style' ? '' : row.label); load(1)">
+            <span>{{ row.label }}</span><span>{{ row.count | number }} / Qty {{ row.quantity | number:'1.0-2' }}</span>
+          </button>
+        </div>
+      </article>
+      <article class="rounded border border-slate-200 bg-slate-50 p-3">
+        <h3 class="text-sm font-black uppercase text-slate-700">By Country</h3>
+        <div class="mt-2 grid gap-1">
+          <button *ngFor="let row of report.countryBreakdown.slice(0, 8)" type="button" class="flex items-center justify-between rounded bg-white px-2 py-1 text-left text-xs font-bold text-slate-700" (click)="country.set(row.label === 'No country' ? '' : row.label); load(1)">
+            <span>{{ row.label }}</span><span>{{ row.count | number }} / Qty {{ row.quantity | number:'1.0-2' }}</span>
+          </button>
+        </div>
+      </article>
+      <article class="rounded border border-slate-200 bg-slate-50 p-3">
+        <h3 class="text-sm font-black uppercase text-slate-700">By Region</h3>
+        <div class="mt-2 grid gap-1">
+          <button *ngFor="let row of report.regionBreakdown.slice(0, 8)" type="button" class="flex items-center justify-between rounded bg-white px-2 py-1 text-left text-xs font-bold text-slate-700" (click)="region.set(row.label === 'No region' ? '' : row.label); load(1)">
             <span>{{ row.label }}</span><span>{{ row.count | number }} / Qty {{ row.quantity | number:'1.0-2' }}</span>
           </button>
         </div>
@@ -113,11 +165,166 @@
           <p *ngIf="report.cleanupItems.length === 0" class="rounded bg-white px-2 py-2 text-xs font-semibold text-emerald-700">No cleanup candidates.</p>
         </div>
       </article>
+      <article class="rounded border border-slate-200 bg-slate-50 p-3">
+        <div class="flex items-center justify-between gap-2">
+          <h3 class="text-sm font-black uppercase text-slate-700">Lookup Cleanup</h3>
+          <span class="rounded bg-white px-2 py-1 text-xs font-black text-slate-600">{{ lookupCleanup()?.totalSuggestions ?? 0 }}</span>
+        </div>
+        <div class="mt-2 grid gap-1">
+          <div *ngFor="let row of (lookupCleanup()?.suggestions ?? []).slice(0, 6)" class="rounded bg-white px-2 py-1 text-xs text-slate-700">
+            <div class="flex items-center justify-between gap-2">
+              <span class="font-black text-slate-900">{{ row.field }}</span>
+              <span class="font-bold text-slate-500">{{ row.count | number }}</span>
+            </div>
+            <div class="font-semibold">{{ row.currentValue }} <span *ngIf="row.suggestedValue">-> {{ row.suggestedValue }}</span><span *ngIf="row.suggestedValue === null">-> clear</span></div>
+            <div class="text-slate-500">{{ row.reason }}</div>
+            <button *ngIf="canApplyLookupCleanup()" type="button" class="mt-2 rounded border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-700 disabled:opacity-50" [disabled]="applyingLookupCleanup() === lookupCleanupKey(row)" (click)="applyLookupCleanup(row)">
+              {{ applyingLookupCleanup() === lookupCleanupKey(row) ? 'Applying.' : 'Apply' }}
+            </button>
+          </div>
+          <p *ngIf="(lookupCleanup()?.totalSuggestions ?? 0) === 0" class="rounded bg-white px-2 py-2 text-xs font-semibold text-emerald-700">No lookup cleanup suggestions.</p>
+        </div>
+      </article>
+      <article class="rounded border border-slate-200 bg-slate-50 p-3">
+        <div class="flex items-center justify-between gap-2">
+          <h3 class="text-sm font-black uppercase text-slate-700">Product Duplicates</h3>
+          <span class="rounded bg-white px-2 py-1 text-xs font-black text-slate-600">{{ productDuplicates()?.totalClusters ?? 0 }}</span>
+        </div>
+        <div class="mt-2 grid gap-1">
+          <div *ngFor="let cluster of (productDuplicates()?.clusters ?? []).slice(0, 5)" class="rounded bg-white px-2 py-1 text-xs text-slate-700">
+            <div class="flex items-center justify-between gap-2">
+              <span class="font-black text-slate-900">{{ cluster.product }}</span>
+              <span class="font-bold text-slate-500">{{ cluster.productRows | number }} rows</span>
+            </div>
+            <div class="font-semibold">{{ cluster.category }} / {{ cluster.producer || '-' }}</div>
+            <div class="text-slate-500">Inventory {{ cluster.inventoryRows | number }} / Qty {{ cluster.quantity | number:'1.0-2' }}</div>
+            <div class="mt-1 flex flex-wrap gap-1">
+              <span *ngFor="let member of cluster.members.slice(0, 4)" class="rounded bg-slate-50 px-2 py-1 font-bold text-slate-600">#{{ member.productId }} {{ member.locations || 'No location' }}</span>
+            </div>
+            <button *ngIf="canApplyLookupCleanup()" type="button" class="mt-2 rounded border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-700 disabled:opacity-50" [disabled]="mergingProductDuplicates() === productDuplicateKey(cluster)" (click)="mergeProductDuplicateCluster(cluster)">
+              {{ mergingProductDuplicates() === productDuplicateKey(cluster) ? 'Merging.' : 'Merge Rows' }}
+            </button>
+          </div>
+          <p *ngIf="(productDuplicates()?.totalClusters ?? 0) === 0" class="rounded bg-white px-2 py-2 text-xs font-semibold text-emerald-700">No duplicate product rows.</p>
+        </div>
+      </article>
+    </div>
+
+    <div class="grid gap-3 xl:grid-cols-3 2xl:grid-cols-5">
+      <article class="rounded border border-slate-200 bg-slate-50 p-3">
+        <div class="flex items-center justify-between gap-2">
+          <h3 class="text-sm font-black uppercase text-slate-700">Price Review</h3>
+          <button type="button" class="rounded bg-white px-2 py-1 text-xs font-black text-slate-600" (click)="downloadPriceReviewCsv()">{{ report.priceReviewItems.length | number }}</button>
+        </div>
+        <div class="mt-2 grid gap-1">
+          <button *ngFor="let item of report.priceReviewItems.slice(0, 6)" type="button" class="rounded bg-white px-2 py-1 text-left text-xs text-slate-700" (click)="selectItem(item)">
+            <div class="font-black text-slate-900">{{ item.name }}</div>
+            <div>{{ item.category }} / {{ (item.quantityOnHand ?? 0) | number:'1.0-2' }} on hand</div>
+          </button>
+          <p *ngIf="report.priceReviewItems.length === 0" class="rounded bg-white px-2 py-2 text-xs font-semibold text-emerald-700">No owned rows missing price.</p>
+        </div>
+      </article>
+      <article class="rounded border border-slate-200 bg-slate-50 p-3">
+        <div class="flex items-center justify-between gap-2">
+          <h3 class="text-sm font-black uppercase text-slate-700">Rating Review</h3>
+          <button type="button" class="rounded bg-white px-2 py-1 text-xs font-black text-slate-600" (click)="downloadRatingReviewCsv()">{{ report.ratingReviewItems.length | number }}</button>
+        </div>
+        <div class="mt-2 grid gap-1">
+          <button *ngFor="let item of report.ratingReviewItems.slice(0, 6)" type="button" class="rounded bg-white px-2 py-1 text-left text-xs text-slate-700" (click)="selectItem(item)">
+            <div class="font-black text-slate-900">{{ item.name }}</div>
+            <div>{{ item.category }} / {{ item.producer || '-' }}</div>
+          </button>
+          <p *ngIf="report.ratingReviewItems.length === 0" class="rounded bg-white px-2 py-2 text-xs font-semibold text-emerald-700">No owned rows missing rating.</p>
+        </div>
+      </article>
+      <article class="rounded border border-slate-200 bg-slate-50 p-3">
+        <div class="flex items-center justify-between gap-2">
+          <h3 class="text-sm font-black uppercase text-slate-700">High Value</h3>
+          <button type="button" class="rounded bg-white px-2 py-1 text-xs font-black text-slate-600" (click)="downloadHighValueCsv()">CSV</button>
+        </div>
+        <div class="mt-2 grid gap-1">
+          <button *ngFor="let item of report.highValueItems.slice(0, 6)" type="button" class="rounded bg-white px-2 py-1 text-left text-xs text-slate-700" (click)="selectItem(item)">
+            <div class="font-black text-slate-900">{{ item.name }}</div>
+            <div>{{ itemValue(item) }} / {{ item.location || 'No location' }}</div>
+          </button>
+          <p *ngIf="report.highValueItems.length === 0" class="rounded bg-white px-2 py-2 text-xs font-semibold text-slate-600">No priced inventory rows.</p>
+        </div>
+      </article>
+      <article class="rounded border border-slate-200 bg-slate-50 p-3">
+        <div class="flex items-center justify-between gap-2">
+          <h3 class="text-sm font-black uppercase text-slate-700">Top Rated</h3>
+          <button type="button" class="rounded bg-white px-2 py-1 text-xs font-black text-slate-600" (click)="downloadTopRatedCsv()">CSV</button>
+        </div>
+        <div class="mt-2 grid gap-1">
+          <button *ngFor="let item of report.topRatedItems.slice(0, 6)" type="button" class="rounded bg-white px-2 py-1 text-left text-xs text-slate-700" (click)="selectItem(item)">
+            <div class="font-black text-slate-900">{{ item.name }}</div>
+            <div>Rating {{ item.rating | number:'1.0-2' }} / {{ item.category }}</div>
+          </button>
+          <p *ngIf="report.topRatedItems.length === 0" class="rounded bg-white px-2 py-2 text-xs font-semibold text-slate-600">No rated rows yet.</p>
+        </div>
+      </article>
+      <article class="rounded border border-slate-200 bg-slate-50 p-3">
+        <div class="flex items-center justify-between gap-2">
+          <h3 class="text-sm font-black uppercase text-slate-700">Vintage Review</h3>
+          <button type="button" class="rounded bg-white px-2 py-1 text-xs font-black text-slate-600" (click)="downloadVintageReviewCsv()">{{ report.vintageReviewItems.length | number }}</button>
+        </div>
+        <div class="mt-2 grid gap-1">
+          <button *ngFor="let item of report.vintageReviewItems.slice(0, 6)" type="button" class="rounded bg-white px-2 py-1 text-left text-xs text-slate-700" (click)="selectItem(item)">
+            <div class="font-black text-slate-900">{{ item.name }}</div>
+            <div>{{ item.country || 'No country' }} / {{ item.region || 'No region' }}</div>
+          </button>
+          <p *ngIf="report.vintageReviewItems.length === 0" class="rounded bg-white px-2 py-2 text-xs font-semibold text-emerald-700">No wine rows missing vintage.</p>
+        </div>
+      </article>
     </div>
   </section>
 
   <div *ngIf="error()" class="rounded border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-800">{{ error() }}</div>
   <div *ngIf="message()" class="rounded border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">{{ message() }}</div>
+
+  <section *ngIf="canApplyLookupCleanup()" class="rounded-md border border-slate-200 bg-white shadow-sm">
+    <div class="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 bg-slate-50 px-4 py-3">
+      <div>
+        <h2 class="text-lg font-bold text-slate-950">Alcohol Lookup Management</h2>
+        <p class="mt-1 text-sm text-slate-600">Merge duplicate lookup values, rename imported labels, or clear values from inventory rows.</p>
+      </div>
+      <button type="button" class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="loadLookups(); loadLookupCleanup()">Refresh Lookups</button>
+    </div>
+    <div class="grid gap-3 p-4 lg:grid-cols-[11rem_minmax(0,1fr)_minmax(0,1fr)_auto_auto] lg:items-end">
+      <label class="grid gap-1 text-sm font-bold text-slate-700">
+        Lookup
+        <select class="rounded border border-slate-300 bg-white px-3 py-2" [ngModel]="mergeForm().field" (ngModelChange)="patchMergeForm({ field: $event, sourceValue: '', targetValue: '', clearTarget: false })">
+          <option value="Category">Category</option>
+          <option value="Type">Type</option>
+          <option value="Style">Style</option>
+          <option value="Location">Location</option>
+          <option value="Country">Country</option>
+          <option value="Region">Region</option>
+        </select>
+      </label>
+      <label class="grid gap-1 text-sm font-bold text-slate-700">
+        Source
+        <input class="rounded border border-slate-300 px-3 py-2" list="alcohol-merge-source-options" [ngModel]="mergeForm().sourceValue" (ngModelChange)="patchMergeForm({ sourceValue: $event })">
+      </label>
+      <label class="grid gap-1 text-sm font-bold text-slate-700">
+        Target
+        <input class="rounded border border-slate-300 px-3 py-2 disabled:bg-slate-100" list="alcohol-merge-target-options" [disabled]="mergeForm().clearTarget" [ngModel]="mergeForm().targetValue" (ngModelChange)="patchMergeForm({ targetValue: $event })">
+      </label>
+      <label class="flex items-center gap-2 rounded border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-bold text-slate-700">
+        <input type="checkbox" class="h-4 w-4" [ngModel]="mergeForm().clearTarget" (ngModelChange)="patchMergeForm({ clearTarget: $event, targetValue: $event ? '' : mergeForm().targetValue })">
+        Clear
+      </label>
+      <button type="button" class="rounded bg-slate-900 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" [disabled]="mergingLookup() || !mergeForm().sourceValue.trim() || (!mergeForm().clearTarget && !mergeForm().targetValue.trim())" (click)="mergeLookup()">
+        {{ mergingLookup() ? 'Merging.' : 'Merge' }}
+      </button>
+      <datalist id="alcohol-merge-source-options">
+        <option *ngFor="let value of mergeSourceOptions()" [value]="value"></option>
+      </datalist>
+      <datalist id="alcohol-merge-target-options">
+        <option *ngFor="let value of mergeTargetOptions()" [value]="value"></option>
+      </datalist>
+    </div>
+  </section>
 
   <section *ngIf="canManage()" class="rounded-md border border-amber-200 bg-white shadow-sm">
     <div class="flex flex-wrap items-start justify-between gap-3 border-b border-amber-100 bg-amber-50 px-4 py-3">
@@ -150,7 +357,7 @@
           <span class="rounded bg-emerald-50 px-2 py-2 text-emerald-800">{{ validImportRows().length }} clean</span>
           <span class="rounded bg-amber-50 px-2 py-2 text-amber-800">{{ warningImportRows().length }} warnings</span>
         </div>
-        <p class="text-xs font-semibold text-slate-600">Known categories and locations come from Admin Settings plus existing Alcohol inventory values.</p>
+        <p class="text-xs font-semibold text-slate-600">Known categories, locations, types, styles, regions, and countries come from normalized Alcohol lookup tables.</p>
         <div class="flex flex-wrap gap-1">
           <span *ngFor="let value of categories().slice(0, 8)" class="rounded bg-white px-2 py-1 text-xs font-bold text-slate-600">{{ value }}</span>
           <span *ngIf="categories().length > 8" class="rounded bg-white px-2 py-1 text-xs font-bold text-slate-500">+{{ categories().length - 8 }} categories</span>
@@ -282,6 +489,18 @@
           <datalist id="alcohol-location-options">
             <option *ngFor="let value of locations()" [value]="value"></option>
           </datalist>
+          <datalist id="alcohol-type-options">
+            <option *ngFor="let value of types()" [value]="value"></option>
+          </datalist>
+          <datalist id="alcohol-style-options">
+            <option *ngFor="let value of styles()" [value]="value"></option>
+          </datalist>
+          <datalist id="alcohol-country-options">
+            <option *ngFor="let value of countries()" [value]="value"></option>
+          </datalist>
+          <datalist id="alcohol-region-options">
+            <option *ngFor="let value of regions()" [value]="value"></option>
+          </datalist>
           <div class="grid grid-cols-2 gap-2">
             <label class="grid gap-1 text-sm font-bold text-slate-700">Category<input class="rounded border border-slate-300 px-3 py-2" list="alcohol-category-options" [ngModel]="form().category" (ngModelChange)="patchForm({ category: $event })"></label>
             <label class="grid gap-1 text-sm font-bold text-slate-700">Status<select class="rounded border border-slate-300 bg-white px-3 py-2" [ngModel]="form().statusID" (ngModelChange)="patchForm({ statusID: $event })"><option value="H">Owned</option><option value="W">Wanted</option></select></label>
@@ -289,16 +508,16 @@
           <label class="grid gap-1 text-sm font-bold text-slate-700">Name<input class="rounded border border-slate-300 px-3 py-2" [ngModel]="form().name" (ngModelChange)="patchForm({ name: $event })"></label>
           <label class="grid gap-1 text-sm font-bold text-slate-700">Producer / Brewery / Winery<input class="rounded border border-slate-300 px-3 py-2" [ngModel]="form().producer" (ngModelChange)="patchForm({ producer: $event })"></label>
           <div class="grid grid-cols-2 gap-2">
-            <label class="grid gap-1 text-sm font-bold text-slate-700">Style<input class="rounded border border-slate-300 px-3 py-2" [ngModel]="form().style" (ngModelChange)="patchForm({ style: $event })"></label>
-            <label class="grid gap-1 text-sm font-bold text-slate-700">Type<input class="rounded border border-slate-300 px-3 py-2" [ngModel]="form().type" (ngModelChange)="patchForm({ type: $event })"></label>
+            <label class="grid gap-1 text-sm font-bold text-slate-700">Style<input class="rounded border border-slate-300 px-3 py-2" list="alcohol-style-options" [ngModel]="form().style" (ngModelChange)="patchForm({ style: $event })"></label>
+            <label class="grid gap-1 text-sm font-bold text-slate-700">Type<input class="rounded border border-slate-300 px-3 py-2" list="alcohol-type-options" [ngModel]="form().type" (ngModelChange)="patchForm({ type: $event })"></label>
           </div>
           <div class="grid grid-cols-2 gap-2">
             <label class="grid gap-1 text-sm font-bold text-slate-700">Variety<input class="rounded border border-slate-300 px-3 py-2" [ngModel]="form().variety" (ngModelChange)="patchForm({ variety: $event })"></label>
             <label class="grid gap-1 text-sm font-bold text-slate-700">Color<input class="rounded border border-slate-300 px-3 py-2" [ngModel]="form().color" (ngModelChange)="patchForm({ color: $event })"></label>
           </div>
           <div class="grid grid-cols-2 gap-2">
-            <label class="grid gap-1 text-sm font-bold text-slate-700">Country<input class="rounded border border-slate-300 px-3 py-2" [ngModel]="form().country" (ngModelChange)="patchForm({ country: $event })"></label>
-            <label class="grid gap-1 text-sm font-bold text-slate-700">Region<input class="rounded border border-slate-300 px-3 py-2" [ngModel]="form().region" (ngModelChange)="patchForm({ region: $event })"></label>
+            <label class="grid gap-1 text-sm font-bold text-slate-700">Country<input class="rounded border border-slate-300 px-3 py-2" list="alcohol-country-options" [ngModel]="form().country" (ngModelChange)="patchForm({ country: $event })"></label>
+            <label class="grid gap-1 text-sm font-bold text-slate-700">Region<input class="rounded border border-slate-300 px-3 py-2" list="alcohol-region-options" [ngModel]="form().region" (ngModelChange)="patchForm({ region: $event })"></label>
           </div>
           <div class="grid grid-cols-2 gap-2">
             <label class="grid gap-1 text-sm font-bold text-slate-700">Year/Vintage<input class="rounded border border-slate-300 px-3 py-2" [ngModel]="form().vintageOrYear" (ngModelChange)="patchForm({ vintageOrYear: $event })"></label>

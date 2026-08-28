@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { BarcodeBatchHistoryPanel } from '../barcode-batch-history-panel/barcode-batch-history-panel';
 import { BarcodeDuplicateScanPanel } from '../barcode-duplicate-scan-panel/barcode-duplicate-scan-panel';
 import { BarcodeImportValidationPanel } from '../barcode-import-validation-panel/barcode-import-validation-panel';
 import { BarcodeStagingService } from '../barcode-staging.service';
@@ -160,7 +161,7 @@ interface BarcodeWorkflowCard {
 
 @Component({
   selector: 'app-barcode-staging-workbench',
-  imports: [CommonModule, FormsModule, BarcodeDuplicateScanPanel, BarcodeImportValidationPanel],
+  imports: [CommonModule, FormsModule, BarcodeBatchHistoryPanel, BarcodeDuplicateScanPanel, BarcodeImportValidationPanel],
   templateUrl: './barcode-staging-workbench.html',
   styleUrl: './barcode-staging-workbench.scss'
 })
@@ -247,7 +248,7 @@ export class BarcodeStagingWorkbench implements OnInit {
       count: this.lookupRecommendedItems().length,
       helper: 'Rows with no usable candidate data yet.',
       actionLabel: 'Select lookup rows',
-      tone: 'border-blue-200 bg-blue-50 text-blue-900',
+      tone: 'app-token-soft-surface app-token-text-primary',
       disabled: this.lookupRecommendedItems().length === 0
     },
     {
@@ -274,7 +275,7 @@ export class BarcodeStagingWorkbench implements OnInit {
       count: this.readyToImportCount(),
       helper: 'Approved Book/CD/DVD rows with enough data to create records.',
       actionLabel: 'Preview import',
-      tone: 'border-indigo-200 bg-indigo-50 text-indigo-900',
+      tone: 'app-token-soft-surface app-token-text-strong',
       disabled: this.readyToImportCount() === 0
     },
     {
@@ -420,7 +421,7 @@ export class BarcodeStagingWorkbench implements OnInit {
       {
         label: 'Types',
         rows: this.groupImportHistory(rows, row => row.itemType || 'Unknown'),
-        tone: 'bg-blue-50 text-blue-900 ring-blue-200'
+        tone: 'app-token-soft-surface app-token-text-primary app-token-ring'
       },
       {
         label: 'Destinations',
@@ -430,7 +431,7 @@ export class BarcodeStagingWorkbench implements OnInit {
       {
         label: 'Providers',
         rows: this.groupImportHistory(rows, row => row.lookupProvider || 'Manual/Unknown', true),
-        tone: 'bg-indigo-50 text-indigo-900 ring-indigo-200'
+        tone: 'app-token-soft-surface app-token-text-primary app-token-ring'
       },
       {
         label: 'Sources',
@@ -472,13 +473,13 @@ export class BarcodeStagingWorkbench implements OnInit {
         label: 'Book ISBN trace',
         count: bookBarcodeLimitedCount,
         helper: 'Book ISBN/barcode remains in staging history because Books has no barcode field yet.',
-        tone: 'bg-blue-50 text-blue-900 ring-blue-200'
+        tone: 'app-token-soft-surface app-token-text-primary app-token-ring'
       },
       {
         label: 'Barcode carried forward',
         count: directBarcodeCount,
         helper: 'CD keeps barcode in album info text; DVD stores it directly on movie inventory.',
-        tone: 'bg-indigo-50 text-indigo-900 ring-indigo-200'
+        tone: 'app-token-soft-surface app-token-text-primary app-token-ring'
       }
     ];
   });
@@ -723,7 +724,7 @@ export class BarcodeStagingWorkbench implements OnInit {
     }
 
     if (this.isReadyToImport(item)) {
-      return 'border-l-4 border-l-indigo-400';
+      return 'border-l-4 app-token-border-left-accent';
     }
 
     if (this.readyForApproval(item)) {
@@ -735,7 +736,7 @@ export class BarcodeStagingWorkbench implements OnInit {
     }
 
     if (this.needsLookup(item)) {
-      return 'border-l-4 border-l-blue-400';
+      return 'border-l-4 app-token-border-left-accent';
     }
 
     return 'border-l-4 border-l-transparent';
@@ -771,7 +772,7 @@ export class BarcodeStagingWorkbench implements OnInit {
     }
 
     if (this.isReadyToImport(item)) {
-      return 'bg-indigo-50 text-indigo-800';
+      return 'app-token-soft-surface app-token-text-primary';
     }
 
     if (this.readyForApproval(item)) {
@@ -783,7 +784,7 @@ export class BarcodeStagingWorkbench implements OnInit {
     }
 
     if (this.needsLookup(item)) {
-      return 'bg-blue-50 text-blue-800';
+      return 'app-token-soft-surface app-token-text-strong';
     }
 
     return 'bg-slate-100 text-slate-700';
@@ -1441,7 +1442,7 @@ export class BarcodeStagingWorkbench implements OnInit {
       case 'Duplicate review':
         return 'bg-amber-100 text-amber-900 ring-amber-200';
       case 'Info':
-        return 'bg-blue-100 text-blue-800 ring-blue-200';
+        return 'app-token-bg-accent app-token-text-strong app-token-ring';
       default:
         return 'bg-slate-100 text-slate-700 ring-slate-200';
     }
@@ -1762,7 +1763,7 @@ export class BarcodeStagingWorkbench implements OnInit {
 
   candidateRankTone(row: CandidateComparisonRow, index: number): string {
     if (row.candidate.selected) {
-      return 'border-blue-200 bg-blue-50 text-blue-800';
+      return 'app-token-soft-surface app-token-text-strong';
     }
 
     if (index === 0) {
@@ -1865,7 +1866,7 @@ export class BarcodeStagingWorkbench implements OnInit {
     }
 
     if (state === 'Adds value') {
-      return 'border-blue-200 bg-blue-50 text-blue-700';
+      return 'app-token-soft-surface app-token-text-strong';
     }
 
     return 'border-slate-200 bg-slate-50 text-slate-500';
@@ -2080,7 +2081,7 @@ export class BarcodeStagingWorkbench implements OnInit {
       {
         label: 'Audit / trace',
         description: 'Fields preserved as lookup trace, notes, or staging import history.',
-        tone: 'border-blue-200 bg-blue-50'
+        tone: 'app-token-soft-surface'
       },
       {
         label: 'Not mapped yet',
@@ -2403,7 +2404,7 @@ export class BarcodeStagingWorkbench implements OnInit {
 
     if (category === 'Audit') {
       return value !== '-'
-        ? 'border-blue-200 bg-blue-50 text-blue-800'
+        ? 'app-token-soft-surface app-token-text-strong'
         : 'border-slate-200 bg-slate-50 text-slate-600';
     }
 
@@ -2552,7 +2553,7 @@ export class BarcodeStagingWorkbench implements OnInit {
     return {
       label,
       value: displayValue,
-      tone: displayValue === '-' ? 'border-slate-200 bg-slate-50 text-slate-500' : 'border-blue-200 bg-blue-50 text-blue-800'
+      tone: displayValue === '-' ? 'border-slate-200 bg-slate-50 text-slate-500' : 'app-token-soft-surface app-token-text-strong'
     };
   }
 

@@ -2,17 +2,122 @@
   <header class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
     <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
       <div>
-        <p class="text-xs font-bold uppercase tracking-wider text-blue-600">Administration</p>
+        <p class="app-token-kicker text-xs font-bold uppercase tracking-wider">Administration</p>
         <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">Settings</h1>
         <p class="mt-1 text-sm text-slate-600">Manage shared lookup values used across the site.</p>
       </div>
     </div>
+    <nav class="mt-4 flex flex-wrap gap-2" aria-label="Settings sections">
+      <a class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" href="#main-appearance">Appearance</a>
+      <a class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" href="#external-sites">External</a>
+      <a class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" href="#barcode-lookups">Barcode</a>
+      <a class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" href="#importer-defaults">Importers</a>
+      <a class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" href="#music-folder-import">Music folders</a>
+      <a class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" href="#finance-tracker">Finance</a>
+      <a class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" href="#fish-thresholds">Fish</a>
+      <a class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" href="#shopping-categories">Shopping</a>
+      <a class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" href="#recipe-lookups">Recipes</a>
+      <a class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" href="#alcohol-lookups">Alcohol</a>
+      <a class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" href="#software-platforms">Platforms</a>
+      <a class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" href="#software-locations">Locations</a>
+      <a class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" href="#spookytown-types">Spookytown</a>
+    </nav>
   </header>
 
   <div *ngIf="error()" class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800">{{ error() }}</div>
   <div *ngIf="message()" class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">{{ message() }}</div>
 
-  <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+  <section id="main-appearance" class="scroll-mt-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+    <div class="grid gap-5">
+      <app-appearance-settings-panel
+        title="Main Appearance"
+        description="Shared brand, color, logo, and artwork defaults for the main application surface."
+        [settings]="mainAppearance()"
+        [loading]="mainAppearanceLoading()"
+        [warnings]="mainAppearanceWarnings()"
+        fallbackBrandName="Verdelak"
+        fallbackTagline="Collections, schedules, and household systems"
+        previewNote="Saved values establish the Admin-managed appearance contract; public surfaces can adopt these tokens as their CSS is centralized."
+        (settingsChange)="mainAppearance.set($event)"
+        (save)="saveMainAppearance()"
+        (reset)="resetMainAppearance()"
+      ></app-appearance-settings-panel>
+
+      <app-appearance-settings-panel
+        title="CD Site Appearance"
+        description="Brand, color, logo, and hero defaults for the public CD collection site."
+        [settings]="cdSiteAppearance()"
+        [loading]="cdSiteAppearanceLoading()"
+        [warnings]="cdSiteAppearanceWarnings()"
+        saveLabel="Save CD appearance"
+        reviewTitle="CD Site Appearance Review"
+        fallbackBrandName="Verdelak CD Collection"
+        fallbackTagline="Browse the collection by band and read CD reviews."
+        logoPlaceholder="/assets/cd-logo.png or https://..."
+        heroPlaceholder="/assets/cd-hero.jpg or https://..."
+        previewNote="Used by the public MVC CD catalog when the API is available, with local fallbacks if it is not."
+        (settingsChange)="cdSiteAppearance.set($event)"
+        (save)="saveCdSiteAppearance()"
+        (reset)="resetCdSiteAppearance()"
+      ></app-appearance-settings-panel>
+
+      <app-appearance-settings-panel
+        title="Dino Site Appearance"
+        description="Brand, color, logo, and hero defaults for the public Dino archive."
+        [settings]="dinoSiteAppearance()"
+        [loading]="dinoSiteAppearanceLoading()"
+        [warnings]="dinoSiteAppearanceWarnings()"
+        saveLabel="Save Dino appearance"
+        reviewTitle="Dino Site Appearance Review"
+        fallbackBrandName="Verdelak Dino Archive"
+        fallbackTagline="Browse published dinosaurs by name, taxonomy, and discovery notes."
+        logoPlaceholder="/assets/dino-logo.png or https://..."
+        heroPlaceholder="/assets/dino-hero.jpg or https://..."
+        previewNote="Used by the public MVC Dino archive when the API is available, with local fallbacks if it is not."
+        (settingsChange)="dinoSiteAppearance.set($event)"
+        (save)="saveDinoSiteAppearance()"
+        (reset)="resetDinoSiteAppearance()"
+      ></app-appearance-settings-panel>
+
+      <app-appearance-settings-panel
+        title="Blog Appearance"
+        description="Brand, color, logo, and hero defaults for the public blog surface."
+        [settings]="blogAppearance()"
+        [loading]="blogAppearanceLoading()"
+        [warnings]="blogAppearanceWarnings()"
+        saveLabel="Save blog appearance"
+        reviewTitle="Blog Appearance Review"
+        fallbackBrandName="Verdelak Blog"
+        fallbackTagline="Notes, updates, and personal writing."
+        logoPlaceholder="/assets/blog-logo.png or https://..."
+        heroPlaceholder="/assets/blog-hero.jpg or https://..."
+        previewNote="Used by the public Angular blog list and detail pages, with local fallbacks if the setting is unavailable."
+        (settingsChange)="blogAppearance.set($event)"
+        (save)="saveBlogAppearance()"
+        (reset)="resetBlogAppearance()"
+      ></app-appearance-settings-panel>
+
+      <app-appearance-settings-panel
+        title="Film Review Appearance"
+        description="Brand, color, logo, and hero defaults for the future public film review surface."
+        [settings]="filmReviewAppearance()"
+        [loading]="filmReviewAppearanceLoading()"
+        [warnings]="filmReviewAppearanceWarnings()"
+        saveLabel="Save film review appearance"
+        reviewTitle="Film Review Appearance Review"
+        fallbackBrandName="Verdelak Film Review"
+        fallbackTagline="Movie notes, ratings, and review writing."
+        logoPlaceholder="/assets/film-review-logo.png or https://..."
+        heroPlaceholder="/assets/film-review-hero.jpg or https://..."
+        previewNote="Stored for the Film Review external surface; public consumption can attach to this contract when that site is added to the repo."
+        (settingsChange)="filmReviewAppearance.set($event)"
+        (save)="saveFilmReviewAppearance()"
+        (reset)="resetFilmReviewAppearance()"
+      ></app-appearance-settings-panel>
+    </div>
+  </section>
+
+  <section id="external-sites" class="scroll-mt-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
     <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
       <div>
         <h2 class="text-lg font-bold text-slate-950">External Sites</h2>
@@ -21,8 +126,8 @@
       <div class="flex flex-wrap gap-2">
         <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="resetExternalSites()" [disabled]="externalSitesLoading()">Defaults</button>
         <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="exportExternalSitesCsv()" [disabled]="externalSitesLoading()">Export links</button>
-        <button type="button" class="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-bold text-blue-800 shadow-sm transition hover:bg-blue-100" (click)="addExternalSite()" [disabled]="externalSitesLoading()">Add site</button>
-        <button type="button" class="rounded-md bg-blue-600 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60" (click)="saveExternalSites()" [disabled]="externalSitesLoading()">
+        <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition" (click)="addExternalSite()" [disabled]="externalSitesLoading()">Add site</button>
+        <button type="button" class="app-primary-action rounded-md px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-wait disabled:opacity-60" (click)="saveExternalSites()" [disabled]="externalSitesLoading()">
           {{ externalSitesLoading() ? 'Saving.' : 'Save external sites' }}
         </button>
       </div>
@@ -30,7 +135,7 @@
 
     <label class="mt-4 grid max-w-xs gap-1 text-sm font-semibold text-slate-700">
       Active URL set
-      <select class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="externalSites().environmentName" (ngModelChange)="setExternalEnvironment($event)">
+      <select class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" [ngModel]="externalSites().environmentName" (ngModelChange)="setExternalEnvironment($event)">
         <option value="local">Local</option>
         <option value="production">Production</option>
       </select>
@@ -72,27 +177,27 @@
               <input type="checkbox" [ngModel]="row.site.isActive" (ngModelChange)="setExternalSiteField(row.index, 'isActive', $event)" [attr.aria-label]="'Enable ' + row.site.label" />
             </td>
             <td class="px-3 py-3 align-top">
-              <input class="w-36 rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" maxlength="50" [ngModel]="row.site.key" (ngModelChange)="setExternalSiteField(row.index, 'key', $event)" />
+              <input class="app-token-control w-36 rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" type="text" maxlength="50" [ngModel]="row.site.key" (ngModelChange)="setExternalSiteField(row.index, 'key', $event)" />
             </td>
             <td class="px-3 py-3 align-top">
-              <input class="w-40 rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" maxlength="100" [ngModel]="row.site.label" (ngModelChange)="setExternalSiteField(row.index, 'label', $event)" />
+              <input class="app-token-control w-40 rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" type="text" maxlength="100" [ngModel]="row.site.label" (ngModelChange)="setExternalSiteField(row.index, 'label', $event)" />
             </td>
             <td class="px-3 py-3 align-top">
-              <input class="w-64 rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="url" placeholder="http://localhost:5120" [ngModel]="row.site.localUrl" (ngModelChange)="setExternalSiteField(row.index, 'localUrl', $event)" />
+              <input class="app-token-control w-64 rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" type="url" placeholder="http://localhost:5120" [ngModel]="row.site.localUrl" (ngModelChange)="setExternalSiteField(row.index, 'localUrl', $event)" />
             </td>
             <td class="px-3 py-3 align-top">
-              <input class="w-64 rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="url" placeholder="https://example.azurewebsites.net" [ngModel]="row.site.productionUrl" (ngModelChange)="setExternalSiteField(row.index, 'productionUrl', $event)" />
+              <input class="app-token-control w-64 rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" type="url" placeholder="https://example.azurewebsites.net" [ngModel]="row.site.productionUrl" (ngModelChange)="setExternalSiteField(row.index, 'productionUrl', $event)" />
             </td>
             <td class="px-3 py-3 align-top">
               <div class="grid max-w-72 gap-1">
                 <span class="rounded-full px-2 py-1 text-xs font-bold" [class.bg-emerald-50]="row.site.isActive && externalSiteResolvedUrl(row.site)" [class.text-emerald-700]="row.site.isActive && externalSiteResolvedUrl(row.site)" [class.bg-slate-100]="!row.site.isActive" [class.text-slate-500]="!row.site.isActive" [class.bg-amber-50]="row.site.isActive && !externalSiteResolvedUrl(row.site)" [class.text-amber-700]="row.site.isActive && !externalSiteResolvedUrl(row.site)">
                   {{ externalSiteStatus(row.site) }}
                 </span>
-                <a *ngIf="externalSiteResolvedUrl(row.site) as resolvedUrl" class="truncate text-xs font-semibold text-blue-700 hover:text-blue-900" [href]="resolvedUrl" target="_blank" rel="noopener">{{ resolvedUrl }}</a>
+                <a *ngIf="externalSiteResolvedUrl(row.site) as resolvedUrl" class="app-token-link truncate text-xs font-semibold" [href]="resolvedUrl" target="_blank" rel="noopener">{{ resolvedUrl }}</a>
               </div>
             </td>
             <td class="px-3 py-3 align-top">
-              <input class="w-24 rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="number" min="1" step="1" [ngModel]="row.site.sortOrder" (ngModelChange)="setExternalSiteField(row.index, 'sortOrder', $event)" />
+              <input class="app-token-control w-24 rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" type="number" min="1" step="1" [ngModel]="row.site.sortOrder" (ngModelChange)="setExternalSiteField(row.index, 'sortOrder', $event)" />
             </td>
             <td class="px-3 py-3 align-top">
               <input type="checkbox" [ngModel]="row.site.openInNewTab" (ngModelChange)="setExternalSiteField(row.index, 'openInNewTab', $event)" [attr.aria-label]="'Open ' + row.site.label + ' in a new tab'" />
@@ -109,7 +214,7 @@
     </div>
   </section>
 
-  <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+  <section id="barcode-lookups" class="scroll-mt-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
     <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
       <div>
         <h2 class="text-lg font-bold text-slate-950">Barcode Lookup Providers</h2>
@@ -118,7 +223,7 @@
       </div>
       <div class="flex flex-wrap gap-2">
         <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="resetBarcodeLookups()" [disabled]="barcodeLookupsLoading()">Defaults</button>
-        <button type="button" class="rounded-md bg-blue-600 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60" (click)="saveBarcodeLookups()" [disabled]="barcodeLookupsLoading()">
+        <button type="button" class="app-primary-action rounded-md px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-wait disabled:opacity-60" (click)="saveBarcodeLookups()" [disabled]="barcodeLookupsLoading()">
           {{ barcodeLookupsLoading() ? 'Saving.' : 'Save barcode lookups' }}
         </button>
       </div>
@@ -147,7 +252,7 @@
               </div>
             </td>
             <td class="px-3 py-3">
-              <input type="number" min="1" step="1" class="w-28 rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="provider.priority" (ngModelChange)="setBarcodeProviderPriority(provider.provider, $event)" />
+              <input type="number" min="1" step="1" class="app-token-control w-28 rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" [ngModel]="provider.priority" (ngModelChange)="setBarcodeProviderPriority(provider.provider, $event)" />
             </td>
           </tr>
         </tbody>
@@ -155,7 +260,156 @@
     </div>
   </section>
 
-  <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+  <section id="importer-defaults" class="scroll-mt-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+      <div>
+        <h2 class="text-lg font-bold text-slate-950">Importer Defaults</h2>
+        <p class="mt-1 text-sm text-slate-600">Shared defaults used by the external imports workbench for Steam and BoardGameGeek staging.</p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="resetImporterSettings()" [disabled]="importerSettingsLoading()">Defaults</button>
+        <button type="button" class="app-primary-action rounded-md px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-wait disabled:opacity-60" (click)="saveImporterSettings()" [disabled]="importerSettingsLoading()">
+          {{ importerSettingsLoading() ? 'Saving.' : 'Save importer defaults' }}
+        </button>
+      </div>
+    </div>
+
+    <div class="mt-4 grid gap-4 xl:grid-cols-2">
+      <article class="grid gap-3 rounded-md border border-slate-200 bg-slate-50 p-3">
+        <h3 class="text-sm font-bold uppercase text-slate-500">Steam</h3>
+        <label class="grid gap-1 text-sm font-semibold text-slate-700">
+          Web API key
+          <input class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-normal shadow-sm outline-none transition" type="password" [ngModel]="steamImporterSettings().apiKey" (ngModelChange)="setSteamImporterSetting('apiKey', $event)" placeholder="Steam Web API key" />
+        </label>
+        <label class="grid gap-1 text-sm font-semibold text-slate-700">
+          Steam ID
+          <input class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-normal shadow-sm outline-none transition" [ngModel]="steamImporterSettings().steamId" (ngModelChange)="setSteamImporterSetting('steamId', $event)" placeholder="7656119..." />
+        </label>
+        <label class="flex items-center gap-2 text-sm font-semibold text-slate-700">
+          <input type="checkbox" [ngModel]="steamImporterSettings().includePlayedFreeGames" (ngModelChange)="setSteamImporterSetting('includePlayedFreeGames', $event)" />
+          Include played free games
+        </label>
+        <label class="flex items-center gap-2 text-sm font-semibold text-slate-700">
+          <input type="checkbox" [ngModel]="steamImporterSettings().includeAppInfo" (ngModelChange)="setSteamImporterSetting('includeAppInfo', $event)" />
+          Include app details
+        </label>
+      </article>
+
+      <article class="grid gap-3 rounded-md border border-slate-200 bg-slate-50 p-3">
+        <h3 class="text-sm font-bold uppercase text-slate-500">BoardGameGeek</h3>
+        <label class="grid gap-1 text-sm font-semibold text-slate-700">
+          Username
+          <input class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-normal shadow-sm outline-none transition" [ngModel]="boardGameGeekImporterSettings().username" (ngModelChange)="setBoardGameGeekImporterSetting('username', $event)" placeholder="BoardGameGeek username" />
+        </label>
+        <label class="flex items-center gap-2 text-sm font-semibold text-slate-700">
+          <input type="checkbox" [ngModel]="boardGameGeekImporterSettings().includeOwned" (ngModelChange)="setBoardGameGeekImporterSetting('includeOwned', $event)" />
+          Include owned games
+        </label>
+        <label class="flex items-center gap-2 text-sm font-semibold text-slate-700">
+          <input type="checkbox" [ngModel]="boardGameGeekImporterSettings().includeWishlist" (ngModelChange)="setBoardGameGeekImporterSetting('includeWishlist', $event)" />
+          Include wishlist
+        </label>
+        <label class="flex items-center gap-2 text-sm font-semibold text-slate-700">
+          <input type="checkbox" [ngModel]="boardGameGeekImporterSettings().includeExpansions" (ngModelChange)="setBoardGameGeekImporterSetting('includeExpansions', $event)" />
+          Include expansions
+        </label>
+      </article>
+    </div>
+
+    <article id="music-folder-import" class="mt-4 grid gap-4 rounded-md border border-slate-200 bg-slate-50 p-3">
+      <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <label class="grid flex-1 gap-1 text-sm font-semibold text-slate-700">
+          CD rip folder
+          <input class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-normal shadow-sm outline-none transition" [ngModel]="musicFolderImportRoot()" (ngModelChange)="musicFolderImportRoot.set($event)" placeholder="Z:\Rips" />
+          <span class="text-xs font-semibold text-slate-500">Saved with importer defaults; preview and import use the current value.</span>
+        </label>
+        <div class="flex flex-wrap gap-2">
+          <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-wait disabled:opacity-60" (click)="previewMusicFolderImport()" [disabled]="musicFolderImportLoading()">
+            {{ musicFolderImportLoading() ? 'Scanning.' : 'Preview CD folders' }}
+          </button>
+          <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50" (click)="exportMusicFolderImportCsv()" [disabled]="musicFolderImportLoading() || !musicFolderImportResult()">
+            Export comparison
+          </button>
+          <button type="button" class="app-primary-action rounded-md px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-wait disabled:opacity-60" (click)="applyMusicFolderImport()" [disabled]="musicFolderImportLoading()">
+            {{ musicFolderImportLoading() ? 'Importing.' : 'Import missing CDs' }}
+          </button>
+        </div>
+      </div>
+
+      <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+        <article *ngFor="let card of musicFolderImportSummaryCards()" class="rounded-md border border-slate-200 bg-white p-3">
+          <p class="text-xs font-bold uppercase text-slate-500">{{ card.label }}</p>
+          <p class="mt-1 text-2xl font-bold text-slate-950">{{ card.value }}</p>
+          <p class="mt-1 text-xs font-semibold text-slate-600">{{ card.detail }}</p>
+        </article>
+      </div>
+
+      <div *ngIf="musicFolderImportWarnings().length" class="rounded-md border border-amber-200 bg-amber-50 p-3">
+        <h3 class="text-sm font-bold text-amber-950">Folder Import Review</h3>
+        <ul class="mt-2 grid gap-1 text-sm font-semibold text-amber-800">
+          <li *ngFor="let warning of musicFolderImportWarnings()">{{ warning }}</li>
+        </ul>
+      </div>
+
+      <div *ngIf="musicFolderImportResult()" class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <label class="grid max-w-xs gap-1 text-sm font-semibold text-slate-700">
+          Result filter
+          <select class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-normal shadow-sm outline-none transition" [ngModel]="musicFolderImportStatusFilter()" (ngModelChange)="musicFolderImportStatusFilter.set($event)">
+            <option *ngFor="let status of musicFolderImportStatusOptions()" [value]="status">{{ musicFolderImportStatusLabel(status) }}</option>
+          </select>
+        </label>
+        <p class="text-xs font-semibold text-slate-500">
+          {{ filteredMusicFolderImportRows().length }} row(s) in the current comparison view.
+        </p>
+      </div>
+
+      <div *ngIf="musicFolderImportPreviewRows().length" class="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+        <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
+          <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+            <tr>
+              <th class="px-3 py-3 font-bold">Artist</th>
+              <th class="px-3 py-3 font-bold">Album</th>
+              <th class="px-3 py-3 font-bold">Status</th>
+              <th class="px-3 py-3 font-bold">Folder</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <tr *ngFor="let row of musicFolderImportPreviewRows()">
+              <td class="px-3 py-3 font-bold text-slate-950">{{ row.artist }}</td>
+              <td class="px-3 py-3 text-slate-700">{{ row.album }}</td>
+              <td class="px-3 py-3">
+                <span class="rounded-full px-2 py-1 text-xs font-bold" [ngClass]="musicFolderImportStatusTone(row.status)">
+                  {{ musicFolderImportStatusLabel(row.status) }}
+                </span>
+              </td>
+              <td class="max-w-96 truncate px-3 py-3 text-xs font-semibold text-slate-500">{{ row.relativePath || '-' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p *ngIf="filteredMusicFolderImportRows().length > musicFolderImportPreviewRows().length" class="text-xs font-semibold text-slate-500">
+        Showing first {{ musicFolderImportPreviewRows().length }} of {{ filteredMusicFolderImportRows().length }} matched folder rows.
+      </p>
+    </article>
+
+    <div class="mt-4 grid gap-3 md:grid-cols-2">
+      <article *ngFor="let card of importerSettingsSummaryCards()" class="rounded-md border border-slate-200 bg-slate-50 p-3">
+        <p class="text-xs font-bold uppercase text-slate-500">{{ card.label }}</p>
+        <p class="mt-1 text-2xl font-bold text-slate-950">{{ card.value }}</p>
+        <p class="mt-1 text-xs font-semibold text-slate-600">{{ card.detail }}</p>
+      </article>
+    </div>
+
+    <div *ngIf="importerSettingsWarnings().length" class="mt-4 rounded-md border border-amber-200 bg-amber-50 p-3">
+      <h3 class="text-sm font-bold text-amber-950">Importer Settings Review</h3>
+      <ul class="mt-2 grid gap-1 text-sm font-semibold text-amber-800">
+        <li *ngFor="let warning of importerSettingsWarnings()">{{ warning }}</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="finance-tracker" class="scroll-mt-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
     <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
       <div>
         <h2 class="text-lg font-bold text-slate-950">Finance Tracker</h2>
@@ -163,7 +417,7 @@
       </div>
       <div class="flex flex-wrap gap-2">
         <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="resetFinanceSettings()" [disabled]="financeSettingsLoading()">Defaults</button>
-        <button type="button" class="rounded-md bg-blue-600 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60" (click)="saveFinanceSettings()" [disabled]="financeSettingsLoading()">
+        <button type="button" class="app-primary-action rounded-md px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-wait disabled:opacity-60" (click)="saveFinanceSettings()" [disabled]="financeSettingsLoading()">
           {{ financeSettingsLoading() ? 'Saving.' : 'Save finance settings' }}
         </button>
       </div>
@@ -172,39 +426,54 @@
     <div class="mt-4 grid gap-4 xl:grid-cols-3">
       <label class="grid gap-1 text-sm font-semibold text-slate-700">
         Account categories
-        <textarea rows="7" class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="financeAccountCategoryText()" (ngModelChange)="financeAccountCategoryText.set($event)"></textarea>
+        <textarea rows="7" class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" [ngModel]="financeAccountCategoryText()" (ngModelChange)="financeAccountCategoryText.set($event)"></textarea>
       </label>
       <label class="grid gap-1 text-sm font-semibold text-slate-700">
         Bill categories
-        <textarea rows="7" class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="financeBillCategoryText()" (ngModelChange)="financeBillCategoryText.set($event)"></textarea>
+        <textarea rows="7" class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" [ngModel]="financeBillCategoryText()" (ngModelChange)="financeBillCategoryText.set($event)"></textarea>
       </label>
       <label class="grid gap-1 text-sm font-semibold text-slate-700">
         Donation methods
-        <textarea rows="7" class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="financeDonationMethodText()" (ngModelChange)="financeDonationMethodText.set($event)"></textarea>
+        <textarea rows="7" class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" [ngModel]="financeDonationMethodText()" (ngModelChange)="financeDonationMethodText.set($event)"></textarea>
       </label>
+    </div>
+
+    <div class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+      <article *ngFor="let card of financeLookupSummaryCards()" class="rounded-md border border-slate-200 bg-slate-50 p-3">
+        <p class="text-xs font-bold uppercase text-slate-500">{{ card.label }}</p>
+        <p class="mt-1 text-2xl font-bold text-slate-950">{{ card.value }}</p>
+        <p class="mt-1 text-xs font-semibold text-slate-600">{{ card.detail }}</p>
+      </article>
+    </div>
+
+    <div *ngIf="financeLookupWarnings().length" class="mt-4 rounded-md border border-amber-200 bg-amber-50 p-3">
+      <h3 class="text-sm font-bold text-amber-950">Finance Lookup Review</h3>
+      <ul class="mt-2 grid gap-1 text-sm font-semibold text-amber-800">
+        <li *ngFor="let warning of financeLookupWarnings()">{{ warning }}</li>
+      </ul>
     </div>
 
     <div class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       <label class="grid gap-1 text-sm font-semibold text-slate-700">
         Year close month
-        <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="number" min="1" max="12" step="1" [ngModel]="financeSettings().yearCloseMonth" (ngModelChange)="setFinanceSetting('yearCloseMonth', $event)" />
+        <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" type="number" min="1" max="12" step="1" [ngModel]="financeSettings().yearCloseMonth" (ngModelChange)="setFinanceSetting('yearCloseMonth', $event)" />
       </label>
       <label class="grid gap-1 text-sm font-semibold text-slate-700">
         Year close day
-        <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="number" min="1" max="31" step="1" [ngModel]="financeSettings().yearCloseDay" (ngModelChange)="setFinanceSetting('yearCloseDay', $event)" />
+        <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" type="number" min="1" max="31" step="1" [ngModel]="financeSettings().yearCloseDay" (ngModelChange)="setFinanceSetting('yearCloseDay', $event)" />
       </label>
       <label class="grid gap-1 text-sm font-semibold text-slate-700">
         Default report year
-        <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="number" min="2000" max="2100" step="1" [ngModel]="financeSettings().defaultReportYear" (ngModelChange)="setFinanceSetting('defaultReportYear', $event)" />
+        <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" type="number" min="2000" max="2100" step="1" [ngModel]="financeSettings().defaultReportYear" (ngModelChange)="setFinanceSetting('defaultReportYear', $event)" />
       </label>
       <label class="grid gap-1 text-sm font-semibold text-slate-700">
         Default report month
-        <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="number" min="1" max="12" step="1" [ngModel]="financeSettings().defaultReportMonth" (ngModelChange)="setFinanceSetting('defaultReportMonth', $event)" />
+        <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" type="number" min="1" max="12" step="1" [ngModel]="financeSettings().defaultReportMonth" (ngModelChange)="setFinanceSetting('defaultReportMonth', $event)" />
       </label>
     </div>
   </section>
 
-  <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+  <section id="fish-thresholds" class="scroll-mt-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
     <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
       <div>
         <h2 class="text-lg font-bold text-slate-950">Fish Report Thresholds</h2>
@@ -212,7 +481,7 @@
       </div>
       <div class="flex flex-wrap gap-2">
         <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="resetFishThresholds()" [disabled]="fishThresholdsLoading()">Defaults</button>
-        <button type="button" class="rounded-md bg-blue-600 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60" (click)="saveFishThresholds()" [disabled]="fishThresholdsLoading()">
+        <button type="button" class="app-primary-action rounded-md px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-wait disabled:opacity-60" (click)="saveFishThresholds()" [disabled]="fishThresholdsLoading()">
           {{ fishThresholdsLoading() ? 'Saving.' : 'Save thresholds' }}
         </button>
       </div>
@@ -221,28 +490,28 @@
     <div class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
       <label class="grid gap-1 text-sm font-semibold text-slate-700">
         Water test due
-        <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="number" min="0" step="1" [ngModel]="fishThresholds().waterTestDueDays" (ngModelChange)="setFishThreshold('waterTestDueDays', $event)" />
+        <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" type="number" min="0" step="1" [ngModel]="fishThresholds().waterTestDueDays" (ngModelChange)="setFishThreshold('waterTestDueDays', $event)" />
       </label>
       <label class="grid gap-1 text-sm font-semibold text-slate-700">
         Critical overdue
-        <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="number" min="0" step="1" [ngModel]="fishThresholds().overdueCriticalDays" (ngModelChange)="setFishThreshold('overdueCriticalDays', $event)" />
+        <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" type="number" min="0" step="1" [ngModel]="fishThresholds().overdueCriticalDays" (ngModelChange)="setFishThreshold('overdueCriticalDays', $event)" />
       </label>
       <label class="grid gap-1 text-sm font-semibold text-slate-700">
         Critical test age
-        <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="number" min="0" step="1" [ngModel]="fishThresholds().waterTestCriticalDays" (ngModelChange)="setFishThreshold('waterTestCriticalDays', $event)" />
+        <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" type="number" min="0" step="1" [ngModel]="fishThresholds().waterTestCriticalDays" (ngModelChange)="setFishThreshold('waterTestCriticalDays', $event)" />
       </label>
       <label class="grid gap-1 text-sm font-semibold text-slate-700">
         Low product %
-        <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="number" min="0" max="100" step="1" [ngModel]="fishThresholds().lowProductPercent" (ngModelChange)="setFishThreshold('lowProductPercent', $event)" />
+        <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" type="number" min="0" max="100" step="1" [ngModel]="fishThresholds().lowProductPercent" (ngModelChange)="setFishThreshold('lowProductPercent', $event)" />
       </label>
       <label class="grid gap-1 text-sm font-semibold text-slate-700">
         Expiring soon
-        <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="number" min="0" step="1" [ngModel]="fishThresholds().expiringSoonDays" (ngModelChange)="setFishThreshold('expiringSoonDays', $event)" />
+        <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" type="number" min="0" step="1" [ngModel]="fishThresholds().expiringSoonDays" (ngModelChange)="setFishThreshold('expiringSoonDays', $event)" />
       </label>
     </div>
   </section>
 
-  <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+  <section id="shopping-categories" class="scroll-mt-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
     <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
       <div>
         <h2 class="text-lg font-bold text-slate-950">Shopping Categories</h2>
@@ -250,7 +519,7 @@
       </div>
       <div class="flex flex-wrap gap-2">
         <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="resetShoppingCategories()" [disabled]="shoppingCategoriesLoading()">Defaults</button>
-        <button type="button" class="rounded-md bg-blue-600 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60" (click)="saveShoppingCategories()" [disabled]="shoppingCategoriesLoading()">
+        <button type="button" class="app-primary-action rounded-md px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-wait disabled:opacity-60" (click)="saveShoppingCategories()" [disabled]="shoppingCategoriesLoading()">
           {{ shoppingCategoriesLoading() ? 'Saving.' : 'Save categories' }}
         </button>
       </div>
@@ -258,11 +527,26 @@
 
     <label class="mt-4 grid gap-1 text-sm font-semibold text-slate-700">
       Categories
-      <textarea rows="7" class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="shoppingCategoryText()" (ngModelChange)="shoppingCategoryText.set($event)"></textarea>
+      <textarea rows="7" class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" [ngModel]="shoppingCategoryText()" (ngModelChange)="shoppingCategoryText.set($event)"></textarea>
     </label>
+
+    <div class="mt-4 grid gap-3 md:grid-cols-3">
+      <article *ngFor="let card of shoppingCategorySummaryCards()" class="rounded-md border border-slate-200 bg-slate-50 p-3">
+        <p class="text-xs font-bold uppercase text-slate-500">{{ card.label }}</p>
+        <p class="mt-1 text-2xl font-bold text-slate-950">{{ card.value }}</p>
+        <p class="mt-1 text-xs font-semibold text-slate-600">{{ card.detail }}</p>
+      </article>
+    </div>
+
+    <div *ngIf="shoppingCategoryWarnings().length" class="mt-4 rounded-md border border-amber-200 bg-amber-50 p-3">
+      <h3 class="text-sm font-bold text-amber-950">Shopping Category Review</h3>
+      <ul class="mt-2 grid gap-1 text-sm font-semibold text-amber-800">
+        <li *ngFor="let warning of shoppingCategoryWarnings()">{{ warning }}</li>
+      </ul>
+    </div>
   </section>
 
-  <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+  <section id="recipe-lookups" class="scroll-mt-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
     <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
       <div>
         <h2 class="text-lg font-bold text-slate-950">Recipe Lookups</h2>
@@ -270,7 +554,7 @@
       </div>
       <div class="flex flex-wrap gap-2">
         <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="resetRecipeLookups()" [disabled]="recipeLookupsLoading()">Defaults</button>
-        <button type="button" class="rounded-md bg-blue-600 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60" (click)="saveRecipeLookups()" [disabled]="recipeLookupsLoading()">
+        <button type="button" class="app-primary-action rounded-md px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-wait disabled:opacity-60" (click)="saveRecipeLookups()" [disabled]="recipeLookupsLoading()">
           {{ recipeLookupsLoading() ? 'Saving.' : 'Save recipe lookups' }}
         </button>
       </div>
@@ -279,20 +563,35 @@
     <div class="mt-4 grid gap-4 lg:grid-cols-3">
       <label class="grid gap-1 text-sm font-semibold text-slate-700">
         Categories
-        <textarea rows="7" class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="recipeCategoryText()" (ngModelChange)="recipeCategoryText.set($event)"></textarea>
+        <textarea rows="7" class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" [ngModel]="recipeCategoryText()" (ngModelChange)="recipeCategoryText.set($event)"></textarea>
       </label>
       <label class="grid gap-1 text-sm font-semibold text-slate-700">
         Cuisines
-        <textarea rows="7" class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="recipeCuisineText()" (ngModelChange)="recipeCuisineText.set($event)"></textarea>
+        <textarea rows="7" class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" [ngModel]="recipeCuisineText()" (ngModelChange)="recipeCuisineText.set($event)"></textarea>
       </label>
       <label class="grid gap-1 text-sm font-semibold text-slate-700">
         Tags
-        <textarea rows="7" class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="recipeTagText()" (ngModelChange)="recipeTagText.set($event)"></textarea>
+        <textarea rows="7" class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" [ngModel]="recipeTagText()" (ngModelChange)="recipeTagText.set($event)"></textarea>
       </label>
+    </div>
+
+    <div class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+      <article *ngFor="let card of recipeLookupSummaryCards()" class="rounded-md border border-slate-200 bg-slate-50 p-3">
+        <p class="text-xs font-bold uppercase text-slate-500">{{ card.label }}</p>
+        <p class="mt-1 text-2xl font-bold text-slate-950">{{ card.value }}</p>
+        <p class="mt-1 text-xs font-semibold text-slate-600">{{ card.detail }}</p>
+      </article>
+    </div>
+
+    <div *ngIf="recipeLookupWarnings().length" class="mt-4 rounded-md border border-amber-200 bg-amber-50 p-3">
+      <h3 class="text-sm font-bold text-amber-950">Recipe Lookup Review</h3>
+      <ul class="mt-2 grid gap-1 text-sm font-semibold text-amber-800">
+        <li *ngFor="let warning of recipeLookupWarnings()">{{ warning }}</li>
+      </ul>
     </div>
   </section>
 
-  <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+  <section id="alcohol-lookups" class="scroll-mt-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
     <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
       <div>
         <h2 class="text-lg font-bold text-slate-950">Alcohol Lookups</h2>
@@ -300,7 +599,7 @@
       </div>
       <div class="flex flex-wrap gap-2">
         <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="resetAlcoholLookups()" [disabled]="alcoholLookupsLoading()">Defaults</button>
-        <button type="button" class="rounded-md bg-blue-600 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60" (click)="saveAlcoholLookups()" [disabled]="alcoholLookupsLoading()">
+        <button type="button" class="app-primary-action rounded-md px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-wait disabled:opacity-60" (click)="saveAlcoholLookups()" [disabled]="alcoholLookupsLoading()">
           {{ alcoholLookupsLoading() ? 'Saving.' : 'Save alcohol lookups' }}
         </button>
       </div>
@@ -309,23 +608,38 @@
     <div class="mt-4 grid gap-4 lg:grid-cols-2">
       <label class="grid gap-1 text-sm font-semibold text-slate-700">
         Categories
-        <textarea rows="8" class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="alcoholCategoryText()" (ngModelChange)="alcoholCategoryText.set($event)"></textarea>
+        <textarea rows="8" class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" [ngModel]="alcoholCategoryText()" (ngModelChange)="alcoholCategoryText.set($event)"></textarea>
       </label>
       <label class="grid gap-1 text-sm font-semibold text-slate-700">
         Locations
-        <textarea rows="8" class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="alcoholLocationText()" (ngModelChange)="alcoholLocationText.set($event)"></textarea>
+        <textarea rows="8" class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" [ngModel]="alcoholLocationText()" (ngModelChange)="alcoholLocationText.set($event)"></textarea>
       </label>
+    </div>
+
+    <div class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <article *ngFor="let card of alcoholLookupSummaryCards()" class="rounded-md border border-slate-200 bg-slate-50 p-3">
+        <p class="text-xs font-bold uppercase text-slate-500">{{ card.label }}</p>
+        <p class="mt-1 text-2xl font-bold text-slate-950">{{ card.value }}</p>
+        <p class="mt-1 text-xs font-semibold text-slate-600">{{ card.detail }}</p>
+      </article>
+    </div>
+
+    <div *ngIf="alcoholLookupWarnings().length" class="mt-4 rounded-md border border-amber-200 bg-amber-50 p-3">
+      <h3 class="text-sm font-bold text-amber-950">Alcohol Lookup Review</h3>
+      <ul class="mt-2 grid gap-1 text-sm font-semibold text-amber-800">
+        <li *ngFor="let warning of alcoholLookupWarnings()">{{ warning }}</li>
+      </ul>
     </div>
   </section>
 
-  <section class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
+  <section id="software-platforms" class="scroll-mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
     <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
       <div class="flex items-center justify-between gap-3">
         <div>
           <h2 class="text-lg font-bold text-slate-950">Software Platforms</h2>
           <p class="mt-1 text-sm text-slate-600">Shared platform values used by the Software inventory page.</p>
         </div>
-        <button type="button" class="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-bold text-blue-800 shadow-sm transition hover:bg-blue-100 disabled:cursor-wait disabled:opacity-60" (click)="seedSoftwareDefaults()" [disabled]="softwarePlatformsLoading() || softwareLocationsLoading()">Add common defaults</button>
+        <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-wait disabled:opacity-60" (click)="seedSoftwareDefaults()" [disabled]="softwarePlatformsLoading() || softwareLocationsLoading()">Add common defaults</button>
       </div>
 
       <div class="mt-4 overflow-x-auto rounded-lg border border-slate-200">
@@ -336,7 +650,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 bg-white">
-            <tr *ngFor="let platform of softwarePlatforms()" (click)="selectSoftwarePlatform(platform)" class="cursor-pointer transition hover:bg-blue-50" [class.bg-blue-50]="selectedSoftwarePlatformId() === platform.id">
+            <tr *ngFor="let platform of softwarePlatforms()" (click)="selectSoftwarePlatform(platform)" class="app-token-selectable-row cursor-pointer transition" [class.app-token-selected-row]="selectedSoftwarePlatformId() === platform.id">
               <td class="whitespace-nowrap px-3 py-3 font-bold text-slate-950">{{ platform.name }}</td>
             </tr>
             <tr *ngIf="softwarePlatforms().length === 0 && !softwarePlatformsLoading()">
@@ -353,11 +667,11 @@
       <form class="mt-4 grid gap-4" (ngSubmit)="saveSoftwarePlatform()">
         <label class="grid gap-1 text-sm font-semibold text-slate-700">
           Platform name
-          <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" maxlength="50" name="softwarePlatformName" [ngModel]="softwarePlatformForm().name" (ngModelChange)="setSoftwarePlatformName($event)" />
+          <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" type="text" maxlength="50" name="softwarePlatformName" [ngModel]="softwarePlatformForm().name" (ngModelChange)="setSoftwarePlatformName($event)" />
         </label>
 
         <div class="flex flex-col gap-2 sm:flex-row">
-          <button type="submit" class="rounded-md bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60" [disabled]="softwarePlatformsLoading()">{{ softwarePlatformForm().id ? 'Save Platform' : 'Add Platform' }}</button>
+          <button type="submit" class="app-primary-action rounded-md px-4 py-2 text-sm font-bold shadow-sm transition disabled:cursor-wait disabled:opacity-60" [disabled]="softwarePlatformsLoading()">{{ softwarePlatformForm().id ? 'Save Platform' : 'Add Platform' }}</button>
           <button type="button" class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="startNewSoftwarePlatform()">Clear</button>
           <button type="button" class="rounded-md border border-red-200 bg-white px-4 py-2 text-sm font-bold text-red-700 shadow-sm transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50" (click)="deleteSelectedSoftwarePlatform()" [disabled]="softwarePlatformsLoading() || !softwarePlatformForm().id">Delete</button>
         </div>
@@ -365,7 +679,7 @@
     </article>
   </section>
 
-  <section class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
+  <section id="software-locations" class="scroll-mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
     <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
       <div class="flex items-center justify-between gap-3">
         <div>
@@ -382,7 +696,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 bg-white">
-            <tr *ngFor="let location of softwareLocations()" (click)="selectSoftwareLocation(location)" class="cursor-pointer transition hover:bg-blue-50" [class.bg-blue-50]="selectedSoftwareLocationId() === location.id">
+            <tr *ngFor="let location of softwareLocations()" (click)="selectSoftwareLocation(location)" class="app-token-selectable-row cursor-pointer transition" [class.app-token-selected-row]="selectedSoftwareLocationId() === location.id">
               <td class="whitespace-nowrap px-3 py-3 font-bold text-slate-950">{{ location.name }}</td>
             </tr>
             <tr *ngIf="softwareLocations().length === 0 && !softwareLocationsLoading()">
@@ -399,11 +713,11 @@
       <form class="mt-4 grid gap-4" (ngSubmit)="saveSoftwareLocation()">
         <label class="grid gap-1 text-sm font-semibold text-slate-700">
           Location name
-          <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" maxlength="50" name="softwareLocationName" [ngModel]="softwareLocationForm().name" (ngModelChange)="setSoftwareLocationName($event)" />
+          <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" type="text" maxlength="50" name="softwareLocationName" [ngModel]="softwareLocationForm().name" (ngModelChange)="setSoftwareLocationName($event)" />
         </label>
 
         <div class="flex flex-col gap-2 sm:flex-row">
-          <button type="submit" class="rounded-md bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60" [disabled]="softwareLocationsLoading()">{{ softwareLocationForm().id ? 'Save Location' : 'Add Location' }}</button>
+          <button type="submit" class="app-primary-action rounded-md px-4 py-2 text-sm font-bold shadow-sm transition disabled:cursor-wait disabled:opacity-60" [disabled]="softwareLocationsLoading()">{{ softwareLocationForm().id ? 'Save Location' : 'Add Location' }}</button>
           <button type="button" class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="startNewSoftwareLocation()">Clear</button>
           <button type="button" class="rounded-md border border-red-200 bg-white px-4 py-2 text-sm font-bold text-red-700 shadow-sm transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50" (click)="deleteSelectedSoftwareLocation()" [disabled]="softwareLocationsLoading() || !softwareLocationForm().id">Delete</button>
         </div>
@@ -411,7 +725,7 @@
     </article>
   </section>
 
-  <section class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
+  <section id="spookytown-types" class="scroll-mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
     <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
       <div class="flex items-center justify-between gap-3">
         <h2 class="text-lg font-bold text-slate-950">Spookytown Types</h2>
@@ -427,7 +741,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 bg-white">
-            <tr *ngFor="let type of spookytownTypes()" (click)="selectSpookytownType(type)" class="cursor-pointer transition hover:bg-blue-50" [class.bg-blue-50]="selectedTypeId() === type.id">
+            <tr *ngFor="let type of spookytownTypes()" (click)="selectSpookytownType(type)" class="app-token-selectable-row cursor-pointer transition" [class.app-token-selected-row]="selectedTypeId() === type.id">
               <td class="whitespace-nowrap px-3 py-3 font-bold text-slate-950">{{ type.id }}</td>
               <td class="whitespace-nowrap px-3 py-3 text-slate-700">{{ type.type }}</td>
             </tr>
@@ -445,16 +759,16 @@
       <form class="mt-4 grid gap-4" (ngSubmit)="saveSpookytownType()">
         <label class="grid gap-1 text-sm font-semibold text-slate-700">
           Type ID
-          <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal uppercase shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" maxlength="1" name="spookytownTypeId" [ngModel]="form().id" (ngModelChange)="setFormField('id', $event)" [disabled]="!!form().originalId" />
+          <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal uppercase shadow-sm outline-none transition" type="text" maxlength="1" name="spookytownTypeId" [ngModel]="form().id" (ngModelChange)="setFormField('id', $event)" [disabled]="!!form().originalId" />
         </label>
 
         <label class="grid gap-1 text-sm font-semibold text-slate-700">
           Type name
-          <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" name="spookytownTypeName" [ngModel]="form().type" (ngModelChange)="setFormField('type', $event)" />
+          <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" type="text" name="spookytownTypeName" [ngModel]="form().type" (ngModelChange)="setFormField('type', $event)" />
         </label>
 
         <div class="flex flex-col gap-2 sm:flex-row">
-          <button type="submit" class="rounded-md bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60" [disabled]="loading()">Save</button>
+          <button type="submit" class="app-primary-action rounded-md px-4 py-2 text-sm font-bold shadow-sm transition disabled:cursor-wait disabled:opacity-60" [disabled]="loading()">Save</button>
           <button type="button" class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="startNewSpookytownType()">Clear</button>
           <button type="button" class="rounded-md border border-red-200 bg-white px-4 py-2 text-sm font-bold text-red-700 shadow-sm transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50" (click)="deleteSelectedSpookytownType()" [disabled]="loading() || !form().originalId">Delete</button>
         </div>

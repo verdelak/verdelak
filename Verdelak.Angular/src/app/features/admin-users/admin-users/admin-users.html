@@ -2,7 +2,7 @@
   <header class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
     <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
       <div>
-        <p class="text-xs font-bold uppercase tracking-wider text-blue-600">Administration</p>
+        <p class="app-token-kicker text-xs font-bold uppercase tracking-wider">Administration</p>
         <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">Users</h1>
         <p class="mt-1 max-w-3xl text-sm text-slate-600 sm:text-base">
           Manage application accounts and account type.
@@ -65,10 +65,10 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 bg-white">
-            <tr *ngFor="let user of users()" (click)="selectUser(user)" class="cursor-pointer transition hover:bg-blue-50" [class.bg-blue-50]="selectedUserId() === user.id">
+            <tr *ngFor="let user of users()" (click)="selectUser(user)" class="app-token-selectable-row cursor-pointer transition" [class.app-token-selected-row]="selectedUserId() === user.id">
               <td class="whitespace-nowrap px-3 py-3 font-semibold text-slate-950">{{ user.username }}</td>
               <td class="whitespace-nowrap px-3 py-3">
-                <span class="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-bold text-indigo-700">{{ user.role }}</span>
+                <span class="app-token-soft-surface app-token-text-primary rounded-full px-2.5 py-1 text-xs font-bold">{{ user.role }}</span>
               </td>
             </tr>
             <tr *ngIf="users().length === 0 && !loading()">
@@ -86,7 +86,7 @@
         <label class="grid gap-1 text-sm font-semibold text-slate-700">
           Username
           <input
-            class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition"
             type="text"
             name="username"
             [ngModel]="form().username"
@@ -97,7 +97,7 @@
         <label class="grid gap-1 text-sm font-semibold text-slate-700">
           Password
           <input
-            class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition"
             type="password"
             name="password"
             [ngModel]="form().password"
@@ -109,7 +109,7 @@
         <label class="grid gap-1 text-sm font-semibold text-slate-700">
           Account type
           <select
-            class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition"
             name="role"
             [ngModel]="form().role"
             (ngModelChange)="setFormField('role', $event)"
@@ -119,7 +119,7 @@
         </label>
 
         <div class="flex flex-col gap-2 sm:flex-row">
-          <button type="submit" class="rounded-md bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60" [disabled]="loading() || isDemotingOnlyAdmin()">
+          <button type="submit" class="app-primary-action rounded-md px-4 py-2 text-sm font-bold shadow-sm transition disabled:cursor-wait disabled:opacity-60" [disabled]="loading() || isDemotingOnlyAdmin()">
             Save user
           </button>
           <button type="button" class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="startNew()">

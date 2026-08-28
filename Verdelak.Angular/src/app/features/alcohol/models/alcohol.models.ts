@@ -64,8 +64,117 @@ export interface AlcoholReport {
   missingLocationItems: number;
   cleanupNeededItems: number;
   categoryBreakdown: AlcoholBreakdown[];
+  typeBreakdown: AlcoholBreakdown[];
+  styleBreakdown: AlcoholBreakdown[];
+  countryBreakdown: AlcoholBreakdown[];
+  regionBreakdown: AlcoholBreakdown[];
   locationBreakdown: AlcoholBreakdown[];
   statusBreakdown: AlcoholBreakdown[];
+  priceReviewItems: AlcoholItem[];
+  ratingReviewItems: AlcoholItem[];
+  highValueItems: AlcoholItem[];
+  topRatedItems: AlcoholItem[];
+  vintageReviewItems: AlcoholItem[];
   wantedList: AlcoholItem[];
   cleanupItems: AlcoholItem[];
+}
+
+export interface AlcoholLookupCleanupSuggestion {
+  field: string;
+  currentValue: string;
+  suggestedValue: string | null;
+  count: number;
+  reason: string;
+}
+
+export interface AlcoholLookupCleanup {
+  totalSuggestions: number;
+  suggestions: AlcoholLookupCleanupSuggestion[];
+}
+
+export interface AlcoholImportDuplicateKey {
+  key: string;
+  count: number;
+  category: string;
+  name: string;
+  producer: string | null;
+  vintageOrYear: string | null;
+  size: string | null;
+}
+
+export interface ApplyAlcoholLookupCleanup {
+  field: string;
+  currentValue: string;
+  suggestedValue: string | null;
+}
+
+export interface ApplyAlcoholLookupCleanupResult {
+  field: string;
+  currentValue: string;
+  suggestedValue: string | null;
+  updatedRows: number;
+  removedRows: number;
+}
+
+export interface MergeAlcoholLookup {
+  field: string;
+  sourceValue: string;
+  targetValue: string | null;
+}
+
+export interface MergeAlcoholLookupResult {
+  field: string;
+  sourceValue: string;
+  targetValue: string | null;
+  updatedRows: number;
+  removedRows: number;
+}
+
+export interface AlcoholProductDuplicateMember {
+  productId: number;
+  inventoryRows: number;
+  quantity: number;
+  locations: string | null;
+  price: number | null;
+  rating: number | null;
+  notes: string | null;
+  sourceSheet: string | null;
+  sourceRowLabel: string | null;
+}
+
+export interface AlcoholProductDuplicateCluster {
+  product: string;
+  category: string;
+  producer: string | null;
+  style: string | null;
+  type: string | null;
+  variety: string | null;
+  color: string | null;
+  country: string | null;
+  region: string | null;
+  vintageOrYear: string | null;
+  size: string | null;
+  productRows: number;
+  inventoryRows: number;
+  quantity: number;
+  members: AlcoholProductDuplicateMember[];
+}
+
+export interface AlcoholProductDuplicateReport {
+  totalClusters: number;
+  totalProductRows: number;
+  clusters: AlcoholProductDuplicateCluster[];
+}
+
+export interface MergeAlcoholProductDuplicates {
+  targetProductId: number;
+  productIds: number[];
+}
+
+export interface MergeAlcoholProductDuplicatesResult {
+  targetProductId: number;
+  mergedProductRows: number;
+  movedInventoryRows: number;
+  movedRatingRows: number;
+  movedValueRows: number;
 }

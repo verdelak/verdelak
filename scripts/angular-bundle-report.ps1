@@ -4,7 +4,8 @@ param(
     [int]$Top = 25,
     [int]$InitialBudgetKb = 550,
     [int]$LazyReviewKb = 125,
-    [string]$StatsFileName = "stats.json"
+    [string]$StatsFileName = "stats.json",
+    [switch]$FailOnThreshold
 )
 
 $ErrorActionPreference = "Stop"
@@ -79,6 +80,7 @@ if ($null -eq $largestInitialBytes) { $largestInitialBytes = 0 }
 
 $initialStatus = if ($initialBytes -le ($InitialBudgetKb * 1KB)) { "OK" } else { "Over budget" }
 $largeLazyAssets = @($assets | Where-Object { -not $_.Initial -and $_.SizeBytes -ge $lazyReviewBytes })
+$lazyStatus = if ($largeLazyAssets.Count -eq 0) { "OK" } else { "$($largeLazyAssets.Count) asset(s) over $LazyReviewKb kB" }
 $statsMetadata = if (Test-Path $statsPath) {
     "``$statsPath``"
 } else {
@@ -105,7 +107,7 @@ $lines = @(
     "| Scope | Size | Status |",
     "| --- | ---: | --- |",
     "| Initial JS/CSS | $([math]::Round($initialBytes / 1KB, 2)) kB | $initialStatus |",
-    "| Lazy JS/CSS | $([math]::Round($lazyBytes / 1KB, 2)) kB | Review largest chunks over $LazyReviewKb kB |",
+    "| Lazy JS/CSS | $([math]::Round($lazyBytes / 1KB, 2)) kB | $lazyStatus |",
     "| Total JS/CSS | $([math]::Round($totalBytes / 1KB, 2)) kB | Informational |",
     "| Largest initial asset | $([math]::Round($largestInitialBytes / 1KB, 2)) kB | Informational |",
     "",
@@ -147,3 +149,7 @@ $lines += @(
 
 Set-Content -Path $outputPath -Value $lines
 Write-Host "Wrote Angular bundle report to $outputPath"
+
+if ($FailOnThreshold -and ($initialStatus -ne "OK" -or $largeLazyAssets.Count -gt 0)) {
+    throw "Angular bundle thresholds failed. Initial JS/CSS: $([math]::Round($initialBytes / 1KB, 2)) kB ($initialStatus). Lazy split candidates: $($largeLazyAssets.Count)."
+}

@@ -16,6 +16,10 @@ public interface IVerdelakApiClient
     Task<PublicDinosaurDetail?> GetDinosaurAsync(string slugOrId, CancellationToken cancellationToken);
 
     Task<IReadOnlyList<PublicDinoTaxonomyNode>> GetDinoTaxonomyAsync(CancellationToken cancellationToken);
+
+    Task<PublicAppearanceSettings> GetCdSiteAppearanceAsync(CancellationToken cancellationToken);
+
+    Task<PublicAppearanceSettings> GetDinoSiteAppearanceAsync(CancellationToken cancellationToken);
 }
 
 public sealed class VerdelakApiClient(HttpClient httpClient) : IVerdelakApiClient
@@ -61,5 +65,17 @@ public sealed class VerdelakApiClient(HttpClient httpClient) : IVerdelakApiClien
     public async Task<IReadOnlyList<PublicDinoTaxonomyNode>> GetDinoTaxonomyAsync(CancellationToken cancellationToken)
     {
         return await httpClient.GetFromJsonAsync<IReadOnlyList<PublicDinoTaxonomyNode>>("api/dino/taxonomy", cancellationToken) ?? [];
+    }
+
+    public async Task<PublicAppearanceSettings> GetCdSiteAppearanceAsync(CancellationToken cancellationToken)
+    {
+        return await httpClient.GetFromJsonAsync<PublicAppearanceSettings>("api/admin/settings/cd-site-appearance", cancellationToken)
+            ?? PublicAppearanceSettings.CdSiteDefault;
+    }
+
+    public async Task<PublicAppearanceSettings> GetDinoSiteAppearanceAsync(CancellationToken cancellationToken)
+    {
+        return await httpClient.GetFromJsonAsync<PublicAppearanceSettings>("api/admin/settings/dino-site-appearance", cancellationToken)
+            ?? PublicAppearanceSettings.DinoSiteDefault;
     }
 }

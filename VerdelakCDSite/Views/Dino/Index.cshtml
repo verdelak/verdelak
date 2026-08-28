@@ -3,6 +3,9 @@
 @{
     ViewData["Title"] = "Dino Archive";
     var featured = Model.Dinosaurs.FirstOrDefault(item => !string.IsNullOrWhiteSpace(item.PrimaryImageUrl)) ?? Model.Dinosaurs.FirstOrDefault();
+    var heroImageUrl = string.IsNullOrWhiteSpace(Model.Appearance.HeroImageUrl)
+        ? featured?.PrimaryImageUrl
+        : Model.Appearance.HeroImageUrl;
     var taxonomyFilters = Model.Taxonomy
         .Where(item => item.EntryCount > 0)
         .OrderBy(item => item.Rank)
@@ -13,8 +16,8 @@
 <section class="dino-hero border rounded-3 bg-white overflow-hidden mb-4">
     <div class="row g-0 align-items-stretch">
         <div class="col-lg-7 p-4 p-lg-5">
-            <p class="text-uppercase fw-semibold text-success mb-2">Verdelak Dino Archive</p>
-            <h1 class="display-5 fw-semibold mb-3">Browse published dinosaurs by name, taxonomy, and discovery notes.</h1>
+            <p class="text-uppercase fw-semibold site-accent mb-2">@Model.Appearance.BrandName</p>
+            <h1 class="display-5 fw-semibold mb-3">@Model.Appearance.Tagline</h1>
             <p class="lead text-secondary mb-4">
                 Explore the public Dino records maintained in Verdelak, including scientific classification, notes, text sections, and illustrations.
             </p>
@@ -28,7 +31,7 @@
                     <input class="form-control form-control-lg" id="taxonomy" name="taxonomy" value="@Model.TaxonomyFilter" placeholder="Taxonomy" />
                 </div>
                 <div class="col-md-2 d-grid">
-                    <button class="btn btn-success btn-lg" type="submit">Search</button>
+                    <button class="btn btn-site btn-lg" type="submit">Search</button>
                 </div>
             </form>
             @if (Model.HasSearch || Model.HasTaxonomyFilter)
@@ -37,9 +40,9 @@
             }
         </div>
         <div class="col-lg-5">
-            @if (featured is not null && !string.IsNullOrWhiteSpace(featured.PrimaryImageUrl))
+            @if (!string.IsNullOrWhiteSpace(heroImageUrl))
             {
-                <img class="dino-hero-image" src="@featured.PrimaryImageUrl" alt="@(featured.PrimaryImageCaption ?? featured.CommonName)" />
+                <img class="dino-hero-image" src="@heroImageUrl" alt="@(featured?.PrimaryImageCaption ?? $"{Model.Appearance.BrandName} hero image")" />
             }
             else
             {
@@ -89,7 +92,7 @@
                 <div class="d-flex flex-wrap gap-2">
                     @foreach (var node in taxonomyFilters.Take(24))
                     {
-                        <a class="badge rounded-pill text-decoration-none @(string.Equals(Model.TaxonomyFilter, node.Name, StringComparison.OrdinalIgnoreCase) ? "text-bg-success" : "text-bg-light")"
+                        <a class="badge rounded-pill text-decoration-none @(string.Equals(Model.TaxonomyFilter, node.Name, StringComparison.OrdinalIgnoreCase) ? "text-bg-site" : "text-bg-light")"
                            asp-controller="Dino"
                            asp-action="Index"
                            asp-route-search="@Model.SearchTerm"
@@ -135,7 +138,7 @@
                                 {
                                     <p class="dino-summary small mb-3">@item.Description</p>
                                 }
-                                <a class="btn btn-outline-success w-100"
+                                <a class="btn btn-outline-site w-100"
                                    asp-controller="Dino"
                                    asp-action="Detail"
                                    asp-route-id="@(string.IsNullOrWhiteSpace(item.Slug) ? item.Id : item.Slug)">

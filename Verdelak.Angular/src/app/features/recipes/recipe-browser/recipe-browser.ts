@@ -818,7 +818,7 @@ export class RecipeBrowser {
   shoppingResultTone(item: RecipeShoppingListItemResult | { created?: boolean }): string {
     return item.created
       ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
-      : 'border-sky-200 bg-sky-50 text-sky-800';
+      : 'app-token-soft-surface app-token-text-primary';
   }
 
   private selectedShoppingIngredients(): RecipeDetail['ingredients'] {

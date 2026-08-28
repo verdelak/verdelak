@@ -1,7 +1,7 @@
 <section class="mx-auto grid w-full max-w-7xl gap-4 px-4 py-4">
   <header class="flex flex-col gap-3 border-b border-slate-200 pb-4 md:flex-row md:items-end md:justify-between">
     <div>
-      <p class="text-xs font-bold uppercase tracking-wide text-blue-600">Inventory</p>
+      <p class="app-token-kicker text-xs font-bold uppercase tracking-wide">Inventory</p>
       <h1 class="mt-1 text-2xl font-bold text-slate-950">{{ titleText() }}</h1>
       <p class="mt-1 text-sm text-slate-600">{{ total() | number }} {{ statusLabel() }} item{{ total() === 1 ? '' : 's' }}</p>
     </div>
@@ -11,15 +11,15 @@
       <button type="button" class="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-bold text-emerald-800 shadow-sm transition hover:bg-emerald-100" (click)="exportWantedCsv()">Export want-list report</button>
       <button *ngIf="routeMode() === 'want-list'" type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="printWantedReport()">Print report</button>
       <a *ngIf="canManageSettings()" routerLink="/admin/settings" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50">Manage platforms/locations</a>
-      <button *ngIf="canManage()" type="button" class="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-bold text-blue-800 shadow-sm transition hover:bg-blue-100" (click)="openImportPanel()">Bulk import</button>
-      <button *ngIf="canManage()" type="button" class="rounded-md bg-blue-600 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700" (click)="startNew()">New software</button>
+      <button *ngIf="canManage()" type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition" (click)="openImportPanel()">Bulk import</button>
+      <button *ngIf="canManage()" type="button" class="app-primary-action rounded-md px-3 py-2 text-sm font-bold shadow-sm transition" (click)="startNew()">New software</button>
     </div>
   </header>
 
   <div *ngIf="error()" class="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-800">{{ error() }}</div>
   <div *ngIf="message()" class="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800">{{ message() }}</div>
 
-  <section *ngIf="canManage() && importPanelOpen()" class="grid gap-4 rounded-lg border border-blue-200 bg-blue-50/40 p-4 shadow-sm">
+  <section *ngIf="canManage() && importPanelOpen()" class="app-token-soft-surface grid gap-4 rounded-lg border p-4 shadow-sm">
     <div class="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
       <div>
         <h2 class="text-lg font-bold text-slate-950">Bulk Import Software</h2>
@@ -31,34 +31,34 @@
     <div class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_20rem]">
       <label class="grid gap-1 text-sm font-semibold text-slate-700">
         Paste rows
-        <textarea class="min-h-56 rounded-md border border-slate-300 bg-white px-3 py-2 font-mono text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="importText()" (ngModelChange)="setImportText($event)" [ngModelOptions]="{standalone: true}" placeholder="Dark Future: Blood Red States&#10;Project Highrise | GOG | Have&#10;Fallout 4, Steam, Want"></textarea>
+        <textarea class="app-token-control min-h-56 rounded-md border bg-white px-3 py-2 font-mono text-sm font-normal shadow-sm outline-none" [ngModel]="importText()" (ngModelChange)="setImportText($event)" [ngModelOptions]="{standalone: true}" placeholder="Dark Future: Blood Red States&#10;Project Highrise | GOG | Have&#10;Fallout 4, Steam, Want"></textarea>
       </label>
 
       <div class="grid content-start gap-3 rounded-md border border-slate-200 bg-white p-3">
         <label class="grid gap-1 text-sm font-semibold text-slate-700">Default platform
-          <select class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="importDefaultPlatformId()" (ngModelChange)="importDefaultPlatformId.set($event); importPreview.set(null)" [ngModelOptions]="{standalone: true}">
+          <select class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" [ngModel]="importDefaultPlatformId()" (ngModelChange)="importDefaultPlatformId.set($event); importPreview.set(null)" [ngModelOptions]="{standalone: true}">
             <option [ngValue]="null">Choose platform</option>
             <option *ngFor="let platform of platforms()" [ngValue]="platform.id">{{ platform.name }}</option>
           </select>
         </label>
         <label class="grid gap-1 text-sm font-semibold text-slate-700">Default location
-          <select class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="importDefaultLocationId()" (ngModelChange)="importDefaultLocationId.set($event); importPreview.set(null)" [ngModelOptions]="{standalone: true}">
+          <select class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" [ngModel]="importDefaultLocationId()" (ngModelChange)="importDefaultLocationId.set($event); importPreview.set(null)" [ngModelOptions]="{standalone: true}">
             <option [ngValue]="null">None / row decides</option>
             <option *ngFor="let location of locations()" [ngValue]="location.id">{{ location.name }}</option>
           </select>
         </label>
         <label class="grid gap-1 text-sm font-semibold text-slate-700">Default status
-          <select class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="importDefaultStatus()" (ngModelChange)="importDefaultStatus.set($event); importPreview.set(null)" [ngModelOptions]="{standalone: true}">
+          <select class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" [ngModel]="importDefaultStatus()" (ngModelChange)="importDefaultStatus.set($event); importPreview.set(null)" [ngModelOptions]="{standalone: true}">
             <option value="H">Owned</option>
             <option value="W">Wanted</option>
           </select>
         </label>
         <label class="flex items-center gap-2 text-sm font-semibold text-slate-700">
-          <input type="checkbox" [ngModel]="importHasHeader()" (ngModelChange)="importHasHeader.set($event); importPreview.set(null)" [ngModelOptions]="{standalone: true}" />
+          <input type="checkbox" class="app-token-checkbox" [ngModel]="importHasHeader()" (ngModelChange)="importHasHeader.set($event); importPreview.set(null)" [ngModelOptions]="{standalone: true}" />
           First row is a header
         </label>
         <div class="flex flex-wrap gap-2">
-          <button type="button" class="rounded-md bg-blue-600 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:opacity-50" [disabled]="importLoading()" (click)="previewImport()">{{ importLoading() ? 'Working...' : 'Preview' }}</button>
+          <button type="button" class="app-primary-action rounded-md px-3 py-2 text-sm font-bold shadow-sm transition disabled:opacity-50" [disabled]="importLoading()" (click)="previewImport()">{{ importLoading() ? 'Working...' : 'Preview' }}</button>
           <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50" [disabled]="importLoading()" (click)="clearImport()">Clear</button>
         </div>
       </div>
@@ -137,7 +137,7 @@
     <div>
       <h2 class="text-sm font-black uppercase text-slate-600">By Platform</h2>
       <div class="mt-3 grid gap-2">
-        <button *ngFor="let bucket of topPlatformBuckets()" type="button" class="flex items-center justify-between rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-left text-sm transition hover:border-blue-300" (click)="applyPlatformFilter(bucket.id)">
+        <button *ngFor="let bucket of topPlatformBuckets()" type="button" class="app-token-selectable-row flex items-center justify-between rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-left text-sm transition" (click)="applyPlatformFilter(bucket.id)">
           <span class="font-bold text-slate-900">{{ bucket.name }}</span>
           <span class="rounded-full bg-white px-2 py-1 text-xs font-bold text-slate-700">{{ bucketCount(bucket) | number }}</span>
         </button>
@@ -146,7 +146,7 @@
     <div>
       <h2 class="text-sm font-black uppercase text-slate-600">By Location</h2>
       <div class="mt-3 grid gap-2">
-        <button *ngFor="let bucket of topLocationBuckets()" type="button" class="flex items-center justify-between rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-left text-sm transition hover:border-blue-300" (click)="applyLocationFilter(bucket.id)">
+        <button *ngFor="let bucket of topLocationBuckets()" type="button" class="app-token-selectable-row flex items-center justify-between rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-left text-sm transition" (click)="applyLocationFilter(bucket.id)">
           <span class="font-bold text-slate-900">{{ bucket.name }}</span>
           <span class="rounded-full bg-white px-2 py-1 text-xs font-bold text-slate-700">{{ bucketCount(bucket) | number }}</span>
         </button>
@@ -206,7 +206,7 @@
         <tbody class="divide-y divide-slate-100">
           <tr *ngFor="let item of wantedReportRows()" class="bg-white">
             <td class="px-3 py-2">
-              <button type="button" class="text-left font-bold text-blue-700 hover:text-blue-900" (click)="selectItem(item)">{{ item.title }}</button>
+              <button type="button" class="app-token-link text-left font-bold" (click)="selectItem(item)">{{ item.title }}</button>
               <p class="text-xs text-slate-500">{{ item.versionEdition || item.developer || '' }}</p>
             </td>
             <td class="px-3 py-2 text-slate-700">{{ item.platform }}</td>
@@ -228,32 +228,32 @@
     <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
       <label class="grid gap-1 text-sm font-semibold text-slate-700 xl:col-span-2">
         Search
-        <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="search" [ngModel]="query()" (ngModelChange)="query.set($event)" [ngModelOptions]="{standalone: true}" placeholder="Title, publisher, developer" />
+        <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" type="search" [ngModel]="query()" (ngModelChange)="query.set($event)" [ngModelOptions]="{standalone: true}" placeholder="Title, publisher, developer" />
       </label>
       <label class="grid gap-1 text-sm font-semibold text-slate-700">
         Platform
-        <select class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="platformId()" (ngModelChange)="platformId.set($event)" [ngModelOptions]="{standalone: true}">
+        <select class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" [ngModel]="platformId()" (ngModelChange)="platformId.set($event)" [ngModelOptions]="{standalone: true}">
           <option [ngValue]="null">All</option>
           <option *ngFor="let platform of platforms()" [ngValue]="platform.id">{{ platform.name }}</option>
         </select>
       </label>
       <label class="grid gap-1 text-sm font-semibold text-slate-700">
         Location
-        <select class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="locationId()" (ngModelChange)="locationId.set($event)" [ngModelOptions]="{standalone: true}">
+        <select class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" [ngModel]="locationId()" (ngModelChange)="locationId.set($event)" [ngModelOptions]="{standalone: true}">
           <option [ngValue]="null">All</option>
           <option *ngFor="let location of locations()" [ngValue]="location.id">{{ location.name }}</option>
         </select>
       </label>
       <label class="grid gap-1 text-sm font-semibold text-slate-700">
         Media
-        <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" [ngModel]="mediaType()" (ngModelChange)="mediaType.set($event)" [ngModelOptions]="{standalone: true}" list="software-media-types" placeholder="Digital, CD, DVD" />
+        <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" type="text" [ngModel]="mediaType()" (ngModelChange)="mediaType.set($event)" [ngModelOptions]="{standalone: true}" list="software-media-types" placeholder="Digital, CD, DVD" />
         <datalist id="software-media-types">
           <option *ngFor="let media of allMediaTypes()" [value]="media"></option>
         </datalist>
       </label>
       <label class="grid gap-1 text-sm font-semibold text-slate-700">
         Status
-        <select class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="status()" (ngModelChange)="status.set($event)" [ngModelOptions]="{standalone: true}">
+        <select class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" [ngModel]="status()" (ngModelChange)="status.set($event)" [ngModelOptions]="{standalone: true}">
           <option value="H">Owned</option>
           <option value="W">Wanted</option>
           <option value="unknown">Unknown status</option>
@@ -264,10 +264,10 @@
     <div class="flex flex-wrap gap-2">
       <button type="button" class="rounded-md bg-slate-900 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-slate-700" (click)="applyFilters()">Apply</button>
       <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="clearFilters()">Clear</button>
-      <span *ngIf="hasActiveFilters()" class="self-center rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">Filtered</span>
+      <span *ngIf="hasActiveFilters()" class="app-token-soft-surface app-token-text-strong self-center rounded-full px-3 py-1 text-xs font-bold">Filtered</span>
     </div>
     <div *ngIf="activeFilterChips().length" class="flex flex-wrap gap-2 border-t border-slate-100 pt-3">
-      <button *ngFor="let chip of activeFilterChips()" type="button" class="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-bold text-blue-800 transition hover:bg-blue-100" (click)="removeFilter(chip.key)" [title]="'Remove ' + chip.label + ' filter'">
+      <button *ngFor="let chip of activeFilterChips()" type="button" class="app-primary-soft-action rounded-full border px-3 py-1 text-xs font-bold transition" (click)="removeFilter(chip.key)" [title]="'Remove ' + chip.label + ' filter'">
         {{ chip.label }}: {{ chip.value }} x
       </button>
     </div>
@@ -288,7 +288,7 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100">
-          <tr *ngFor="let item of items()" class="cursor-pointer transition hover:bg-blue-50" [class.bg-blue-50]="selectedItem()?.id === item.id" (click)="selectItem(item)">
+          <tr *ngFor="let item of items()" class="app-token-selectable-row cursor-pointer transition" [class.app-token-selected-row]="selectedItem()?.id === item.id" (click)="selectItem(item)">
             <td class="px-3 py-2">
               <p class="font-bold text-slate-950">{{ item.title }}</p>
               <p class="text-xs text-slate-500">{{ item.versionEdition || item.developer || '' }}</p>
@@ -334,7 +334,7 @@
       <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm" *ngIf="selectedItem() as item; else noSelection">
         <div class="flex items-start justify-between gap-3">
           <div>
-            <p class="text-xs font-bold uppercase tracking-wide text-blue-600">Selected software</p>
+            <p class="app-token-kicker text-xs font-bold uppercase tracking-wide">Selected software</p>
             <h2 class="mt-1 text-xl font-bold text-slate-950">{{ item.title }}</h2>
             <p class="mt-1 text-sm text-slate-600">{{ itemIdentity(item) || item.developer || item.publisher || 'No platform details listed.' }}</p>
           </div>
@@ -397,13 +397,13 @@
           </div>
         </section>
 
-        <section class="mt-4 rounded-md border border-blue-100 bg-blue-50 p-3">
-          <h3 class="text-sm font-black text-blue-950">Browse from this item</h3>
+        <section class="app-token-soft-surface mt-4 rounded-md border p-3">
+          <h3 class="app-token-text-strong text-sm font-black">Browse from this item</h3>
           <div class="mt-2 flex flex-wrap gap-2">
-            <button type="button" class="rounded border border-blue-200 bg-white px-2 py-1 text-xs font-bold text-blue-800 transition hover:bg-blue-100" (click)="searchSelectedTitle(item)">Same title</button>
-            <button type="button" class="rounded border border-blue-200 bg-white px-2 py-1 text-xs font-bold text-blue-800 transition hover:bg-blue-100" (click)="filterToSelectedPlatform(item)">Platform</button>
-            <button type="button" class="rounded border border-blue-200 bg-white px-2 py-1 text-xs font-bold text-blue-800 transition hover:bg-blue-100" (click)="filterToSelectedLocation(item)">Location</button>
-            <button type="button" class="rounded border border-blue-200 bg-white px-2 py-1 text-xs font-bold text-blue-800 transition hover:bg-blue-100" (click)="filterToSelectedMedia(item)">Media</button>
+            <button type="button" class="app-primary-soft-action rounded border px-2 py-1 text-xs font-bold transition" (click)="searchSelectedTitle(item)">Same title</button>
+            <button type="button" class="app-primary-soft-action rounded border px-2 py-1 text-xs font-bold transition" (click)="filterToSelectedPlatform(item)">Platform</button>
+            <button type="button" class="app-primary-soft-action rounded border px-2 py-1 text-xs font-bold transition" (click)="filterToSelectedLocation(item)">Location</button>
+            <button type="button" class="app-primary-soft-action rounded border px-2 py-1 text-xs font-bold transition" (click)="filterToSelectedMedia(item)">Media</button>
           </div>
         </section>
 
@@ -435,8 +435,8 @@
         </ng-template>
 
         <div class="mt-4 flex flex-wrap gap-2" *ngIf="canManage()">
-          <button type="button" class="rounded-md bg-blue-600 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700" (click)="editSelected()">Edit</button>
-          <button type="button" class="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-bold text-blue-800 shadow-sm transition hover:bg-blue-100" (click)="duplicateSelected()">Duplicate</button>
+          <button type="button" class="app-primary-action rounded-md px-3 py-2 text-sm font-bold shadow-sm transition" (click)="editSelected()">Edit</button>
+          <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition" (click)="duplicateSelected()">Duplicate</button>
           <button *ngIf="item.statusID !== 'H'" type="button" class="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-bold text-emerald-800 shadow-sm transition hover:bg-emerald-100 disabled:opacity-50" [disabled]="loading()" (click)="markSelectedStatus('H')">Mark owned</button>
           <button *ngIf="item.statusID !== 'W'" type="button" class="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-bold text-amber-800 shadow-sm transition hover:bg-amber-100 disabled:opacity-50" [disabled]="loading()" (click)="markSelectedStatus('W')">Mark wanted</button>
           <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="startNew()">New</button>
@@ -456,28 +456,28 @@
           <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="cancelEdit()">Close</button>
         </div>
         <label class="grid gap-1 text-sm font-semibold text-slate-700">Title
-          <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" maxlength="100" required [ngModel]="form().title" (ngModelChange)="setFormField('title', $event)" name="title" />
+          <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" maxlength="100" required [ngModel]="form().title" (ngModelChange)="setFormField('title', $event)" name="title" />
         </label>
         <div class="grid gap-2 sm:grid-cols-2">
           <label class="grid gap-1 text-sm font-semibold text-slate-700">Status
-            <select class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="form().statusID" (ngModelChange)="setFormField('statusID', $event)" name="statusID">
+            <select class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" [ngModel]="form().statusID" (ngModelChange)="setFormField('statusID', $event)" name="statusID">
               <option value="H">Owned</option>
               <option value="W">Wanted</option>
             </select>
           </label>
           <label class="grid gap-1 text-sm font-semibold text-slate-700">Media
-            <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="form().mediaType" (ngModelChange)="setFormField('mediaType', $event)" name="mediaType" placeholder="Digital, CD, DVD" />
+            <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" [ngModel]="form().mediaType" (ngModelChange)="setFormField('mediaType', $event)" name="mediaType" placeholder="Digital, CD, DVD" />
           </label>
         </div>
         <label class="grid gap-1 text-sm font-semibold text-slate-700">Platform
-          <select class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="form().platformId" (ngModelChange)="setFormField('platformId', $event)" name="platformId">
+          <select class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" [ngModel]="form().platformId" (ngModelChange)="setFormField('platformId', $event)" name="platformId">
             <option [ngValue]="null">Choose platform</option>
             <option *ngFor="let platform of platforms()" [ngValue]="platform.id">{{ platform.name }}</option>
           </select>
           <span class="text-xs font-normal text-slate-500">Platforms are managed in Admin Settings.</span>
         </label>
         <label class="grid gap-1 text-sm font-semibold text-slate-700">Location
-          <select class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="form().locationId" (ngModelChange)="setFormField('locationId', $event)" name="locationId">
+          <select class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" [ngModel]="form().locationId" (ngModelChange)="setFormField('locationId', $event)" name="locationId">
             <option [ngValue]="null">None</option>
             <option *ngFor="let location of locations()" [ngValue]="location.id">{{ location.name }}</option>
           </select>
@@ -485,28 +485,28 @@
         </label>
         <div class="grid gap-2 sm:grid-cols-2">
           <label class="grid gap-1 text-sm font-semibold text-slate-700">Publisher
-            <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="form().publisher" (ngModelChange)="setFormField('publisher', $event)" name="publisher" />
+            <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" [ngModel]="form().publisher" (ngModelChange)="setFormField('publisher', $event)" name="publisher" />
           </label>
           <label class="grid gap-1 text-sm font-semibold text-slate-700">Developer
-            <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="form().developer" (ngModelChange)="setFormField('developer', $event)" name="developer" />
+            <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" [ngModel]="form().developer" (ngModelChange)="setFormField('developer', $event)" name="developer" />
           </label>
         </div>
         <label class="grid gap-1 text-sm font-semibold text-slate-700">Version / Edition
-          <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="form().versionEdition" (ngModelChange)="setFormField('versionEdition', $event)" name="versionEdition" />
+          <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" [ngModel]="form().versionEdition" (ngModelChange)="setFormField('versionEdition', $event)" name="versionEdition" />
         </label>
         <div class="flex flex-wrap gap-3 text-sm font-semibold text-slate-700">
-          <label class="flex items-center gap-2"><input type="checkbox" [ngModel]="form().hasBox" (ngModelChange)="setFormField('hasBox', $event)" name="hasBox" /> Box</label>
-          <label class="flex items-center gap-2"><input type="checkbox" [ngModel]="form().hasManual" (ngModelChange)="setFormField('hasManual', $event)" name="hasManual" /> Manual</label>
-          <label class="flex items-center gap-2"><input type="checkbox" [ngModel]="form().hasDisc" (ngModelChange)="setFormField('hasDisc', $event)" name="hasDisc" /> Disc</label>
+          <label class="flex items-center gap-2"><input type="checkbox" class="app-token-checkbox" [ngModel]="form().hasBox" (ngModelChange)="setFormField('hasBox', $event)" name="hasBox" /> Box</label>
+          <label class="flex items-center gap-2"><input type="checkbox" class="app-token-checkbox" [ngModel]="form().hasManual" (ngModelChange)="setFormField('hasManual', $event)" name="hasManual" /> Manual</label>
+          <label class="flex items-center gap-2"><input type="checkbox" class="app-token-checkbox" [ngModel]="form().hasDisc" (ngModelChange)="setFormField('hasDisc', $event)" name="hasDisc" /> Disc</label>
         </div>
         <label class="grid gap-1 text-sm font-semibold text-slate-700">Serial / License Notes
-          <textarea class="min-h-20 rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="form().serialLicenseKeyNotes" (ngModelChange)="setFormField('serialLicenseKeyNotes', $event)" name="serialLicenseKeyNotes"></textarea>
+          <textarea class="app-token-control min-h-20 rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" [ngModel]="form().serialLicenseKeyNotes" (ngModelChange)="setFormField('serialLicenseKeyNotes', $event)" name="serialLicenseKeyNotes"></textarea>
         </label>
         <label class="grid gap-1 text-sm font-semibold text-slate-700">Notes
-          <textarea class="min-h-24 rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="form().notes" (ngModelChange)="setFormField('notes', $event)" name="notes"></textarea>
+          <textarea class="app-token-control min-h-24 rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" [ngModel]="form().notes" (ngModelChange)="setFormField('notes', $event)" name="notes"></textarea>
         </label>
         <div class="flex flex-wrap gap-2">
-          <button type="submit" class="rounded-md bg-blue-600 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:opacity-50" [disabled]="loading()">{{ form().id ? 'Save Changes' : 'Add Software' }}</button>
+          <button type="submit" class="app-primary-action rounded-md px-3 py-2 text-sm font-bold shadow-sm transition disabled:opacity-50" [disabled]="loading()">{{ form().id ? 'Save Changes' : 'Add Software' }}</button>
           <button *ngIf="form().id" type="button" class="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-bold text-red-700 shadow-sm transition hover:bg-red-100 disabled:opacity-50" [disabled]="loading()" (click)="deleteSelected()">Delete</button>
         </div>
       </form>

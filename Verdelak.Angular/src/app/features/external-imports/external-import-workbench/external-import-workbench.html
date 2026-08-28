@@ -16,7 +16,7 @@
   <div *ngIf="error()" class="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-bold text-rose-800">{{ error() }}</div>
 
   <section class="grid gap-3 md:grid-cols-3">
-    <button *ngFor="let provider of providers" type="button" class="rounded-lg border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:border-blue-300 hover:bg-blue-50" (click)="chooseProvider(provider.name)">
+    <button *ngFor="let provider of providers" type="button" class="app-token-selectable-row rounded-lg border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:border-[var(--verd-primary-border)]" (click)="chooseProvider(provider.name)">
       <div class="flex items-center justify-between gap-2">
         <h2 class="text-lg font-black text-slate-950">Import from {{ provider.name }}</h2>
         <span class="rounded-full bg-slate-100 px-2 py-1 text-xs font-black text-slate-600">Staging</span>
@@ -33,24 +33,24 @@
       </div>
       <div class="flex flex-wrap gap-2">
         <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm hover:bg-slate-50 disabled:cursor-wait disabled:opacity-60" (click)="saveSteamSettings()" [disabled]="savingSteamSettings()">Save Steam Settings</button>
-        <button type="button" class="rounded-md bg-blue-700 px-3 py-2 text-sm font-bold text-white shadow-sm hover:bg-blue-800 disabled:cursor-wait disabled:opacity-60" (click)="importSteamLibrary()" [disabled]="loading()">Import from Steam</button>
+        <button type="button" class="app-primary-action rounded-md px-3 py-2 text-sm font-bold shadow-sm disabled:cursor-wait disabled:opacity-60" (click)="importSteamLibrary()" [disabled]="loading()">Import from Steam</button>
       </div>
     </div>
     <div class="mt-3 grid gap-3 lg:grid-cols-[minmax(16rem,1fr)_minmax(14rem,20rem)_auto_auto]">
       <label class="grid gap-1 text-sm font-bold text-slate-700">
         Steam API key
-        <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="password" [ngModel]="steamSettings().apiKey" (ngModelChange)="updateSteamSetting('apiKey', $event)" placeholder="Steam Web API key">
+        <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" type="password" [ngModel]="steamSettings().apiKey" (ngModelChange)="updateSteamSetting('apiKey', $event)" placeholder="Steam Web API key">
       </label>
       <label class="grid gap-1 text-sm font-bold text-slate-700">
         SteamID64
-        <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="steamSettings().steamId" (ngModelChange)="updateSteamSetting('steamId', $event)" placeholder="7656119...">
+        <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" [ngModel]="steamSettings().steamId" (ngModelChange)="updateSteamSetting('steamId', $event)" placeholder="7656119...">
       </label>
       <label class="flex items-center gap-2 self-end rounded-md border border-slate-200 px-3 py-2 text-sm font-bold text-slate-700">
-        <input type="checkbox" [ngModel]="steamSettings().includePlayedFreeGames" (ngModelChange)="updateSteamSetting('includePlayedFreeGames', $event)">
+        <input class="app-token-checkbox" type="checkbox" [ngModel]="steamSettings().includePlayedFreeGames" (ngModelChange)="updateSteamSetting('includePlayedFreeGames', $event)">
         Free played games
       </label>
       <label class="flex items-center gap-2 self-end rounded-md border border-slate-200 px-3 py-2 text-sm font-bold text-slate-700">
-        <input type="checkbox" [ngModel]="steamSettings().includeAppInfo" (ngModelChange)="updateSteamSetting('includeAppInfo', $event)">
+        <input class="app-token-checkbox" type="checkbox" [ngModel]="steamSettings().includeAppInfo" (ngModelChange)="updateSteamSetting('includeAppInfo', $event)">
         App info
       </label>
     </div>
@@ -65,24 +65,24 @@
       </div>
       <div class="flex flex-wrap gap-2">
         <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm hover:bg-slate-50 disabled:cursor-wait disabled:opacity-60" (click)="saveBoardGameGeekSettings()" [disabled]="savingBoardGameGeekSettings()">Save BGG Settings</button>
-        <button type="button" class="rounded-md bg-blue-700 px-3 py-2 text-sm font-bold text-white shadow-sm hover:bg-blue-800 disabled:cursor-wait disabled:opacity-60" (click)="importBoardGameGeekCollection()" [disabled]="loading()">Import from BoardGameGeek</button>
+        <button type="button" class="app-primary-action rounded-md px-3 py-2 text-sm font-bold shadow-sm disabled:cursor-wait disabled:opacity-60" (click)="importBoardGameGeekCollection()" [disabled]="loading()">Import from BoardGameGeek</button>
       </div>
     </div>
     <div class="mt-3 grid gap-3 lg:grid-cols-[minmax(16rem,1fr)_auto_auto_auto]">
       <label class="grid gap-1 text-sm font-bold text-slate-700">
         BGG username
-        <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="boardGameGeekSettings().username" (ngModelChange)="updateBoardGameGeekSetting('username', $event)" placeholder="BoardGameGeek username">
+        <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" [ngModel]="boardGameGeekSettings().username" (ngModelChange)="updateBoardGameGeekSetting('username', $event)" placeholder="BoardGameGeek username">
       </label>
       <label class="flex items-center gap-2 self-end rounded-md border border-slate-200 px-3 py-2 text-sm font-bold text-slate-700">
-        <input type="checkbox" [ngModel]="boardGameGeekSettings().includeOwned" (ngModelChange)="updateBoardGameGeekSetting('includeOwned', $event)">
+        <input class="app-token-checkbox" type="checkbox" [ngModel]="boardGameGeekSettings().includeOwned" (ngModelChange)="updateBoardGameGeekSetting('includeOwned', $event)">
         Owned
       </label>
       <label class="flex items-center gap-2 self-end rounded-md border border-slate-200 px-3 py-2 text-sm font-bold text-slate-700">
-        <input type="checkbox" [ngModel]="boardGameGeekSettings().includeWishlist" (ngModelChange)="updateBoardGameGeekSetting('includeWishlist', $event)">
+        <input class="app-token-checkbox" type="checkbox" [ngModel]="boardGameGeekSettings().includeWishlist" (ngModelChange)="updateBoardGameGeekSetting('includeWishlist', $event)">
         Wishlist
       </label>
       <label class="flex items-center gap-2 self-end rounded-md border border-slate-200 px-3 py-2 text-sm font-bold text-slate-700">
-        <input type="checkbox" [ngModel]="boardGameGeekSettings().includeExpansions" (ngModelChange)="updateBoardGameGeekSetting('includeExpansions', $event)">
+        <input class="app-token-checkbox" type="checkbox" [ngModel]="boardGameGeekSettings().includeExpansions" (ngModelChange)="updateBoardGameGeekSetting('includeExpansions', $event)">
         Expansions
       </label>
     </div>
@@ -95,7 +95,7 @@
         <button type="button" class="rounded-md border border-slate-300 px-3 py-1 text-xs font-bold text-slate-700 hover:bg-slate-50" (click)="loadBatches()" [disabled]="loading()">Refresh</button>
       </div>
       <div class="mt-3 grid gap-2">
-        <button *ngFor="let batch of batches()" type="button" class="rounded-md border p-3 text-left text-sm transition hover:bg-blue-50" [class.border-blue-400]="selectedBatchId() === batch.id" [class.bg-blue-50]="selectedBatchId() === batch.id" [class.border-slate-200]="selectedBatchId() !== batch.id" (click)="selectBatch(batch.id)">
+        <button *ngFor="let batch of batches()" type="button" class="app-token-selectable-row rounded-md border p-3 text-left text-sm transition" [class.app-token-border-accent]="selectedBatchId() === batch.id" [class.app-token-selected-row]="selectedBatchId() === batch.id" [class.border-slate-200]="selectedBatchId() !== batch.id" (click)="selectBatch(batch.id)">
           <span class="block font-black text-slate-950">{{ batch.batchName }}</span>
           <span class="mt-1 block text-xs font-semibold text-slate-600">{{ batch.source }} / {{ batch.targetArea }} / {{ batch.status }}</span>
           <span class="mt-1 block text-xs text-slate-500">{{ batch.itemCount }} staged / {{ batch.importableCount }} importable / {{ batch.importedCount }} imported</span>
@@ -109,7 +109,7 @@
         <div class="grid gap-3 lg:grid-cols-4">
           <label class="grid gap-1 text-sm font-bold text-slate-700">
             Source
-            <select class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="source()" (ngModelChange)="source.set($event)">
+            <select class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" [ngModel]="source()" (ngModelChange)="source.set($event)">
               <option>Steam</option>
               <option>GOG</option>
               <option>BoardGameGeek</option>
@@ -118,23 +118,23 @@
           </label>
           <label class="grid gap-1 text-sm font-bold text-slate-700">
             Target
-            <select class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="targetArea()" (ngModelChange)="targetArea.set($event)">
+            <select class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" [ngModel]="targetArea()" (ngModelChange)="targetArea.set($event)">
               <option>Software</option>
               <option>BoardGames</option>
             </select>
           </label>
           <label class="grid gap-1 text-sm font-bold text-slate-700 lg:col-span-2">
             Batch name
-            <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="batchName()" (ngModelChange)="batchName.set($event)" placeholder="Steam import July 2026">
+            <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" [ngModel]="batchName()" (ngModelChange)="batchName.set($event)" placeholder="Steam import July 2026">
           </label>
         </div>
         <label class="mt-3 grid gap-1 text-sm font-bold text-slate-700">
           Paste CSV/TXT rows
-          <textarea class="min-h-40 rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="importText()" (ngModelChange)="importText.set($event)" placeholder="externalId,title,platform,location,publisher,developer,versionEdition,mediaType,artworkUrl,notes&#10;12345,Example Game,PC,Steam,Example Publisher,Example Studio,,Digital,,Imported from Steam"></textarea>
+          <textarea class="app-token-control min-h-40 rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" [ngModel]="importText()" (ngModelChange)="importText.set($event)" placeholder="externalId,title,platform,location,publisher,developer,versionEdition,mediaType,artworkUrl,notes&#10;12345,Example Game,PC,Steam,Example Publisher,Example Studio,,Digital,,Imported from Steam"></textarea>
         </label>
         <div class="mt-3 flex flex-wrap items-center justify-between gap-2">
           <p class="text-sm font-semibold text-slate-600">{{ parsedRows().length }} parsed row{{ parsedRows().length === 1 ? '' : 's' }}</p>
-          <button type="button" class="rounded-md bg-blue-700 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-800 disabled:cursor-wait disabled:opacity-60" (click)="stageBatch()" [disabled]="loading()">Stage Rows</button>
+          <button type="button" class="app-primary-action rounded-md px-4 py-2 text-sm font-bold shadow-sm transition disabled:cursor-wait disabled:opacity-60" (click)="stageBatch()" [disabled]="loading()">Stage Rows</button>
         </div>
       </section>
 
@@ -155,9 +155,9 @@
         <div class="grid gap-2 sm:grid-cols-4 xl:grid-cols-7">
           <div class="rounded-md bg-emerald-50 p-3 text-sm font-bold text-emerald-800">Importable {{ importableCount() }}</div>
           <div class="rounded-md bg-emerald-50 p-3 text-sm font-bold text-emerald-800">Missing DB {{ missingDatabaseCount() }}</div>
-          <div class="rounded-md bg-blue-50 p-3 text-sm font-bold text-blue-800">Steam only {{ steamOnlyCount() }}</div>
-          <div class="rounded-md bg-violet-50 p-3 text-sm font-bold text-violet-800">GOG only {{ gogOnlyCount() }}</div>
-          <div class="rounded-md bg-indigo-50 p-3 text-sm font-bold text-indigo-800">Both {{ bothCount() }}</div>
+          <div class="app-token-soft-surface app-token-text-primary rounded-md p-3 text-sm font-bold">Steam only {{ steamOnlyCount() }}</div>
+          <div class="app-token-soft-surface app-token-text-primary rounded-md p-3 text-sm font-bold">GOG only {{ gogOnlyCount() }}</div>
+          <div class="app-token-soft-surface app-token-text-primary rounded-md p-3 text-sm font-bold">Both {{ bothCount() }}</div>
           <div class="rounded-md bg-amber-50 p-3 text-sm font-bold text-amber-800">Duplicates {{ duplicateCount() }}</div>
           <div class="rounded-md bg-rose-50 p-3 text-sm font-bold text-rose-800">Missing platform {{ missingPlatformCount() }}</div>
         </div>
@@ -165,25 +165,25 @@
         <div class="grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 lg:grid-cols-[minmax(12rem,1fr)_12rem_10rem_10rem_auto]">
           <label class="grid gap-1 text-xs font-black uppercase text-slate-500">
             Search
-            <input class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold normal-case text-slate-800 shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="itemSearch()" (ngModelChange)="itemSearch.set($event)" placeholder="Title, AppID, match, store">
+            <input class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-semibold normal-case text-slate-800 shadow-sm outline-none" [ngModel]="itemSearch()" (ngModelChange)="itemSearch.set($event)" placeholder="Title, AppID, match, store">
           </label>
           <label class="grid gap-1 text-xs font-black uppercase text-slate-500">
             Match
-            <select class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold normal-case text-slate-800 shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="matchFilter()" (ngModelChange)="matchFilter.set($event)">
+            <select class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-semibold normal-case text-slate-800 shadow-sm outline-none" [ngModel]="matchFilter()" (ngModelChange)="matchFilter.set($event)">
               <option value="all">All matches</option>
               <option *ngFor="let option of matchOptions()" [value]="option">{{ matchLabel(option) }}</option>
             </select>
           </label>
           <label class="grid gap-1 text-xs font-black uppercase text-slate-500">
             Action
-            <select class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold normal-case text-slate-800 shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="actionFilter()" (ngModelChange)="actionFilter.set($event)">
+            <select class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-semibold normal-case text-slate-800 shadow-sm outline-none" [ngModel]="actionFilter()" (ngModelChange)="actionFilter.set($event)">
               <option value="all">All actions</option>
               <option *ngFor="let option of actionOptions()" [value]="option">{{ option }}</option>
             </select>
           </label>
           <label class="grid gap-1 text-xs font-black uppercase text-slate-500">
             Status
-            <select class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold normal-case text-slate-800 shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)">
+            <select class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-semibold normal-case text-slate-800 shadow-sm outline-none" [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)">
               <option value="all">All statuses</option>
               <option *ngFor="let option of statusOptions()" [value]="option">{{ option }}</option>
             </select>

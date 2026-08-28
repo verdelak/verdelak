@@ -2,15 +2,12 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { MatButtonModule } from '@angular/material/button';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
 import { RpgService } from '../rpg-service';
 import { IdName, ProductDetail } from '../models/rpg.models';
 
 @Component({
   selector: 'app-rpg-edit',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, MatButtonModule, MatInputModule, MatSelectModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './rpg-edit.html',
   styleUrl: './rpg-edit.scss'
 })

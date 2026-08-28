@@ -23,8 +23,13 @@ import {
   ProjectXmlRoundTripValidation
 } from '../models/goals-plans.models';
 import { GoalsPlansService } from '../goals-plans.service';
-import { GoalsArchiveComparisonPanel } from '../goals-archive-comparison-panel/goals-archive-comparison-panel';
+import { GoalsArchiveRolloverPanel } from '../goals-archive-rollover-panel/goals-archive-rollover-panel';
+import { GoalsFocusedWorkPanel } from '../goals-focused-work-panel/goals-focused-work-panel';
+import { GoalsGridPanel } from '../goals-grid-panel/goals-grid-panel';
+import { GoalsOutlinePanel } from '../goals-outline-panel/goals-outline-panel';
+import { GoalsReportingPanel } from '../goals-reporting-panel/goals-reporting-panel';
 import { GoalsSchedulePreviewPanel } from '../goals-schedule-preview-panel/goals-schedule-preview-panel';
+import { GoalsSectionSummariesPanel } from '../goals-section-summaries-panel/goals-section-summaries-panel';
 import { GoalsStagingPanel } from '../goals-staging-panel/goals-staging-panel';
 
 type BrowserView = 'outline' | 'grid';
@@ -193,7 +198,7 @@ interface FutureBulkPreviewRow {
 
 @Component({
   selector: 'app-goals-plans-browser',
-  imports: [CommonModule, FormsModule, GoalsArchiveComparisonPanel, GoalsSchedulePreviewPanel, GoalsStagingPanel],
+  imports: [CommonModule, FormsModule, GoalsArchiveRolloverPanel, GoalsFocusedWorkPanel, GoalsGridPanel, GoalsOutlinePanel, GoalsReportingPanel, GoalsSchedulePreviewPanel, GoalsSectionSummariesPanel, GoalsStagingPanel],
   templateUrl: './goals-plans-browser.html',
   styleUrl: './goals-plans-browser.scss'
 })
@@ -1863,9 +1868,9 @@ export class GoalsPlansBrowser implements OnInit {
       case 'amber':
         return 'border-amber-200 bg-amber-50 text-amber-900';
       case 'blue':
-        return 'border-blue-200 bg-white text-blue-950';
+        return 'app-token-border-accent bg-white app-token-text-strong';
       default:
-        return 'border-blue-100 bg-white text-slate-900';
+        return 'border-slate-200 bg-white text-slate-900';
     }
   }
 

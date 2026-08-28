@@ -15,8 +15,8 @@
 <section class="catalog-hero py-5">
     <div class="row align-items-center g-4">
         <div class="col-lg-7">
-            <p class="text-uppercase fw-semibold text-primary mb-2">Verdelak CD Collection</p>
-            <h1 class="display-5 fw-semibold mb-3">Browse the collection by band and read CD reviews.</h1>
+            <p class="text-uppercase fw-semibold site-accent mb-2">@Model.Appearance.BrandName</p>
+            <h1 class="display-5 fw-semibold mb-3">@Model.Appearance.Tagline</h1>
             <p class="lead text-secondary mb-4">
                 Search for a band, scan the albums in the collection, and open any CD to see details and reviews.
             </p>
@@ -31,6 +31,10 @@
             </form>
         </div>
         <div class="col-lg-5">
+            @if (!string.IsNullOrWhiteSpace(Model.Appearance.HeroImageUrl))
+            {
+                <img class="catalog-hero-image mb-3" src="@Model.Appearance.HeroImageUrl" alt="@($"{Model.Appearance.BrandName} hero image")" />
+            }
             <div class="border rounded-3 p-4 bg-white shadow-sm">
                 <p class="text-secondary mb-1">Collection snapshot</p>
                 <div class="d-flex align-items-end gap-4">

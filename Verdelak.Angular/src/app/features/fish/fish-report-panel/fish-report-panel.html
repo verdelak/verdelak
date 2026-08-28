@@ -1,0 +1,291 @@
+<section class="rounded border border-slate-200 bg-white shadow-sm">
+      <div class="flex flex-col gap-3 border-b border-slate-200 p-4 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <h2 class="text-lg font-bold text-slate-950">Fish Reports</h2>
+          <p class="text-sm text-slate-600">Overdue work, tanks due for water tests, and products that need attention.</p>
+        </div>
+        <div class="grid grid-cols-2 gap-2 text-sm lg:grid-cols-6">
+          <div class="rounded border border-rose-200 bg-rose-50 px-3 py-2">
+            <div class="text-xs font-bold uppercase text-rose-700">Overdue</div>
+            <div class="text-lg font-bold text-rose-950">{{ filteredOverdueFishTasks().length }}</div>
+          </div>
+          <div class="rounded border border-amber-200 bg-amber-50 px-3 py-2">
+            <div class="text-xs font-bold uppercase text-amber-700">Tests</div>
+            <div class="text-lg font-bold text-amber-950">{{ filteredTanksNeedingTests().length }}</div>
+          </div>
+          <div class="app-token-soft-surface rounded border px-3 py-2">
+            <div class="app-token-text-primary text-xs font-bold uppercase">Products</div>
+            <div class="app-token-text-strong text-lg font-bold">{{ filteredProductsNeedingReplacement().length }}</div>
+          </div>
+          <div class="app-token-soft-surface rounded border px-3 py-2">
+            <div class="app-token-text-primary text-xs font-bold uppercase">Profiles</div>
+            <div class="app-token-text-strong text-lg font-bold">{{ filteredSpeciesProfileGaps().length }}</div>
+          </div>
+          <div class="app-token-soft-surface rounded border px-3 py-2">
+            <div class="app-token-text-primary text-xs font-bold uppercase">Foods</div>
+            <div class="app-token-text-strong text-lg font-bold">{{ speciesFoodProductGaps().length }}</div>
+          </div>
+          <div class="rounded border border-orange-200 bg-orange-50 px-3 py-2">
+            <div class="text-xs font-bold uppercase text-orange-700">Quarantine</div>
+            <div class="text-lg font-bold text-orange-950">{{ quarantineAttention().length }}</div>
+          </div>
+        </div>
+      </div>
+    
+      <div class="flex flex-wrap gap-2 border-b border-slate-200 bg-slate-50 p-4">
+        <select class="rounded border border-slate-300 bg-white px-3 py-2 text-sm" [ngModel]="reportTankFilter()" (ngModelChange)="reportTankFilter.set($event ? +$event : null)">
+          <option [ngValue]="null">All tanks</option>
+          <option *ngFor="let tank of tanks()" [ngValue]="tank.id">{{ tank.name }}</option>
+        </select>
+        <select class="rounded border border-slate-300 bg-white px-3 py-2 text-sm" [ngModel]="reportTaskCategoryFilter()" (ngModelChange)="reportTaskCategoryFilter.set($event)">
+          <option value="All">All task categories</option>
+          <option *ngFor="let category of taskCategories" [value]="category">{{ category }}</option>
+        </select>
+        <select class="rounded border border-slate-300 bg-white px-3 py-2 text-sm" [ngModel]="reportProductCategoryFilter()" (ngModelChange)="reportProductCategoryFilter.set($event)">
+          <option value="All">All product categories</option>
+          <option *ngFor="let category of productCategories" [value]="category">{{ category }}</option>
+        </select>
+        <select class="rounded border border-slate-300 bg-white px-3 py-2 text-sm" [ngModel]="speciesGapFilter()" (ngModelChange)="speciesGapFilter.set($event)">
+          <option *ngFor="let type of speciesGapTypes()" [value]="type">{{ type === 'All' ? 'All profile gaps' : type }}</option>
+        </select>
+        <label class="flex items-center gap-2 rounded border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700">
+          <input type="checkbox" [ngModel]="reportCriticalOnly()" (ngModelChange)="reportCriticalOnly.set($event)">
+          Critical only
+        </label>
+        <button type="button" class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700" (click)="resetReportFilters()">Reset</button>
+      </div>
+    
+      <div class="flex flex-wrap gap-2 border-b border-slate-200 bg-white p-4 text-xs font-bold text-slate-600">
+        <span class="rounded border border-slate-200 px-2 py-1">Water test due: {{ reportWaterTestDueDays() }}d</span>
+        <span class="rounded border border-slate-200 px-2 py-1">Critical overdue: {{ reportOverdueCriticalDays() }}d</span>
+        <span class="rounded border border-slate-200 px-2 py-1">Critical test age: {{ reportWaterTestCriticalDays() }}d</span>
+        <span class="rounded border border-slate-200 px-2 py-1">Low product: {{ reportLowProductPercent() }}%</span>
+        <span class="rounded border border-slate-200 px-2 py-1">Expiring soon: {{ reportExpiringSoonDays() }}d</span>
+        <span *ngIf="thresholdsLoading()" class="app-token-soft-surface app-token-text-primary rounded border px-2 py-1">Loading thresholds</span>
+      </div>
+    
+      <div class="grid gap-4 p-4 xl:grid-cols-3 2xl:grid-cols-6">
+        <section class="rounded border border-slate-200">
+          <div class="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-3 py-2">
+            <h3 class="text-sm font-bold text-slate-950">Overdue Fish Tasks</h3>
+            <button type="button" class="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-700 disabled:opacity-50" [disabled]="filteredOverdueFishTasks().length === 0" (click)="exportOverdueFishTasks()">CSV</button>
+          </div>
+          <div class="max-h-80 overflow-auto">
+            <table class="min-w-full divide-y divide-slate-200 text-sm">
+              <thead class="bg-white text-left text-xs font-bold uppercase text-slate-500">
+                <tr>
+                  <th class="px-3 py-2">Task</th>
+                  <th class="px-3 py-2">Due</th>
+                  <th class="px-3 py-2">Age</th>
+                  <th class="px-3 py-2 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <tr *ngFor="let item of filteredOverdueFishTasks().slice(0, 12)" class="align-top">
+                  <td class="px-3 py-2 text-slate-700">
+                    <div class="font-semibold text-slate-950">{{ item.task.title }}</div>
+                    <div class="text-xs text-slate-500">{{ item.task.tankName }} / {{ item.task.taskCategory }}</div>
+                  </td>
+                  <td class="whitespace-nowrap px-3 py-2 text-slate-700">{{ item.occurrence.scheduledDate | date: 'MMM d' }}</td>
+                  <td class="px-3 py-2">
+                    <span class="rounded border border-rose-200 bg-rose-50 px-2 py-1 text-xs font-bold text-rose-800">{{ overdueDaysLabel(item.daysOverdue) }}</span>
+                  </td>
+                  <td class="px-3 py-2 text-right">
+                    <button
+                      type="button"
+                      class="app-primary-soft-action rounded border px-3 py-1.5 text-xs font-bold disabled:cursor-not-allowed disabled:opacity-50"
+                      [disabled]="completingOccurrenceId() === item.occurrence.occurrenceID"
+                      (click)="completeOverdueTask(item)">
+                      {{ completingOccurrenceId() === item.occurrence.occurrenceID ? 'Completing.' : 'Complete' }}
+                    </button>
+                  </td>
+                </tr>
+                <tr *ngIf="filteredOverdueFishTasks().length === 0">
+                  <td colspan="4" class="px-3 py-8 text-center text-sm text-slate-500">No overdue Fish tasks.</td>
+                </tr>
+              </tbody>
+            </table>
+            <p *ngIf="filteredOverdueFishTasks().length > 12" class="border-t border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-600">Showing oldest 12 overdue tasks.</p>
+          </div>
+        </section>
+    
+        <section class="rounded border border-slate-200">
+          <div class="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-3 py-2">
+            <h3 class="text-sm font-bold text-slate-950">Tanks Needing Tests</h3>
+            <button type="button" class="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-700 disabled:opacity-50" [disabled]="filteredTanksNeedingTests().length === 0" (click)="exportTanksNeedingTests()">CSV</button>
+          </div>
+          <div class="max-h-80 overflow-auto">
+            <table class="min-w-full divide-y divide-slate-200 text-sm">
+              <thead class="bg-white text-left text-xs font-bold uppercase text-slate-500">
+                <tr>
+                  <th class="px-3 py-2">Tank</th>
+                  <th class="px-3 py-2">Last Test</th>
+                  <th class="px-3 py-2 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <tr *ngFor="let item of filteredTanksNeedingTests().slice(0, 12)" class="align-top">
+                  <td class="px-3 py-2 text-slate-700">
+                    <div class="font-semibold text-slate-950">{{ item.tank.name }}</div>
+                    <div class="text-xs text-slate-500">{{ item.tank.location }} / {{ item.tank.gallons || '-' }} gal</div>
+                  </td>
+                  <td class="px-3 py-2 text-slate-700">{{ latestTestLabel(item) }}</td>
+                  <td class="px-3 py-2 text-right">
+                    <button type="button" class="rounded border border-amber-200 px-3 py-1.5 text-xs font-bold text-amber-800" (click)="prepareWaterTest(item)">Log Test</button>
+                  </td>
+                </tr>
+                <tr *ngIf="filteredTanksNeedingTests().length === 0">
+                  <td colspan="3" class="px-3 py-8 text-center text-sm text-slate-500">All active tanks have recent water tests.</td>
+                </tr>
+              </tbody>
+            </table>
+            <p *ngIf="filteredTanksNeedingTests().length > 12" class="border-t border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-600">Showing first 12 tanks due for testing.</p>
+          </div>
+        </section>
+    
+        <section class="rounded border border-slate-200">
+          <div class="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-3 py-2">
+            <h3 class="text-sm font-bold text-slate-950">Products Needing Replacement</h3>
+            <button type="button" class="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-700 disabled:opacity-50" [disabled]="filteredProductsNeedingReplacement().length === 0" (click)="exportProductsNeedingReplacement()">CSV</button>
+          </div>
+          <div class="max-h-80 overflow-auto">
+            <table class="min-w-full divide-y divide-slate-200 text-sm">
+              <thead class="bg-white text-left text-xs font-bold uppercase text-slate-500">
+                <tr>
+                  <th class="px-3 py-2">Product</th>
+                  <th class="px-3 py-2">Reason</th>
+                  <th class="px-3 py-2 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <tr *ngFor="let product of filteredProductsNeedingReplacement().slice(0, 12)" class="align-top">
+                  <td class="px-3 py-2 text-slate-700">
+                    <div class="font-semibold text-slate-950">{{ product.name }}</div>
+                    <div class="text-xs text-slate-500">{{ product.category }} / {{ product.tankName || 'General' }}</div>
+                  </td>
+                  <td class="px-3 py-2">
+                    <span class="rounded border px-2 py-1 text-xs font-bold" [ngClass]="productStatusTone(product)">{{ replacementReason(product) }}</span>
+                  </td>
+                  <td class="px-3 py-2 text-right">
+                    <div class="flex flex-wrap justify-end gap-2">
+                      <button type="button" class="rounded border border-amber-200 px-3 py-1.5 text-xs font-bold text-amber-800 disabled:opacity-50" [disabled]="addingShoppingProductId() === product.id" (click)="addProductReplacementToShoppingList(product)">
+                        {{ addingShoppingProductId() === product.id ? 'Adding.' : 'Add Shopping' }}
+                      </button>
+                      <button type="button" class="app-primary-soft-action rounded border px-3 py-1.5 text-xs font-bold" (click)="prepareProductReplacement(product)">Log Replacement</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr *ngIf="filteredProductsNeedingReplacement().length === 0">
+                  <td colspan="3" class="px-3 py-8 text-center text-sm text-slate-500">No products need replacement.</td>
+                </tr>
+              </tbody>
+            </table>
+            <p *ngIf="filteredProductsNeedingReplacement().length > 12" class="border-t border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-600">Showing first 12 replacement candidates.</p>
+          </div>
+        </section>
+    
+        <section class="rounded border border-slate-200">
+          <div class="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-3 py-2">
+            <h3 class="text-sm font-bold text-slate-950">Species Profile Gaps</h3>
+            <button type="button" class="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-700 disabled:opacity-50" [disabled]="filteredSpeciesProfileGaps().length === 0" (click)="exportSpeciesProfileGaps()">CSV</button>
+          </div>
+          <div class="max-h-80 overflow-auto">
+            <table class="min-w-full divide-y divide-slate-200 text-sm">
+              <thead class="bg-white text-left text-xs font-bold uppercase text-slate-500">
+                <tr>
+                  <th class="px-3 py-2">Species</th>
+                  <th class="px-3 py-2">Gap</th>
+                  <th class="px-3 py-2 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <tr *ngFor="let gap of filteredSpeciesProfileGaps().slice(0, 12)" class="align-top">
+                  <td class="px-3 py-2 text-slate-700">
+                    <div class="font-semibold text-slate-950">{{ gap.commonName }}</div>
+                    <div class="text-xs text-slate-500">{{ gap.scientificName || gap.tankName || '' }}</div>
+                  </td>
+                  <td class="px-3 py-2">
+                    <span class="app-token-soft-surface app-token-text-primary rounded border px-2 py-1 text-xs font-bold">{{ gap.gapType }}</span>
+                    <div class="mt-1 text-xs text-slate-500">{{ gap.detail }}</div>
+                  </td>
+                  <td class="px-3 py-2 text-right">
+                    <button *ngIf="gap.fishStockId" type="button" class="app-primary-soft-action rounded border px-3 py-1.5 text-xs font-bold" (click)="createProfileFromGap(gap)">Create</button>
+                  </td>
+                </tr>
+                <tr *ngIf="filteredSpeciesProfileGaps().length === 0">
+                  <td colspan="3" class="px-3 py-8 text-center text-sm text-slate-500">No species profile gaps.</td>
+                </tr>
+              </tbody>
+            </table>
+            <p *ngIf="filteredSpeciesProfileGaps().length > 12" class="border-t border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-600">Showing first 12 profile gaps.</p>
+          </div>
+        </section>
+    
+        <section class="rounded border border-slate-200">
+          <div class="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-3 py-2">
+            <h3 class="text-sm font-bold text-slate-950">Food Product Gaps</h3>
+            <button type="button" class="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-700 disabled:opacity-50" [disabled]="speciesFoodProductGaps().length === 0" (click)="exportSpeciesFoodProductGaps()">CSV</button>
+          </div>
+          <div class="max-h-80 overflow-auto">
+            <table class="min-w-full divide-y divide-slate-200 text-sm">
+              <thead class="bg-white text-left text-xs font-bold uppercase text-slate-500">
+                <tr>
+                  <th class="px-3 py-2">Species</th>
+                  <th class="px-3 py-2">Food</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <tr *ngFor="let item of speciesFoodProductGaps().slice(0, 12)" class="align-top">
+                  <td class="px-3 py-2 text-slate-700">
+                    <div class="font-semibold text-slate-950">{{ item.profile.commonName }}</div>
+                    <div class="text-xs text-slate-500">{{ item.profile.scientificName || '' }}</div>
+                  </td>
+                  <td class="px-3 py-2 text-slate-700">
+                    <div class="font-semibold">{{ item.food.foodName }}</div>
+                    <div class="text-xs text-slate-500">{{ item.food.foodType || '' }} {{ item.food.feedingFrequency || '' }}</div>
+                  </td>
+                </tr>
+                <tr *ngIf="speciesFoodProductGaps().length === 0">
+                  <td colspan="2" class="px-3 py-8 text-center text-sm text-slate-500">All listed species foods match active Food products.</td>
+                </tr>
+              </tbody>
+            </table>
+            <p *ngIf="speciesFoodProductGaps().length > 12" class="border-t border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-600">Showing first 12 food product gaps.</p>
+          </div>
+        </section>
+    
+        <section class="rounded border border-slate-200">
+          <div class="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-3 py-2">
+            <h3 class="text-sm font-bold text-slate-950">Quarantine Attention</h3>
+            <button type="button" class="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-700 disabled:opacity-50" [disabled]="quarantineAttention().length === 0" (click)="exportQuarantineAttention()">CSV</button>
+          </div>
+          <div class="max-h-80 overflow-auto">
+            <table class="min-w-full divide-y divide-slate-200 text-sm">
+              <thead class="bg-white text-left text-xs font-bold uppercase text-slate-500">
+                <tr>
+                  <th class="px-3 py-2">Issue</th>
+                  <th class="px-3 py-2">Species</th>
+                  <th class="px-3 py-2">Detail</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <tr *ngFor="let item of quarantineAttention().slice(0, 12)" class="align-top">
+                  <td class="px-3 py-2">
+                    <span class="rounded border border-orange-200 bg-orange-50 px-2 py-1 text-xs font-bold text-orange-800">{{ item.issue }}</span>
+                  </td>
+                  <td class="px-3 py-2 text-slate-700">
+                    <div class="font-semibold text-slate-950">{{ item.event?.commonName || item.stock?.commonName || item.profile?.commonName }}</div>
+                    <div class="text-xs text-slate-500">{{ item.days !== null ? quarantineDuration(item.event!) : item.stock?.tankName }}</div>
+                  </td>
+                  <td class="px-3 py-2 text-slate-600">{{ item.detail }}</td>
+                </tr>
+                <tr *ngIf="quarantineAttention().length === 0">
+                  <td colspan="3" class="px-3 py-8 text-center text-sm text-slate-500">No quarantine items need attention.</td>
+                </tr>
+              </tbody>
+            </table>
+            <p *ngIf="quarantineAttention().length > 12" class="border-t border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-600">Showing first 12 quarantine items.</p>
+          </div>
+        </section>
+      </div>
+    </section>

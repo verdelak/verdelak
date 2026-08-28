@@ -11,6 +11,7 @@ public sealed class DinoController(IVerdelakApiClient apiClient, ILogger<DinoCon
         IReadOnlyList<PublicDinosaurSummary> dinosaurs = [];
         IReadOnlyList<PublicDinoTaxonomyNode> taxonomyNodes = [];
         string? errorMessage = null;
+        var appearance = await LoadAppearanceAsync(cancellationToken);
 
         try
         {
@@ -23,8 +24,10 @@ public sealed class DinoController(IVerdelakApiClient apiClient, ILogger<DinoCon
             errorMessage = "The Dino archive is not available yet. Start Verdelak.Api and refresh this page.";
         }
 
+        ViewData["Appearance"] = appearance;
         return View(new DinoIndexViewModel
         {
+            Appearance = appearance,
             SearchTerm = search,
             TaxonomyFilter = taxonomy,
             ApiBaseUrl = apiClient.BaseAddress?.ToString() ?? "Not configured",
@@ -38,6 +41,7 @@ public sealed class DinoController(IVerdelakApiClient apiClient, ILogger<DinoCon
     {
         PublicDinosaurDetail? dinosaur = null;
         string? errorMessage = null;
+        var appearance = await LoadAppearanceAsync(cancellationToken);
 
         try
         {
@@ -53,10 +57,25 @@ public sealed class DinoController(IVerdelakApiClient apiClient, ILogger<DinoCon
             errorMessage = "This Dino entry could not be loaded. Start Verdelak.Api and try again.";
         }
 
+        ViewData["Appearance"] = appearance;
         return View(new DinoDetailViewModel
         {
+            Appearance = appearance,
             Dinosaur = dinosaur,
             ErrorMessage = errorMessage
         });
+    }
+
+    private async Task<PublicAppearanceSettings> LoadAppearanceAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await apiClient.GetDinoSiteAppearanceAsync(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogDebug(ex, "Unable to load Dino site appearance settings; using defaults.");
+            return PublicAppearanceSettings.DinoSiteDefault;
+        }
     }
 }

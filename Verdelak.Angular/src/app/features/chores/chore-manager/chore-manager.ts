@@ -513,9 +513,9 @@ export class ChoreManager {
     return category === 'Medical'
       ? 'border-rose-200 bg-rose-50 text-rose-800'
       : category === 'Pets'
-        ? 'border-sky-200 bg-sky-50 text-sky-800'
-        : category === 'Cleaning'
-          ? 'border-teal-200 bg-teal-50 text-teal-800'
+        ? 'border-pink-200 bg-pink-50 text-pink-800'
+      : category === 'Cleaning'
+          ? 'border-lime-200 bg-lime-50 text-lime-800'
           : category === 'Errands'
             ? 'border-amber-200 bg-amber-50 text-amber-800'
             : 'border-orange-200 bg-orange-50 text-orange-800';

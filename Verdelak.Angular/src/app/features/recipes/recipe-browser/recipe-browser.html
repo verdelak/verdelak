@@ -166,7 +166,7 @@
               </div>
               <span class="rounded border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-bold text-amber-800">Needs source</span>
             </div>
-            <button type="button" class="mt-2 rounded border border-sky-200 px-2 py-1 text-xs font-bold text-sky-800" (click)="selectRecipe(recipe.id)">Open</button>
+            <button type="button" class="app-primary-soft-action mt-2 rounded px-2 py-1 text-xs font-bold" (click)="selectRecipe(recipe.id)">Open</button>
           </article>
           <p *ngIf="missingSourceRecipes().length === 0" class="px-3 py-4 text-sm text-slate-500">No visible recipes are missing a cookbook/source link.</p>
         </div>
@@ -188,7 +188,7 @@
               <td class="px-3 py-2 font-semibold text-slate-950">{{ book.name }}</td>
               <td class="px-3 py-2 text-slate-600">{{ book.description || '-' }}</td>
               <td class="whitespace-nowrap px-3 py-2 text-right">
-                <button type="button" class="rounded border border-sky-200 px-2 py-1 text-xs font-bold text-sky-800" (click)="editBook(book)">Edit</button>
+                <button type="button" class="app-primary-soft-action rounded px-2 py-1 text-xs font-bold" (click)="editBook(book)">Edit</button>
                 <button type="button" class="ml-2 rounded border border-rose-200 px-2 py-1 text-xs font-bold text-rose-700" (click)="deleteBook(book)">Delete</button>
               </td>
             </tr>
@@ -303,19 +303,19 @@
           <p class="mt-1 text-sm text-slate-600">{{ selected()!.description || 'No description yet.' }}</p>
           <div class="mt-3 flex flex-wrap gap-2">
             <span class="rounded border border-emerald-200 bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-800">{{ selected()!.category }}</span>
-            <span *ngIf="selected()!.cuisine" class="rounded border border-sky-200 bg-sky-50 px-2 py-1 text-xs font-bold text-sky-800">{{ selected()!.cuisine }}</span>
-            <span *ngIf="selected()!.recipeBookName" class="rounded border border-purple-200 bg-purple-50 px-2 py-1 text-xs font-bold text-purple-800">{{ selected()!.recipeBookName }}</span>
+            <span *ngIf="selected()!.cuisine" class="app-token-soft-surface app-token-text-primary rounded border px-2 py-1 text-xs font-bold">{{ selected()!.cuisine }}</span>
+            <span *ngIf="selected()!.recipeBookName" class="app-token-soft-surface app-token-text-primary rounded border px-2 py-1 text-xs font-bold">{{ selected()!.recipeBookName }}</span>
             <span *ngFor="let tag of selected()!.tags" class="rounded border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-bold text-slate-700">{{ tag.name }}</span>
           </div>
         </div>
         <div class="flex flex-wrap gap-2">
-          <button *ngIf="isAdmin()" type="button" class="rounded border border-purple-200 px-4 py-2 text-sm font-bold text-purple-800 disabled:opacity-50" [disabled]="saving()" (click)="markUsed()">
+          <button *ngIf="isAdmin()" type="button" class="app-primary-soft-action rounded border px-4 py-2 text-sm font-bold" [disabled]="saving()" (click)="markUsed()">
             {{ saving() ? 'Saving.' : 'Mark Used' }}
           </button>
           <button *ngIf="isAdmin()" type="button" class="rounded border border-emerald-200 px-4 py-2 text-sm font-bold text-emerald-800 disabled:opacity-50" [disabled]="shopping() || selectedIngredientCount() === 0" (click)="addToShoppingList()">
             {{ shopping() ? 'Adding.' : 'Add Selected' }}
           </button>
-          <button *ngIf="isAdmin()" type="button" class="rounded border border-sky-200 px-4 py-2 text-sm font-bold text-sky-800" (click)="editSelected()">Edit</button>
+          <button *ngIf="isAdmin()" type="button" class="app-primary-soft-action rounded px-4 py-2 text-sm font-bold" (click)="editSelected()">Edit</button>
           <button *ngIf="isAdmin()" type="button" class="rounded border border-rose-200 px-4 py-2 text-sm font-bold text-rose-700 disabled:opacity-50" [disabled]="deleting()" (click)="deleteSelected()">Delete</button>
         </div>
       </div>
@@ -418,7 +418,7 @@
                       <span class="text-slate-700">{{ previewQuantityLabel(row) }}</span>
                       <span class="text-slate-700">{{ row.sortOrder ?? '-' }}</span>
                       <span class="text-slate-600">{{ row.notes || '-' }}</span>
-                      <span class="rounded border px-2 py-1 text-center text-xs font-bold" [ngClass]="row.pantryMatchCount ? (skipPantryItems() ? 'border-amber-200 bg-amber-50 text-amber-800' : 'border-teal-200 bg-teal-50 text-teal-800') : 'border-slate-200 bg-slate-50 text-slate-500'" [title]="row.pantryMatchDetail || ''">
+                      <span class="rounded border px-2 py-1 text-center text-xs font-bold" [ngClass]="row.pantryMatchCount ? (skipPantryItems() ? 'border-amber-200 bg-amber-50 text-amber-800' : 'border-emerald-200 bg-emerald-50 text-emerald-800') : 'border-slate-200 bg-slate-50 text-slate-500'" [title]="row.pantryMatchDetail || ''">
                         {{ row.pantryMatchCount ? (skipPantryItems() ? 'Will skip' : 'On hand') : 'Need' }}
                       </span>
                     </div>

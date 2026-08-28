@@ -2,6 +2,8 @@ namespace VerdelakCDSite.Models;
 
 public sealed class CdCatalogViewModel
 {
+    public PublicAppearanceSettings Appearance { get; init; } = PublicAppearanceSettings.CdSiteDefault;
+
     public string? SearchTerm { get; init; }
 
     public string ApiBaseUrl { get; init; } = string.Empty;
@@ -64,9 +66,44 @@ public sealed class CdCatalogPage
 
 public sealed class AlbumDetailViewModel
 {
+    public PublicAppearanceSettings Appearance { get; init; } = PublicAppearanceSettings.CdSiteDefault;
+
     public AlbumDetail? Album { get; init; }
 
     public string? ErrorMessage { get; init; }
+}
+
+public sealed class PublicAppearanceSettings
+{
+    public static PublicAppearanceSettings CdSiteDefault { get; } = new()
+    {
+        BrandName = "Verdelak CD Collection",
+        Tagline = "Browse the collection by band and read CD reviews.",
+        PrimaryColor = "#0d6efd",
+        AccentColor = "#6f42c1"
+    };
+
+    public static PublicAppearanceSettings DinoSiteDefault { get; } = new()
+    {
+        BrandName = "Verdelak Dino Archive",
+        Tagline = "Browse published dinosaurs by name, taxonomy, and discovery notes.",
+        PrimaryColor = "#198754",
+        AccentColor = "#0f766e"
+    };
+
+    public string BrandName { get; init; } = "Verdelak CD Collection";
+
+    public string Tagline { get; init; } = "Browse the collection by band and read CD reviews.";
+
+    public string PrimaryColor { get; init; } = "#0d6efd";
+
+    public string AccentColor { get; init; } = "#6f42c1";
+
+    public string? LogoUrl { get; init; }
+
+    public string? HeroImageUrl { get; init; }
+
+    public string? FaviconUrl { get; init; }
 }
 
 public sealed class ArtistCatalogItem

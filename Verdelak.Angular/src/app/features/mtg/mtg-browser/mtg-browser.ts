@@ -1084,7 +1084,7 @@ export class MtgBrowser implements OnInit {
       case 'red':
         return 'border-red-200 bg-red-50 text-red-800';
       case 'blue':
-        return 'border-blue-200 bg-blue-50 text-blue-800';
+        return 'app-token-soft-surface app-token-text-strong';
       default:
         return 'border-slate-200 bg-slate-50 text-slate-800';
     }

@@ -1,0 +1,137 @@
+    <div class="mt-4 grid gap-3">
+      <p *ngIf="filteredItems().length > gridItemLimit" class="rounded-md bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800">
+        Showing the first {{ gridItemLimit | number }} matching rows. Narrow the filters to edit a smaller batch.
+      </p>
+
+      <section class="app-token-soft-surface grid gap-3 rounded-lg border p-3">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h3 class="app-token-text-strong text-base font-bold">Queue Mass Edit</h3>
+            <p class="app-token-text-primary text-sm font-semibold">{{ massSelectionLabel() }}</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" class="app-primary-soft-action rounded-md border px-3 py-1.5 text-sm font-bold shadow-sm transition disabled:opacity-50" [disabled]="massVisibleQueueItems().length === 0 || massEditing() || selectedPlanArchived()" (click)="selectVisibleQueueRows()">Select visible queue</button>
+            <button type="button" class="app-primary-soft-action rounded-md border px-3 py-1.5 text-sm font-bold shadow-sm transition disabled:opacity-50" [disabled]="massEditableQueueItems().length === 0 || massEditing() || selectedPlanArchived()" (click)="selectFilteredQueueRows()">Select filtered queue</button>
+            <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50" [disabled]="massSelectedCount() === 0 || massEditing()" (click)="clearMassSelection()">Clear selection</button>
+          </div>
+        </div>
+
+        <div class="grid gap-2 md:grid-cols-3 xl:grid-cols-6">
+          <label class="app-token-text-strong grid gap-1 text-xs font-bold uppercase">Complete
+            <input class="app-token-control rounded-md border bg-white px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none focus:ring-2" type="number" min="0" max="100" [ngModel]="massPercent()" (ngModelChange)="massPercent.set($event === '' ? null : $event)" [ngModelOptions]="{standalone: true}" />
+          </label>
+          <label class="app-token-text-strong grid gap-1 text-xs font-bold uppercase">Window
+            <select class="app-token-control rounded-md border bg-white px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none focus:ring-2" [ngModel]="massPlanningWindow()" (ngModelChange)="massPlanningWindow.set($event)" [ngModelOptions]="{standalone: true}">
+              <option value="">No change</option>
+              <option *ngFor="let type of planningWindowTypes" [value]="type">{{ type }}</option>
+            </select>
+          </label>
+          <label class="app-token-text-strong grid gap-1 text-xs font-bold uppercase">Start
+            <input class="app-token-control rounded-md border bg-white px-2 py-1.5 text-sm font-normal normal-case text-slate-900 outline-none focus:ring-2" type="date" [ngModel]="massStartDate()" (ngModelChange)="massStartDate.set($event)" [ngModelOptions]="{standalone: true}" />
+          </label>
+          <label class="app-token-text-strong grid gap-1 text-xs font-bold uppercase">End
+            <input class="app-token-control rounded-md border bg-white px-2 py-1.5 text-sm font-normal normal-case text-slate-900 outline-none focus:ring-2" type="date" [ngModel]="massEndDate()" (ngModelChange)="massEndDate.set($event)" [ngModelOptions]="{standalone: true}" />
+          </label>
+          <label class="app-token-text-strong grid gap-1 text-xs font-bold uppercase">Schedule
+            <select class="app-token-control rounded-md border bg-white px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none focus:ring-2" [ngModel]="massScheduleMode()" (ngModelChange)="massScheduleMode.set($event)" [ngModelOptions]="{standalone: true}">
+              <option value="">No change</option>
+              <option *ngFor="let mode of scheduleSurfaceModes" [value]="mode">{{ scheduleModeLabel(mode) }}</option>
+            </select>
+          </label>
+          <label class="app-token-text-strong grid gap-1 text-xs font-bold uppercase">Rollover
+            <select class="app-token-control rounded-md border bg-white px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none focus:ring-2" [ngModel]="massRolloverPolicy()" (ngModelChange)="massRolloverPolicy.set($event)" [ngModelOptions]="{standalone: true}">
+              <option value="">No change</option>
+              <option *ngFor="let policy of rolloverPolicies" [value]="policy">{{ policy }}</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="flex flex-wrap gap-2">
+          <button type="button" class="app-primary-action rounded-md px-3 py-2 text-sm font-bold shadow-sm transition disabled:opacity-50" [disabled]="massSelectedCount() === 0 || massEditing() || selectedPlanArchived()" (click)="applyMassEdit()">{{ massEditing() ? 'Applying' : 'Apply mass edit' }}</button>
+          <button type="button" class="rounded-md border border-emerald-300 bg-white px-3 py-2 text-sm font-bold text-emerald-800 shadow-sm transition hover:bg-emerald-50 disabled:opacity-50" [disabled]="massSelectedCount() === 0 || massEditing() || selectedPlanArchived()" (click)="markSelectedQueueDone()">Mark done</button>
+          <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50" [disabled]="massSelectedCount() === 0 || massEditing() || selectedPlanArchived()" (click)="applySelectedQueueDefaults()">Queue defaults</button>
+          <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50" [disabled]="massSelectedCount() === 0 || massEditing() || selectedPlanArchived()" (click)="clearSelectedQueueDates()">Clear dates</button>
+        </div>
+      </section>
+
+      <fieldset class="contents" [disabled]="selectedPlanArchived()">
+      <div class="overflow-x-auto rounded-lg border border-slate-200">
+        <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
+          <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+            <tr>
+              <th class="px-3 py-3 font-bold">Select</th>
+              <th class="px-3 py-3 font-bold">Plan item</th>
+              <th class="px-3 py-3 font-bold">Type</th>
+              <th class="px-3 py-3 font-bold">Complete</th>
+              <th class="px-3 py-3 font-bold">Window</th>
+              <th class="px-3 py-3 font-bold">Start</th>
+              <th class="px-3 py-3 font-bold">End</th>
+              <th class="px-3 py-3 font-bold">Schedule</th>
+              <th class="px-3 py-3 font-bold">Rollover</th>
+              <th class="px-3 py-3 font-bold">Notes</th>
+              <th class="px-3 py-3 font-bold">Imported</th>
+              <th class="px-3 py-3 font-bold"></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 bg-white">
+            <tr *ngFor="let item of gridItems()" class="align-top" [class.bg-slate-50]="item.isSummary">
+              <td class="px-3 py-2">
+                <input type="checkbox" class="app-token-checkbox h-4 w-4 rounded border-slate-300" [disabled]="item.itemType !== 'QueueItem' || item.outlineLevel <= 0 || item.isSummary || isSaving(item)" [checked]="isMassSelected(item)" (change)="toggleMassSelection(item, $any($event.target).checked)" aria-label="Select queue row for mass edit" />
+              </td>
+              <td class="min-w-72 px-3 py-2">
+                <p class="font-semibold text-slate-950">{{ item.title }}</p>
+                <p class="mt-1 text-xs text-slate-500">{{ item.topLevelSection || 'Plan root' }} / level {{ item.outlineLevel }}</p>
+                <p *ngIf="rowError(item)" class="mt-2 max-w-72 text-xs font-bold text-red-700">{{ rowError(item) }}</p>
+              </td>
+              <td class="min-w-36 px-3 py-2">
+                <select class="app-token-control w-full rounded-md border px-2 py-1.5 text-sm font-semibold text-slate-900 outline-none" [ngModel]="editFor(item).itemType" (ngModelChange)="updateEdit(item, { itemType: $event })" [ngModelOptions]="{standalone: true}">
+                  <option *ngFor="let type of editableItemTypes" [value]="type">{{ type }}</option>
+                </select>
+              </td>
+              <td class="min-w-28 px-3 py-2">
+                <input class="app-token-control w-full rounded-md border px-2 py-1.5 text-sm font-semibold text-slate-900 outline-none" type="number" min="0" max="100" [ngModel]="editFor(item).percentComplete" (ngModelChange)="updatePercent(item, $event)" [ngModelOptions]="{standalone: true}" aria-label="Percent complete" />
+                <p class="mt-1 text-xs text-slate-500">{{ item.status }}</p>
+              </td>
+              <td class="min-w-40 px-3 py-2">
+                <select class="app-token-control w-full rounded-md border px-2 py-1.5 text-sm font-semibold text-slate-900 outline-none" [ngModel]="editFor(item).planningWindowType" (ngModelChange)="updateEdit(item, { planningWindowType: $event })" [ngModelOptions]="{standalone: true}">
+                  <option *ngFor="let type of planningWindowTypes" [value]="type">{{ type }}</option>
+                </select>
+              </td>
+              <td class="min-w-40 px-3 py-2">
+                <input class="app-token-control w-full rounded-md border px-2 py-1.5 text-sm text-slate-900 outline-none" type="date" [ngModel]="editFor(item).targetStartDate" (ngModelChange)="updateEdit(item, { targetStartDate: $event })" [ngModelOptions]="{standalone: true}" aria-label="Target start date" />
+              </td>
+              <td class="min-w-40 px-3 py-2">
+                <input class="app-token-control w-full rounded-md border px-2 py-1.5 text-sm text-slate-900 outline-none" type="date" [ngModel]="editFor(item).targetEndDate" (ngModelChange)="updateEdit(item, { targetEndDate: $event })" [ngModelOptions]="{standalone: true}" aria-label="Target end date" />
+              </td>
+              <td class="min-w-48 px-3 py-2">
+                <select class="app-token-control w-full rounded-md border px-2 py-1.5 text-sm font-semibold text-slate-900 outline-none" [ngModel]="editFor(item).scheduleSurfaceMode" (ngModelChange)="updateEdit(item, { scheduleSurfaceMode: $event })" [ngModelOptions]="{standalone: true}">
+                  <option *ngFor="let mode of scheduleSurfaceModes" [value]="mode">{{ scheduleModeLabel(mode) }}</option>
+                </select>
+              </td>
+              <td class="min-w-44 px-3 py-2">
+                <select class="app-token-control w-full rounded-md border px-2 py-1.5 text-sm font-semibold text-slate-900 outline-none" [ngModel]="editFor(item).rolloverPolicy" (ngModelChange)="updateEdit(item, { rolloverPolicy: $event })" [ngModelOptions]="{standalone: true}" aria-label="Rollover policy">
+                  <option *ngFor="let policy of rolloverPolicies" [value]="policy">{{ policy }}</option>
+                </select>
+              </td>
+              <td class="min-w-72 px-3 py-2">
+                <textarea class="app-token-control min-h-20 w-full resize-y rounded-md border px-2 py-1.5 text-sm text-slate-900 outline-none" [ngModel]="editFor(item).notes" (ngModelChange)="updateEdit(item, { notes: $event })" [ngModelOptions]="{standalone: true}" aria-label="Plan item notes"></textarea>
+              </td>
+              <td class="min-w-40 whitespace-nowrap px-3 py-2 text-xs text-slate-600">
+                <p *ngIf="item.importedStart || item.importedFinish">{{ item.importedStart | date:'shortDate' }} - {{ item.importedFinish | date:'shortDate' }}</p>
+                <p>{{ item.importedDuration || '' }}</p>
+              </td>
+              <td class="whitespace-nowrap px-3 py-2">
+                <div class="flex gap-2">
+                  <button type="button" class="app-primary-action px-3 py-1.5 text-sm" [disabled]="!isDirty(item) || isSaving(item)" (click)="saveItem(item)">{{ isSaving(item) ? 'Saving' : 'Save' }}</button>
+                  <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="!isDirty(item) || isSaving(item)" (click)="discardEdit(item)">Reset</button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="gridItems().length === 0 && !loading()">
+              <td colspan="12" class="px-3 py-8 text-center text-sm text-slate-500">No plan items found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      </fieldset>
+    </div>

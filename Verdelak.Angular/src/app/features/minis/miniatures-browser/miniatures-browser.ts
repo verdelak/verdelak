@@ -374,7 +374,7 @@ export class MiniaturesBrowser implements OnInit {
   }
 
   itemRowClasses(item: MiniatureItem): string {
-    return this.selectedItem()?.id === item.id ? 'bg-indigo-50' : '';
+    return this.selectedItem()?.id === item.id ? 'app-token-selected-row' : '';
   }
 
   isSystemCollapsed(key: string): boolean {

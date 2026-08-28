@@ -5,13 +5,13 @@
       <h1>{{ title }}</h1>
     </div>
     <div class="actions">
-      <button mat-stroked-button type="button" (click)="exportCurrentPageCsv()" [disabled]="svc.products().length === 0">
-        <mat-icon>download</mat-icon> Page CSV
+      <button class="btn btn-outline-secondary btn-sm" type="button" (click)="exportCurrentPageCsv()" [disabled]="svc.products().length === 0">
+        Page CSV
       </button>
-      <button mat-stroked-button type="button" (click)="exportReportCsv()" [disabled]="svc.products().length === 0">
-        <mat-icon>summarize</mat-icon> Report CSV
+      <button class="btn btn-outline-secondary btn-sm" type="button" (click)="exportReportCsv()" [disabled]="svc.products().length === 0">
+        Report CSV
       </button>
-      <a *ngIf="auth.isAdmin()" mat-flat-button color="primary"
+      <a *ngIf="auth.isAdmin()" class="btn btn-primary btn-sm"
         [routerLink]="['/rpg/new']"
         [queryParams]="{ systemId, seriesId, typeId, q }">
         Add
@@ -21,54 +21,54 @@
 
   <header class="toolbar">
     <div class="filters">
-      <mat-form-field appearance="outline">
-        <mat-label>Status</mat-label>
-        <mat-select [(ngModel)]="status" (selectionChange)="refetch(true)">
-          <mat-option value="H">Owned</mat-option>
-          <mat-option value="W">Wanted</mat-option>
-          <mat-option value="all">All</mat-option>
-          <mat-option value="unknown">Unknown</mat-option>
-        </mat-select>
-      </mat-form-field>
+      <label class="filter-field">
+        <span>Status</span>
+        <select class="form-select" [(ngModel)]="status" (change)="refetch(true)">
+          <option value="H">Owned</option>
+          <option value="W">Wanted</option>
+          <option value="all">All</option>
+          <option value="unknown">Unknown</option>
+        </select>
+      </label>
 
-      <mat-form-field appearance="outline">
-        <mat-label>System</mat-label>
-        <mat-select [(ngModel)]="systemId" (selectionChange)="refetch(true)">
-          <mat-option [value]="null">All</mat-option>
-          <mat-option *ngFor="let s of systems" [value]="s.id">{{ s.name }}</mat-option>
-        </mat-select>
-      </mat-form-field>
+      <label class="filter-field">
+        <span>System</span>
+        <select class="form-select" [(ngModel)]="systemId" (change)="refetch(true)">
+          <option [ngValue]="null">All</option>
+          <option *ngFor="let s of systems" [ngValue]="s.id">{{ s.name }}</option>
+        </select>
+      </label>
 
-      <mat-form-field appearance="outline">
-        <mat-label>Series</mat-label>
-        <mat-select [(ngModel)]="seriesId" (selectionChange)="refetch(true)">
-          <mat-option [value]="null">All</mat-option>
-          <mat-option *ngFor="let s of filteredSeries()" [value]="s.id">{{ s.name }}</mat-option>
-        </mat-select>
-      </mat-form-field>
+      <label class="filter-field">
+        <span>Series</span>
+        <select class="form-select" [(ngModel)]="seriesId" (change)="refetch(true)">
+          <option [ngValue]="null">All</option>
+          <option *ngFor="let s of filteredSeries()" [ngValue]="s.id">{{ s.name }}</option>
+        </select>
+      </label>
 
-      <mat-form-field appearance="outline">
-        <mat-label>Type</mat-label>
-        <mat-select [(ngModel)]="typeId" (selectionChange)="refetch(true)">
-          <mat-option [value]="null">All</mat-option>
-          <mat-option *ngFor="let t of types" [value]="t.id">{{ t.name }}</mat-option>
-        </mat-select>
-      </mat-form-field>
+      <label class="filter-field">
+        <span>Type</span>
+        <select class="form-select" [(ngModel)]="typeId" (change)="refetch(true)">
+          <option [ngValue]="null">All</option>
+          <option *ngFor="let t of types" [ngValue]="t.id">{{ t.name }}</option>
+        </select>
+      </label>
 
-      <mat-form-field appearance="outline" class="search">
-        <mat-label>Search name / ISBN</mat-label>
-        <input matInput [(ngModel)]="q" (keyup.enter)="refetch(true)" />
-      </mat-form-field>
+      <label class="filter-field search">
+        <span>Search name / ISBN</span>
+        <input class="form-control" [(ngModel)]="q" (keyup.enter)="refetch(true)" />
+      </label>
 
-      <button mat-stroked-button (click)="clearFilters()">
-        <mat-icon>filter_alt_off</mat-icon> Clear
+      <button class="btn btn-outline-secondary clear-button" type="button" (click)="clearFilters()">
+        Clear
       </button>
     </div>
   </header>
 
   <div class="content">
     <div class="state" *ngIf="svc.loading()">
-      <mat-spinner diameter="32"></mat-spinner> Loading...
+      <span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Loading...
     </div>
     <div class="state error" *ngIf="svc.lastError()">{{ svc.lastError() }}</div>
 
@@ -136,9 +136,9 @@
     </div>
 
     <footer class="paging">
-      <button mat-stroked-button (click)="prev()" [disabled]="page===1">Prev</button>
+      <button class="btn btn-outline-secondary btn-sm" type="button" (click)="prev()" [disabled]="page===1">Prev</button>
       <span class="page-num">{{ page }}</span>
-      <button mat-stroked-button (click)="next()" [disabled]="svc.products().length < pageSize">Next</button>
+      <button class="btn btn-outline-secondary btn-sm" type="button" (click)="next()" [disabled]="svc.products().length < pageSize">Next</button>
       <span class="total">Total: {{ svc.total() }}</span>
     </footer>
   </div>

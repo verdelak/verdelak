@@ -2,7 +2,7 @@
   <header class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
     <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
       <div>
-        <p class="text-xs font-bold uppercase tracking-wider text-blue-600">Inventory / Gaming</p>
+        <p class="app-token-kicker text-xs font-bold uppercase tracking-wider">Inventory / Gaming</p>
         <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">{{ titleText() }}</h1>
         <p class="mt-1 text-sm text-slate-600">{{ total() }} {{ statusLabel() }} card rows</p>
       </div>
@@ -25,50 +25,50 @@
 
   <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
     <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
-      <input class="rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 xl:col-span-2" type="search" [ngModel]="query()" (ngModelChange)="query.set($event)" placeholder="Search name, artist, type, set, text, or notes" />
-      <select class="rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="setCode()" (ngModelChange)="setCode.set($event)">
+      <input class="app-token-control rounded-md border px-3 py-2 text-sm shadow-sm outline-none xl:col-span-2" type="search" [ngModel]="query()" (ngModelChange)="query.set($event)" placeholder="Search name, artist, type, set, text, or notes" />
+      <select class="app-token-control rounded-md border px-3 py-2 text-sm shadow-sm outline-none" [ngModel]="setCode()" (ngModelChange)="setCode.set($event)">
         <option value="">All sets</option>
         <option *ngFor="let set of sets()" [value]="set.id">{{ set.name }}</option>
       </select>
-      <select class="rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="color()" (ngModelChange)="color.set($event)">
+      <select class="app-token-control rounded-md border px-3 py-2 text-sm shadow-sm outline-none" [ngModel]="color()" (ngModelChange)="color.set($event)">
         <option *ngFor="let colorOption of colors" [value]="colorOption.id">{{ colorOption.name }}</option>
       </select>
-      <select class="rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="rarity()" (ngModelChange)="rarity.set($event)">
+      <select class="app-token-control rounded-md border px-3 py-2 text-sm shadow-sm outline-none" [ngModel]="rarity()" (ngModelChange)="rarity.set($event)">
         <option value="">All rarities</option>
         <option *ngFor="let rarityOption of rarities()" [value]="rarityOption.id">{{ rarityOption.name }}</option>
       </select>
-      <select class="rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="status()" (ngModelChange)="status.set($event)">
+      <select class="app-token-control rounded-md border px-3 py-2 text-sm shadow-sm outline-none" [ngModel]="status()" (ngModelChange)="status.set($event)">
         <option value="H">Have</option>
         <option value="W">Want</option>
         <option value="all">All</option>
       </select>
     </div>
     <div class="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-      <input class="rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="search" [ngModel]="type()" (ngModelChange)="type.set($event)" placeholder="Type filter" />
-      <select class="rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="location()" (ngModelChange)="location.set($event)">
+      <input class="app-token-control rounded-md border px-3 py-2 text-sm shadow-sm outline-none" type="search" [ngModel]="type()" (ngModelChange)="type.set($event)" placeholder="Type filter" />
+      <select class="app-token-control rounded-md border px-3 py-2 text-sm shadow-sm outline-none" [ngModel]="location()" (ngModelChange)="location.set($event)">
         <option value="">All locations</option>
         <option value="__none">No location</option>
         <option *ngFor="let locationOption of locations()" [value]="locationOption.id">{{ locationOption.name }}</option>
       </select>
-      <button type="button" class="rounded-md bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700" (click)="applyFilters()">Apply</button>
+      <button type="button" class="app-primary-action rounded-md px-4 py-2 text-sm font-bold shadow-sm transition" (click)="applyFilters()">Apply</button>
       <button type="button" class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="clearFilters()">Clear</button>
     </div>
     <div class="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-      <select class="rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="condition()" (ngModelChange)="condition.set($event)">
+      <select class="app-token-control rounded-md border px-3 py-2 text-sm shadow-sm outline-none" [ngModel]="condition()" (ngModelChange)="condition.set($event)">
         <option value="">All conditions</option>
         <option value="__none">No condition</option>
         <option *ngFor="let conditionOption of conditions()" [value]="conditionOption.id">{{ conditionOption.name }}</option>
       </select>
-      <select class="rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="language()" (ngModelChange)="language.set($event)">
+      <select class="app-token-control rounded-md border px-3 py-2 text-sm shadow-sm outline-none" [ngModel]="language()" (ngModelChange)="language.set($event)">
         <option value="">All languages</option>
         <option value="__none">No language</option>
         <option *ngFor="let languageOption of languages()" [value]="languageOption.id">{{ languageOption.name }}</option>
       </select>
-      <select class="rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="finish()" (ngModelChange)="finish.set($event)">
+      <select class="app-token-control rounded-md border px-3 py-2 text-sm shadow-sm outline-none" [ngModel]="finish()" (ngModelChange)="finish.set($event)">
         <option value="">All finishes</option>
         <option *ngFor="let finishOption of finishes()" [value]="finishOption.id">{{ finishOption.name }}</option>
       </select>
-      <select class="rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="cleanup()" (ngModelChange)="cleanup.set($event)">
+      <select class="app-token-control rounded-md border px-3 py-2 text-sm shadow-sm outline-none" [ngModel]="cleanup()" (ngModelChange)="cleanup.set($event)">
         <option value="">All cleanup issues</option>
         <option value="anyIssue">Any cleanup issue ({{ filteredReviewRowCount() | number }})</option>
         <option value="noIssue">No cleanup issues ({{ filteredReadyRowCount() | number }})</option>
@@ -76,7 +76,7 @@
       </select>
     </div>
     <div *ngIf="activeFilterChips().length" class="mt-3 flex flex-wrap gap-2 border-t border-slate-200 pt-3">
-      <button *ngFor="let chip of activeFilterChips()" type="button" class="inline-flex items-center gap-2 rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-800 transition hover:bg-blue-100" (click)="clearFilter(chip.key)">
+      <button *ngFor="let chip of activeFilterChips()" type="button" class="app-primary-soft-action inline-flex items-center gap-2 rounded-md border px-2.5 py-1 text-xs font-bold transition" (click)="clearFilter(chip.key)">
         <span>{{ chip.label }}: {{ chip.value }}</span>
         <span aria-hidden="true" class="text-sm leading-none">&times;</span>
       </button>
@@ -94,10 +94,10 @@
         <button *ngIf="importRows().length" type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="importValidCount() === 0" (click)="selectValidImportRows()">Select valid {{ importValidCount() }}</button>
         <button *ngIf="importRows().length" type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="importSelectedCount() === 0" (click)="clearImportSelection()">Clear selection</button>
         <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="clearImportPreview()">Clear import</button>
-        <button type="button" class="rounded-md bg-blue-600 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="importBusy() || importSelectedCount() === 0" (click)="commitImportRows()">Commit selected {{ importSelectedCount() }}</button>
+        <button type="button" class="app-primary-action rounded-md px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50" [disabled]="importBusy() || importSelectedCount() === 0" (click)="commitImportRows()">Commit selected {{ importSelectedCount() }}</button>
       </div>
     </div>
-    <textarea class="mt-3 min-h-32 w-full rounded-md border border-slate-300 px-3 py-2 font-mono text-xs shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="importText()" (ngModelChange)="importText.set($event)" placeholder="Name,Set Code,Collector Number,Rarity,Qty,Foil Qty,Status,Condition,Language,Location,Notes"></textarea>
+    <textarea class="app-token-control mt-3 min-h-32 w-full rounded-md border px-3 py-2 font-mono text-xs shadow-sm outline-none" [ngModel]="importText()" (ngModelChange)="importText.set($event)" placeholder="Name,Set Code,Collector Number,Rarity,Qty,Foil Qty,Status,Condition,Language,Location,Notes"></textarea>
     <div *ngIf="importRows().length" class="mt-3 grid gap-3 sm:grid-cols-3">
       <div class="rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
         <div class="text-xs font-bold uppercase text-slate-500">Rows</div>
@@ -129,7 +129,7 @@
         <tbody class="divide-y divide-slate-100">
           <tr *ngFor="let row of importRows(); trackBy: trackByImportRow" [class.bg-red-50]="row.errors.length" [class.bg-amber-50]="!row.errors.length && row.warnings.length">
             <td class="px-3 py-2">
-              <input type="checkbox" class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" [checked]="row.selected" [disabled]="row.errors.length > 0" (change)="toggleImportRow(row.rowNumber)" />
+              <input type="checkbox" class="app-token-checkbox h-4 w-4 rounded border-slate-300" [checked]="row.selected" [disabled]="row.errors.length > 0" (change)="toggleImportRow(row.rowNumber)" />
             </td>
             <td class="whitespace-nowrap px-3 py-2 font-semibold text-slate-700">{{ row.rowNumber }}</td>
             <td class="px-3 py-2">
@@ -154,7 +154,7 @@
   </section>
 
   <section class="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-    <article *ngFor="let card of mtgSummaryCards()" class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm outline-none transition" [class.cursor-pointer]="card.action" [class.hover:border-blue-200]="card.action" [class.hover:bg-blue-50]="card.action" [class.focus-visible:ring-2]="card.action" [class.focus-visible:ring-blue-200]="card.action" [attr.tabindex]="card.action ? 0 : null" [attr.role]="card.action ? 'button' : null" (click)="applySummaryCard(card)" (keydown.enter)="applySummaryCard(card)" (keydown.space)="applySummaryCard(card)">
+    <article *ngFor="let card of mtgSummaryCards()" class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm outline-none transition" [class.cursor-pointer]="card.action" [class.app-token-selectable-row]="card.action" [class.app-token-ring]="card.action" [attr.tabindex]="card.action ? 0 : null" [attr.role]="card.action ? 'button' : null" (click)="applySummaryCard(card)" (keydown.enter)="applySummaryCard(card)" (keydown.space)="applySummaryCard(card)">
       <div class="text-xs font-bold uppercase tracking-wide text-slate-500">{{ card.label }}</div>
       <div class="mt-2 text-2xl font-bold text-slate-950">{{ card.value }}</div>
       <div class="mt-1 text-sm font-semibold text-slate-600">{{ card.detail }}</div>
@@ -181,7 +181,7 @@
           <tbody class="divide-y divide-slate-100">
             <tr *ngFor="let row of setReportRows()" class="align-top hover:bg-slate-50">
               <td class="px-4 py-3">
-                <button type="button" class="text-left font-bold text-blue-700 hover:text-blue-900" (click)="applySetReport(row)">{{ row.name }}</button>
+                <button type="button" class="app-token-link text-left font-bold" (click)="applySetReport(row)">{{ row.name }}</button>
                 <div class="text-xs font-semibold text-slate-500">{{ row.missingImageCount | number }} missing images</div>
               </td>
               <td class="whitespace-nowrap px-4 py-3 font-semibold text-slate-700">{{ row.rowCount | number }}</td>
@@ -213,7 +213,7 @@
           <tbody class="divide-y divide-slate-100">
             <tr *ngFor="let row of colorReportRows()" class="align-top hover:bg-slate-50">
               <td class="px-4 py-3">
-                <button type="button" class="text-left font-bold text-blue-700 hover:text-blue-900" (click)="applyColorReport(row)">{{ row.name }}</button>
+                <button type="button" class="app-token-link text-left font-bold" (click)="applyColorReport(row)">{{ row.name }}</button>
                 <div class="text-xs font-semibold text-slate-500">{{ row.missingImageCount | number }} missing images</div>
               </td>
               <td class="whitespace-nowrap px-4 py-3 font-semibold text-slate-700">{{ row.rowCount | number }}</td>
@@ -245,7 +245,7 @@
           <tbody class="divide-y divide-slate-100">
             <tr *ngFor="let row of rarityReportRows()" class="align-top hover:bg-slate-50">
               <td class="px-4 py-3">
-                <button type="button" class="text-left font-bold text-blue-700 hover:text-blue-900" (click)="applyRarityReport(row)">{{ row.name }}</button>
+                <button type="button" class="app-token-link text-left font-bold" (click)="applyRarityReport(row)">{{ row.name }}</button>
                 <div class="text-xs font-semibold text-slate-500">{{ row.foilCopies | number }} foil copies</div>
               </td>
               <td class="whitespace-nowrap px-4 py-3 font-semibold text-slate-700">{{ row.rowCount | number }}</td>
@@ -277,7 +277,7 @@
           <tbody class="divide-y divide-slate-100">
             <tr *ngFor="let row of locationReportRows()" class="align-top hover:bg-slate-50">
               <td class="px-4 py-3">
-                <button type="button" class="text-left font-bold text-blue-700 hover:text-blue-900" (click)="applyLocationReport(row)">{{ row.name }}</button>
+                <button type="button" class="app-token-link text-left font-bold" (click)="applyLocationReport(row)">{{ row.name }}</button>
                 <div class="text-xs font-semibold text-slate-500">{{ row.missingImageCount | number }} missing images</div>
               </td>
               <td class="whitespace-nowrap px-4 py-3 font-semibold text-slate-700">{{ row.rowCount | number }}</td>
@@ -354,21 +354,21 @@
         <table class="min-w-full divide-y divide-slate-200 text-sm">
           <thead class="bg-slate-50 text-left text-xs font-bold uppercase text-slate-600">
             <tr>
-              <th class="px-4 py-3"><button type="button" class="font-bold hover:text-blue-700" (click)="sortBy('name')">Card <span class="normal-case text-slate-400">{{ sortLabel('name') }}</span></button></th>
-              <th class="px-4 py-3"><button type="button" class="font-bold hover:text-blue-700" (click)="sortBy('set')">Set <span class="normal-case text-slate-400">{{ sortLabel('set') }}</span></button></th>
-              <th class="px-4 py-3"><button type="button" class="font-bold hover:text-blue-700" (click)="sortBy('rarity')">Rarity <span class="normal-case text-slate-400">{{ sortLabel('rarity') }}</span></button></th>
+              <th class="px-4 py-3"><button type="button" class="app-token-link font-bold" (click)="sortBy('name')">Card <span class="normal-case text-slate-400">{{ sortLabel('name') }}</span></button></th>
+              <th class="px-4 py-3"><button type="button" class="app-token-link font-bold" (click)="sortBy('set')">Set <span class="normal-case text-slate-400">{{ sortLabel('set') }}</span></button></th>
+              <th class="px-4 py-3"><button type="button" class="app-token-link font-bold" (click)="sortBy('rarity')">Rarity <span class="normal-case text-slate-400">{{ sortLabel('rarity') }}</span></button></th>
               <th class="px-4 py-3">Color</th>
               <th class="px-4 py-3">Type</th>
-              <th class="px-4 py-3"><button type="button" class="font-bold hover:text-blue-700" (click)="sortBy('qty')">Copies <span class="normal-case text-slate-400">{{ sortLabel('qty') }}</span></button></th>
-              <th class="px-4 py-3"><button type="button" class="font-bold hover:text-blue-700" (click)="sortBy('location')">Storage <span class="normal-case text-slate-400">{{ sortLabel('location') }}</span></button></th>
-              <th class="px-4 py-3"><button type="button" class="font-bold hover:text-blue-700" (click)="sortBy('condition')">Trade <span class="normal-case text-slate-400">{{ sortLabel('condition') }}</span></button></th>
-              <th class="px-4 py-3"><button type="button" class="font-bold hover:text-blue-700" (click)="sortBy('value')">Value <span class="normal-case text-slate-400">{{ sortLabel('value') }}</span></button></th>
-              <th class="px-4 py-3"><button type="button" class="font-bold hover:text-blue-700" (click)="sortBy('review')">Review <span class="normal-case text-slate-400">{{ sortLabel('review') }}</span></button></th>
+              <th class="px-4 py-3"><button type="button" class="app-token-link font-bold" (click)="sortBy('qty')">Copies <span class="normal-case text-slate-400">{{ sortLabel('qty') }}</span></button></th>
+              <th class="px-4 py-3"><button type="button" class="app-token-link font-bold" (click)="sortBy('location')">Storage <span class="normal-case text-slate-400">{{ sortLabel('location') }}</span></button></th>
+              <th class="px-4 py-3"><button type="button" class="app-token-link font-bold" (click)="sortBy('condition')">Trade <span class="normal-case text-slate-400">{{ sortLabel('condition') }}</span></button></th>
+              <th class="px-4 py-3"><button type="button" class="app-token-link font-bold" (click)="sortBy('value')">Value <span class="normal-case text-slate-400">{{ sortLabel('value') }}</span></button></th>
+              <th class="px-4 py-3"><button type="button" class="app-token-link font-bold" (click)="sortBy('review')">Review <span class="normal-case text-slate-400">{{ sortLabel('review') }}</span></button></th>
               <th class="px-4 py-3">Status</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
-            <tr *ngFor="let row of reviewRows(); trackBy: trackByReviewRow" class="cursor-pointer hover:bg-blue-50/60" [class.bg-blue-50]="form().id === row.item.id" (click)="selectItem(row.item)">
+            <tr *ngFor="let row of reviewRows(); trackBy: trackByReviewRow" class="app-token-selectable-row cursor-pointer" [class.app-token-selected-row]="form().id === row.item.id" (click)="selectItem(row.item)">
               <td class="px-4 py-3">
                 <div class="font-semibold text-slate-900">{{ row.item.name }}</div>
                 <div *ngIf="row.item.manaCost" class="text-xs text-slate-500">{{ row.item.manaCost }}</div>
@@ -446,7 +446,7 @@
           </div>
           <div class="flex flex-wrap gap-2">
             <a *ngIf="formScryfallUrl()" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" [href]="formScryfallUrl()" target="_blank" rel="noopener">Scryfall</a>
-            <a *ngIf="formScryfallPrintingUrl()" class="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-bold text-blue-800 shadow-sm transition hover:bg-blue-100" [href]="formScryfallPrintingUrl()" target="_blank" rel="noopener">Scryfall printing</a>
+            <a *ngIf="formScryfallPrintingUrl()" class="app-primary-soft-action rounded-md border px-3 py-2 text-xs font-bold shadow-sm transition" [href]="formScryfallPrintingUrl()" target="_blank" rel="noopener">Scryfall printing</a>
             <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="!form().name" (click)="filterToFormName()">Same card</button>
             <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="!form().name || !form().setCode || form().setCode === 'UNK'" (click)="filterToFormPrinting()">Same set</button>
             <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="!form().rarity" (click)="filterToFormRarity()">Same rarity</button>
@@ -499,56 +499,56 @@
       <form class="mt-4 grid gap-4" (ngSubmit)="save()">
         <label class="grid gap-1 text-sm font-semibold text-slate-700">
           Name
-          <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" name="name" [ngModel]="form().name" (ngModelChange)="setFormField('name', $event)" [disabled]="!canManage()" />
+          <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" type="text" name="name" [ngModel]="form().name" (ngModelChange)="setFormField('name', $event)" [disabled]="!canManage()" />
         </label>
         <div class="grid gap-4 sm:grid-cols-3">
           <label class="grid gap-1 text-sm font-semibold text-slate-700">
             Mana Cost
-            <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" name="manaCost" [ngModel]="form().manaCost" (ngModelChange)="setFormField('manaCost', $event)" [disabled]="!canManage()" />
+            <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" type="text" name="manaCost" [ngModel]="form().manaCost" (ngModelChange)="setFormField('manaCost', $event)" [disabled]="!canManage()" />
           </label>
           <label class="grid gap-1 text-sm font-semibold text-slate-700">
             Colors
-            <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal uppercase shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" name="colors" [ngModel]="form().colors" (ngModelChange)="setFormUpperField('colors', $event)" [disabled]="!canManage()" />
+            <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal uppercase shadow-sm outline-none" type="text" name="colors" [ngModel]="form().colors" (ngModelChange)="setFormUpperField('colors', $event)" [disabled]="!canManage()" />
           </label>
           <label class="grid gap-1 text-sm font-semibold text-slate-700">
             Identity
-            <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal uppercase shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" name="colorIdentity" [ngModel]="form().colorIdentity" (ngModelChange)="setFormUpperField('colorIdentity', $event)" [disabled]="!canManage()" />
+            <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal uppercase shadow-sm outline-none" type="text" name="colorIdentity" [ngModel]="form().colorIdentity" (ngModelChange)="setFormUpperField('colorIdentity', $event)" [disabled]="!canManage()" />
           </label>
         </div>
         <label class="grid gap-1 text-sm font-semibold text-slate-700">
           Type Line
-          <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" name="typeLine" [ngModel]="form().typeLine" (ngModelChange)="setFormField('typeLine', $event)" [disabled]="!canManage()" />
+          <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" type="text" name="typeLine" [ngModel]="form().typeLine" (ngModelChange)="setFormField('typeLine', $event)" [disabled]="!canManage()" />
         </label>
         <div class="grid gap-4 sm:grid-cols-3">
           <label class="grid gap-1 text-sm font-semibold text-slate-700">
             Set Code
-            <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal uppercase shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" name="setCode" [ngModel]="form().setCode" (ngModelChange)="setFormUpperField('setCode', $event)" [disabled]="!canManage()" />
+            <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal uppercase shadow-sm outline-none" type="text" name="setCode" [ngModel]="form().setCode" (ngModelChange)="setFormUpperField('setCode', $event)" [disabled]="!canManage()" />
           </label>
           <label class="grid gap-1 text-sm font-semibold text-slate-700">
             Collector #
-            <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" name="collectorNumber" [ngModel]="form().collectorNumber" (ngModelChange)="setFormField('collectorNumber', $event)" [disabled]="!canManage()" />
+            <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" type="text" name="collectorNumber" [ngModel]="form().collectorNumber" (ngModelChange)="setFormField('collectorNumber', $event)" [disabled]="!canManage()" />
           </label>
           <label class="grid gap-1 text-sm font-semibold text-slate-700">
             Rarity
-            <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal lowercase shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" name="rarityForm" [ngModel]="form().rarity" (ngModelChange)="setFormLowerField('rarity', $event)" [disabled]="!canManage()" />
+            <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal lowercase shadow-sm outline-none" type="text" name="rarityForm" [ngModel]="form().rarity" (ngModelChange)="setFormLowerField('rarity', $event)" [disabled]="!canManage()" />
           </label>
         </div>
         <label class="grid gap-1 text-sm font-semibold text-slate-700">
           Set Name
-          <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" name="setName" [ngModel]="form().setName" (ngModelChange)="setFormField('setName', $event)" [disabled]="!canManage()" />
+          <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" type="text" name="setName" [ngModel]="form().setName" (ngModelChange)="setFormField('setName', $event)" [disabled]="!canManage()" />
         </label>
         <div class="grid gap-4 sm:grid-cols-3">
           <label class="grid gap-1 text-sm font-semibold text-slate-700">
             Qty
-            <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="number" min="0" name="quantity" [ngModel]="form().quantity" (ngModelChange)="setFormNumberField('quantity', $event)" [disabled]="!canManage()" />
+            <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" type="number" min="0" name="quantity" [ngModel]="form().quantity" (ngModelChange)="setFormNumberField('quantity', $event)" [disabled]="!canManage()" />
           </label>
           <label class="grid gap-1 text-sm font-semibold text-slate-700">
             Foil Qty
-            <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="number" min="0" name="foilQuantity" [ngModel]="form().foilQuantity" (ngModelChange)="setFormNumberField('foilQuantity', $event)" [disabled]="!canManage()" />
+            <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" type="number" min="0" name="foilQuantity" [ngModel]="form().foilQuantity" (ngModelChange)="setFormNumberField('foilQuantity', $event)" [disabled]="!canManage()" />
           </label>
           <label class="grid gap-1 text-sm font-semibold text-slate-700">
             Status
-            <select class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="wantStatusID" [ngModel]="form().wantStatusID" (ngModelChange)="setFormField('wantStatusID', $event)" [disabled]="!canManage()">
+            <select class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" name="wantStatusID" [ngModel]="form().wantStatusID" (ngModelChange)="setFormField('wantStatusID', $event)" [disabled]="!canManage()">
               <option value="H">Have</option>
               <option value="W">Want</option>
             </select>
@@ -557,43 +557,43 @@
         <div class="grid gap-4 sm:grid-cols-3">
           <label class="grid gap-1 text-sm font-semibold text-slate-700">
             Condition
-            <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" name="condition" [ngModel]="form().condition" (ngModelChange)="setFormField('condition', $event)" [disabled]="!canManage()" />
+            <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" type="text" name="condition" [ngModel]="form().condition" (ngModelChange)="setFormField('condition', $event)" [disabled]="!canManage()" />
           </label>
           <label class="grid gap-1 text-sm font-semibold text-slate-700">
             Language
-            <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal uppercase shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" name="language" [ngModel]="form().language" (ngModelChange)="setFormUpperField('language', $event)" [disabled]="!canManage()" />
+            <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal uppercase shadow-sm outline-none" type="text" name="language" [ngModel]="form().language" (ngModelChange)="setFormUpperField('language', $event)" [disabled]="!canManage()" />
           </label>
           <label class="grid gap-1 text-sm font-semibold text-slate-700">
             Value
-            <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="number" min="0" step="0.01" name="estimatedValue" [ngModel]="form().estimatedValue" (ngModelChange)="setFormNumberField('estimatedValue', $event)" [disabled]="!canManage()" />
+            <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" type="number" min="0" step="0.01" name="estimatedValue" [ngModel]="form().estimatedValue" (ngModelChange)="setFormNumberField('estimatedValue', $event)" [disabled]="!canManage()" />
           </label>
         </div>
         <label class="grid gap-1 text-sm font-semibold text-slate-700">
           Location
-          <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" name="locationForm" [ngModel]="form().location" (ngModelChange)="setFormField('location', $event)" [disabled]="!canManage()" />
+          <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" type="text" name="locationForm" [ngModel]="form().location" (ngModelChange)="setFormField('location', $event)" [disabled]="!canManage()" />
         </label>
         <div class="grid gap-4 sm:grid-cols-2">
           <label class="grid gap-1 text-sm font-semibold text-slate-700">
             Image URL
-            <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="url" name="imageUrl" [ngModel]="form().imageUrl" (ngModelChange)="setFormField('imageUrl', $event)" [disabled]="!canManage()" />
+            <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" type="url" name="imageUrl" [ngModel]="form().imageUrl" (ngModelChange)="setFormField('imageUrl', $event)" [disabled]="!canManage()" />
           </label>
           <label class="grid gap-1 text-sm font-semibold text-slate-700">
             Scryfall ID
-            <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" name="scryfallId" [ngModel]="form().scryfallId" (ngModelChange)="setFormField('scryfallId', $event)" [disabled]="!canManage()" />
+            <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" type="text" name="scryfallId" [ngModel]="form().scryfallId" (ngModelChange)="setFormField('scryfallId', $event)" [disabled]="!canManage()" />
           </label>
         </div>
         <label class="grid gap-1 text-sm font-semibold text-slate-700">
           Oracle Text
-          <textarea class="min-h-24 rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="oracleText" [ngModel]="form().oracleText" (ngModelChange)="setFormField('oracleText', $event)" [disabled]="!canManage()"></textarea>
+          <textarea class="app-token-control min-h-24 rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" name="oracleText" [ngModel]="form().oracleText" (ngModelChange)="setFormField('oracleText', $event)" [disabled]="!canManage()"></textarea>
         </label>
         <label class="grid gap-1 text-sm font-semibold text-slate-700">
           Notes
-          <textarea class="min-h-24 rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="notes" [ngModel]="form().notes" (ngModelChange)="setFormField('notes', $event)" [disabled]="!canManage()"></textarea>
+          <textarea class="app-token-control min-h-24 rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" name="notes" [ngModel]="form().notes" (ngModelChange)="setFormField('notes', $event)" [disabled]="!canManage()"></textarea>
         </label>
 
         <div class="flex flex-col gap-2 sm:flex-row" *ngIf="canManage()">
-          <button type="submit" class="rounded-md bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60" [disabled]="loading()">Save</button>
-          <button type="button" class="rounded-md border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-bold text-blue-800 shadow-sm transition hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50" (click)="duplicateSelected()" [disabled]="loading() || !form().id">Duplicate</button>
+          <button type="submit" class="app-primary-action rounded-md px-4 py-2 text-sm font-bold shadow-sm transition disabled:cursor-wait disabled:opacity-60" [disabled]="loading()">Save</button>
+          <button type="button" class="app-primary-soft-action rounded-md border px-4 py-2 text-sm font-bold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50" (click)="duplicateSelected()" [disabled]="loading() || !form().id">Duplicate</button>
           <button type="button" class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="startNew()">Clear</button>
           <button type="button" class="rounded-md border border-red-200 bg-white px-4 py-2 text-sm font-bold text-red-700 shadow-sm transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50" (click)="deleteSelected()" [disabled]="loading() || !form().id">Delete</button>
         </div>

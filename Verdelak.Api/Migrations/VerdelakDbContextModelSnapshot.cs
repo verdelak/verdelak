@@ -22,6 +22,68 @@ namespace Verdelak.Api.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("Verdelak.Api.Models.AlcoholCategory", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("Category")
+                        .IsUnique();
+
+                    b.ToTable("AlcoholCategory", (string)null);
+                });
+
+            modelBuilder.Entity("Verdelak.Api.Models.AlcoholCount", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+
+                    b.Property<int>("AlcoholID")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("LocationID")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<decimal>("Qty")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<string>("StatusID")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(1)")
+                        .HasDefaultValue("H")
+                        .HasColumnName("wantStatusID");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("AlcoholID");
+
+                    b.HasIndex("LocationID");
+
+                    b.HasIndex("StatusID");
+
+                    b.HasIndex("AlcoholID", "LocationID", "StatusID");
+
+                    b.ToTable("AlcoholCount", (string)null);
+                });
+
             modelBuilder.Entity("Verdelak.Api.Models.AlcoholItem", b =>
                 {
                     b.Property<int>("Id")
@@ -69,8 +131,8 @@ namespace Verdelak.Api.Migrations
                         .HasColumnType("decimal(10,2)");
 
                     b.Property<decimal?>("Rating")
-                        .HasPrecision(4, 2)
-                        .HasColumnType("decimal(4,2)");
+                        .HasPrecision(6, 2)
+                        .HasColumnType("decimal(6,2)");
 
                     b.Property<string>("Region")
                         .HasMaxLength(150)
@@ -124,6 +186,246 @@ namespace Verdelak.Api.Migrations
                     b.HasIndex("StatusID");
 
                     b.ToTable("AlcoholItems", (string)null);
+                });
+
+            modelBuilder.Entity("Verdelak.Api.Models.AlcoholLocation", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+
+                    b.Property<string>("Location")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("Location")
+                        .IsUnique();
+
+                    b.ToTable("AlcoholLocation", (string)null);
+                });
+
+            modelBuilder.Entity("Verdelak.Api.Models.AlcoholProduct", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+
+                    b.Property<int?>("CategoryID")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Color")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Country")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("Producer")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Product")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int?>("RegionID")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Size")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("SourceRowLabel")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("SourceSheet")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int?>("StyleID")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TypeID")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Variety")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("VintageOrYear")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("CategoryID");
+
+                    b.HasIndex("Product");
+
+                    b.HasIndex("RegionID");
+
+                    b.HasIndex("StyleID");
+
+                    b.HasIndex("TypeID");
+
+                    b.ToTable("AlcoholProducts", (string)null);
+                });
+
+            modelBuilder.Entity("Verdelak.Api.Models.AlcoholRating", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+
+                    b.Property<int>("AlcoholID")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<decimal?>("Rating")
+                        .HasPrecision(4, 2)
+                        .HasColumnType("decimal(4,2)");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("AlcoholID");
+
+                    b.ToTable("AlcoholRating", (string)null);
+                });
+
+            modelBuilder.Entity("Verdelak.Api.Models.AlcoholRegion", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+
+                    b.Property<string>("Country")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Region")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("Country", "Region")
+                        .IsUnique()
+                        .HasFilter("[Country] IS NOT NULL");
+
+                    b.ToTable("AlcoholRegion", (string)null);
+                });
+
+            modelBuilder.Entity("Verdelak.Api.Models.AlcoholStyle", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<int?>("TypeID")
+                        .HasColumnType("int");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("TypeID", "Name")
+                        .IsUnique()
+                        .HasFilter("[TypeID] IS NOT NULL");
+
+                    b.ToTable("AlcoholStyle", (string)null);
+                });
+
+            modelBuilder.Entity("Verdelak.Api.Models.AlcoholType", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+
+                    b.Property<int?>("CategoryID")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("CategoryID", "Type")
+                        .IsUnique()
+                        .HasFilter("[CategoryID] IS NOT NULL");
+
+                    b.ToTable("AlcoholType", (string)null);
+                });
+
+            modelBuilder.Entity("Verdelak.Api.Models.AlcoholValue", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+
+                    b.Property<int>("AlcoholID")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("AsOfDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("money");
+
+                    b.Property<int?>("StoreID")
+                        .HasColumnType("int");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("AlcoholID");
+
+                    b.HasIndex("StoreID");
+
+                    b.ToTable("AlcoholValue", (string)null);
                 });
 
             modelBuilder.Entity("Verdelak.Api.Models.AnnualPlan", b =>
@@ -5263,6 +5565,97 @@ namespace Verdelak.Api.Migrations
                     b.ToTable("ToySeries", (string)null);
                 });
 
+            modelBuilder.Entity("Verdelak.Api.Models.AlcoholCount", b =>
+                {
+                    b.HasOne("Verdelak.Api.Models.AlcoholProduct", "Alcohol")
+                        .WithMany("Counts")
+                        .HasForeignKey("AlcoholID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Verdelak.Api.Models.AlcoholLocation", "Location")
+                        .WithMany("Counts")
+                        .HasForeignKey("LocationID")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Alcohol");
+
+                    b.Navigation("Location");
+                });
+
+            modelBuilder.Entity("Verdelak.Api.Models.AlcoholProduct", b =>
+                {
+                    b.HasOne("Verdelak.Api.Models.AlcoholCategory", "Category")
+                        .WithMany("Products")
+                        .HasForeignKey("CategoryID")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Verdelak.Api.Models.AlcoholRegion", "Region")
+                        .WithMany("Products")
+                        .HasForeignKey("RegionID")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Verdelak.Api.Models.AlcoholStyle", "Style")
+                        .WithMany("Products")
+                        .HasForeignKey("StyleID")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Verdelak.Api.Models.AlcoholType", "Type")
+                        .WithMany("Products")
+                        .HasForeignKey("TypeID")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Category");
+
+                    b.Navigation("Region");
+
+                    b.Navigation("Style");
+
+                    b.Navigation("Type");
+                });
+
+            modelBuilder.Entity("Verdelak.Api.Models.AlcoholRating", b =>
+                {
+                    b.HasOne("Verdelak.Api.Models.AlcoholProduct", "Alcohol")
+                        .WithMany("Ratings")
+                        .HasForeignKey("AlcoholID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Alcohol");
+                });
+
+            modelBuilder.Entity("Verdelak.Api.Models.AlcoholStyle", b =>
+                {
+                    b.HasOne("Verdelak.Api.Models.AlcoholType", "Type")
+                        .WithMany("Styles")
+                        .HasForeignKey("TypeID")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Type");
+                });
+
+            modelBuilder.Entity("Verdelak.Api.Models.AlcoholType", b =>
+                {
+                    b.HasOne("Verdelak.Api.Models.AlcoholCategory", "Category")
+                        .WithMany("Types")
+                        .HasForeignKey("CategoryID")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("Verdelak.Api.Models.AlcoholValue", b =>
+                {
+                    b.HasOne("Verdelak.Api.Models.AlcoholProduct", "Alcohol")
+                        .WithMany("Values")
+                        .HasForeignKey("AlcoholID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Alcohol");
+                });
+
             modelBuilder.Entity("Verdelak.Api.Models.BackupJob", b =>
                 {
                     b.HasOne("Verdelak.Api.Models.BackupDestination", "BackupDestination")
@@ -6192,6 +6585,44 @@ namespace Verdelak.Api.Migrations
                     b.Navigation("Line");
 
                     b.Navigation("Series");
+                });
+
+            modelBuilder.Entity("Verdelak.Api.Models.AlcoholCategory", b =>
+                {
+                    b.Navigation("Products");
+
+                    b.Navigation("Types");
+                });
+
+            modelBuilder.Entity("Verdelak.Api.Models.AlcoholLocation", b =>
+                {
+                    b.Navigation("Counts");
+                });
+
+            modelBuilder.Entity("Verdelak.Api.Models.AlcoholProduct", b =>
+                {
+                    b.Navigation("Counts");
+
+                    b.Navigation("Ratings");
+
+                    b.Navigation("Values");
+                });
+
+            modelBuilder.Entity("Verdelak.Api.Models.AlcoholRegion", b =>
+                {
+                    b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("Verdelak.Api.Models.AlcoholStyle", b =>
+                {
+                    b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("Verdelak.Api.Models.AlcoholType", b =>
+                {
+                    b.Navigation("Products");
+
+                    b.Navigation("Styles");
                 });
 
             modelBuilder.Entity("Verdelak.Api.Models.AnnualPlan", b =>

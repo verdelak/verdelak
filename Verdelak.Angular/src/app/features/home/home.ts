@@ -6,6 +6,7 @@ import { BlogService } from '../blog/blog.service';
 import { BlogPostSummary } from '../blog/models/blog.models';
 import { ShoppingListItem } from '../shopping-list/models/shopping-list.models';
 import { ShoppingListService } from '../shopping-list/shopping-list.service';
+import { MainAppearanceService } from '../../shared/services/main-appearance.service';
 import { MasterScheduleItem } from '../tasks/models/scheduled-task.model';
 import { TaskService } from '../tasks/task';
 
@@ -52,7 +53,8 @@ export class Home implements OnInit {
   constructor(
     private readonly blogService: BlogService,
     private readonly taskService: TaskService,
-    private readonly shoppingListService: ShoppingListService
+    private readonly shoppingListService: ShoppingListService,
+    readonly appearance: MainAppearanceService
   ) {}
 
   ngOnInit(): void {
@@ -202,15 +204,15 @@ export class Home implements OnInit {
   taskTone(task: MasterScheduleItem): string {
     switch (task.source) {
       case 'Goals':
-        return 'border-violet-200 bg-violet-50 text-violet-800';
+        return 'app-token-soft-surface app-token-text-primary';
       case 'Fish':
-        return 'border-cyan-200 bg-cyan-50 text-cyan-900';
+        return 'app-token-soft-surface app-token-text-primary';
       case 'Backups':
         return 'border-amber-200 bg-amber-50 text-amber-800';
       case 'Gardening':
         return 'border-emerald-200 bg-emerald-50 text-emerald-800';
       default:
-        return 'border-blue-200 bg-blue-50 text-blue-800';
+        return 'app-token-soft-surface app-token-text-strong';
     }
   }
 

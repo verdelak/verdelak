@@ -1,0 +1,73 @@
+<div class="border-t border-slate-200 pt-5 first:border-t-0 first:pt-0">
+  <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+    <div>
+      <h3 class="text-base font-bold text-slate-950">{{ title }}</h3>
+      <p class="mt-1 text-sm text-slate-600">{{ description }}</p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="reset.emit()" [disabled]="loading">Defaults</button>
+      <button type="button" class="app-primary-action rounded-md px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-wait disabled:opacity-60" (click)="save.emit()" [disabled]="loading">
+        {{ loading ? loadingLabel : saveLabel }}
+      </button>
+    </div>
+  </div>
+
+  <div class="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_18rem]">
+    <div class="grid gap-3">
+      <div class="grid gap-3 md:grid-cols-2">
+        <label class="grid gap-1 text-sm font-semibold text-slate-700">
+          Brand name
+          <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" [ngModel]="settings.brandName" (ngModelChange)="setField('brandName', $event)" maxlength="100" />
+        </label>
+        <label class="grid gap-1 text-sm font-semibold text-slate-700">
+          Tagline
+          <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" [ngModel]="settings.tagline" (ngModelChange)="setField('tagline', $event)" maxlength="140" />
+        </label>
+      </div>
+
+      <div class="grid gap-3 md:grid-cols-2">
+        <label class="grid gap-1 text-sm font-semibold text-slate-700">
+          Primary color
+          <input class="app-token-control h-11 rounded-md border bg-white px-2 py-1 shadow-sm outline-none transition" type="color" [ngModel]="settings.primaryColor" (ngModelChange)="setField('primaryColor', $event)" />
+        </label>
+        <label class="grid gap-1 text-sm font-semibold text-slate-700">
+          Accent color
+          <input class="app-token-control h-11 rounded-md border bg-white px-2 py-1 shadow-sm outline-none transition" type="color" [ngModel]="settings.accentColor" (ngModelChange)="setField('accentColor', $event)" />
+        </label>
+      </div>
+
+      <label class="grid gap-1 text-sm font-semibold text-slate-700">
+        Logo URL
+        <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" [ngModel]="settings.logoUrl" (ngModelChange)="setField('logoUrl', $event)" [placeholder]="logoPlaceholder" />
+      </label>
+      <label class="grid gap-1 text-sm font-semibold text-slate-700">
+        Hero image URL
+        <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" [ngModel]="settings.heroImageUrl" (ngModelChange)="setField('heroImageUrl', $event)" [placeholder]="heroPlaceholder" />
+      </label>
+      <label class="grid gap-1 text-sm font-semibold text-slate-700">
+        Favicon URL
+        <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" [ngModel]="settings.faviconUrl" (ngModelChange)="setField('faviconUrl', $event)" [placeholder]="faviconPlaceholder" />
+      </label>
+    </div>
+
+    <article class="grid content-start gap-3 rounded-md border border-slate-200 bg-slate-50 p-3">
+      <div class="flex items-center gap-3">
+        <span class="h-10 w-10 rounded-md border border-slate-200 bg-white" [style.background-color]="settings.primaryColor"></span>
+        <span class="h-10 w-10 rounded-md border border-slate-200 bg-white" [style.background-color]="settings.accentColor"></span>
+      </div>
+      <div>
+        <p class="text-xs font-bold uppercase text-slate-500">Preview</p>
+        <p class="mt-1 text-xl font-bold text-slate-950">{{ settings.brandName || fallbackBrandName }}</p>
+        <p class="mt-1 text-sm font-semibold text-slate-600">{{ settings.tagline || fallbackTagline }}</p>
+      </div>
+      <p class="text-xs font-semibold text-slate-500">{{ previewNote }}</p>
+    </article>
+  </div>
+
+  <div *ngIf="warnings.length" class="mt-4 rounded-md border border-amber-200 bg-amber-50 p-3">
+    <h3 class="text-sm font-bold text-amber-950">{{ reviewTitle }}</h3>
+    <ul class="mt-2 grid gap-1 text-sm font-semibold text-amber-800">
+      <li *ngFor="let warning of warnings">{{ warning }}</li>
+    </ul>
+  </div>
+</div>

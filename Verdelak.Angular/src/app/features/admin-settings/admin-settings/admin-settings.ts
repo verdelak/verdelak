@@ -1,8 +1,10 @@
 ﻿import { CommonModule } from '@angular/common';
-import { Component, OnInit, computed, signal } from '@angular/core';
+import { Component, OnInit, WritableSignal, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Observable, forkJoin } from 'rxjs';
 import { SpookytownType } from '../../spookytown/models/spookytown.models';
-import { AdminSettingsService, BarcodeLookupProviderSetting, ExternalSiteSetting, ExternalSitesSettings, FinanceTrackerSettings, FishReportThresholds, SoftwareLocationSetting, SoftwarePlatformSetting } from '../admin-settings.service';
+import { AdminSettingsService, BarcodeLookupProviderSetting, BoardGameGeekImporterSettings, ExternalSiteSetting, ExternalSitesSettings, FinanceTrackerSettings, FishReportThresholds, MainAppearanceSettings, MusicFolderImportResult, SoftwareLocationSetting, SoftwarePlatformSetting, SteamImporterSettings } from '../admin-settings.service';
+import { AppearanceSettingsPanel } from './appearance-settings-panel';
 
 interface SpookytownTypeForm {
   id: string;
@@ -31,11 +33,17 @@ interface ExternalSiteRow {
   index: number;
 }
 
+interface LookupSummaryCard {
+  label: string;
+  value: number;
+  detail: string;
+}
+
 type FinanceNumericSetting = 'yearCloseMonth' | 'yearCloseDay' | 'defaultReportYear' | 'defaultReportMonth';
 
 @Component({
   selector: 'app-admin-settings',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AppearanceSettingsPanel],
   templateUrl: './admin-settings.html',
   styleUrl: './admin-settings.scss'
 })
@@ -45,17 +53,146 @@ export class AdminSettings implements OnInit {
   readonly form = signal<SpookytownTypeForm>({ id: '', type: '', originalId: null });
   readonly fishThresholds = signal<FishReportThresholds>(this.defaultFishThresholds());
   readonly shoppingCategoryText = signal(this.defaultShoppingCategories().join('\n'));
+  readonly shoppingCategorySummaryCards = computed<LookupSummaryCard[]>(() => {
+    const rawRows = this.shoppingCategoryRawRows();
+    const parsed = this.parseShoppingCategoryText();
+    const duplicates = this.duplicateLookupValues(rawRows);
+    return [
+      { label: 'Will save', value: parsed.length, detail: 'Unique category suggestions' },
+      { label: 'Input rows', value: rawRows.length, detail: 'Non-blank rows or comma values' },
+      { label: 'Duplicates', value: duplicates.length, detail: 'Ignored when saving' }
+    ];
+  });
+  readonly shoppingCategoryWarnings = computed(() => {
+    const warnings: string[] = [];
+    const rawRows = this.shoppingCategoryRawRows();
+    const duplicates = this.duplicateLookupValues(rawRows);
+    if (duplicates.length) {
+      warnings.push(`Duplicate categories ignored on save: ${duplicates.join(', ')}`);
+    }
+    if (rawRows.length > 0 && this.parseShoppingCategoryText().length === 0) {
+      warnings.push('No valid category names were found.');
+    }
+    return warnings;
+  });
   readonly recipeCategoryText = signal(this.defaultRecipeCategories().join('\n'));
   readonly recipeCuisineText = signal(this.defaultRecipeCuisines().join('\n'));
   readonly recipeTagText = signal(this.defaultRecipeTags().join('\n'));
+  readonly recipeLookupSummaryCards = computed<LookupSummaryCard[]>(() => [
+    ...this.lookupSummaryCards('Recipe categories', this.recipeCategoryText()),
+    ...this.lookupSummaryCards('Cuisines', this.recipeCuisineText()),
+    ...this.lookupSummaryCards('Tags', this.recipeTagText())
+  ]);
+  readonly recipeLookupWarnings = computed(() => [
+    ...this.lookupWarnings('Recipe categories', this.recipeCategoryText()),
+    ...this.lookupWarnings('Cuisines', this.recipeCuisineText()),
+    ...this.lookupWarnings('Tags', this.recipeTagText())
+  ]);
   readonly alcoholCategoryText = signal(this.defaultAlcoholCategories().join('\n'));
   readonly alcoholLocationText = signal(this.defaultAlcoholLocations().join('\n'));
+  readonly alcoholLookupSummaryCards = computed<LookupSummaryCard[]>(() => [
+    ...this.lookupSummaryCards('Alcohol categories', this.alcoholCategoryText()),
+    ...this.lookupSummaryCards('Locations', this.alcoholLocationText())
+  ]);
+  readonly alcoholLookupWarnings = computed(() => [
+    ...this.lookupWarnings('Alcohol categories', this.alcoholCategoryText()),
+    ...this.lookupWarnings('Locations', this.alcoholLocationText())
+  ]);
   readonly barcodeProviders = signal<BarcodeLookupProviderSetting[]>(this.defaultBarcodeProviders());
   readonly barcodeProviderOrderPreview = computed(() =>
     this.normalizeBarcodeProviderPriorities(this.barcodeProviders())
       .filter(provider => provider.enabled)
       .map(provider => provider.provider)
       .join(' > ') || 'No enabled providers');
+  readonly mainAppearance = signal<MainAppearanceSettings>(this.defaultMainAppearance());
+  readonly mainAppearanceWarnings = computed(() => this.appearanceWarnings(this.mainAppearance()));
+  readonly cdSiteAppearance = signal<MainAppearanceSettings>(this.defaultCdSiteAppearance());
+  readonly cdSiteAppearanceWarnings = computed(() => this.appearanceWarnings(this.cdSiteAppearance()));
+  readonly dinoSiteAppearance = signal<MainAppearanceSettings>(this.defaultDinoSiteAppearance());
+  readonly dinoSiteAppearanceWarnings = computed(() => this.appearanceWarnings(this.dinoSiteAppearance()));
+  readonly blogAppearance = signal<MainAppearanceSettings>(this.defaultBlogAppearance());
+  readonly blogAppearanceWarnings = computed(() => this.appearanceWarnings(this.blogAppearance()));
+  readonly filmReviewAppearance = signal<MainAppearanceSettings>(this.defaultFilmReviewAppearance());
+  readonly filmReviewAppearanceWarnings = computed(() => this.appearanceWarnings(this.filmReviewAppearance()));
+  readonly steamImporterSettings = signal<SteamImporterSettings>(this.defaultSteamImporterSettings());
+  readonly boardGameGeekImporterSettings = signal<BoardGameGeekImporterSettings>(this.defaultBoardGameGeekImporterSettings());
+  readonly musicFolderImportRoot = signal('Z:\\Rips');
+  readonly musicFolderImportResult = signal<MusicFolderImportResult | null>(null);
+  readonly musicFolderImportStatusFilter = signal('All');
+  readonly musicFolderImportSummaryCards = computed<LookupSummaryCard[]>(() => {
+    const result = this.musicFolderImportResult();
+    if (!result) {
+      return [
+        { label: 'Artists', value: 0, detail: 'Run preview to scan folders' },
+        { label: 'Albums', value: 0, detail: 'Run preview to scan folders' },
+        { label: 'Missing', value: 0, detail: 'Albums that can be added' },
+        { label: 'Existing', value: 0, detail: 'Already matched in DB' },
+        { label: 'DB only', value: 0, detail: 'Owned CDs missing from folder scan' }
+      ];
+    }
+
+    return [
+      { label: 'Artists', value: result.artistFoldersScanned, detail: 'Top-level folders scanned' },
+      { label: 'Albums', value: result.albumFoldersScanned, detail: 'Album folders scanned' },
+      { label: 'Missing', value: result.albumsCreated, detail: result.applied ? 'Albums added' : 'Albums ready to add' },
+      { label: 'Existing', value: result.existingAlbums, detail: 'Already matched in DB' },
+      { label: 'DB only', value: result.databaseOnlyAlbums, detail: 'Owned CDs not seen in folders' }
+    ];
+  });
+  readonly musicFolderImportStatusOptions = computed(() => {
+    const statuses = this.musicFolderImportResult()?.rows.map(row => row.status) ?? [];
+    return ['All', ...Array.from(new Set(statuses)).sort((left, right) => this.musicFolderImportStatusLabel(left).localeCompare(this.musicFolderImportStatusLabel(right)))];
+  });
+  readonly filteredMusicFolderImportRows = computed(() => {
+    const result = this.musicFolderImportResult();
+    const statusFilter = this.musicFolderImportStatusFilter();
+    if (!result) {
+      return [];
+    }
+
+    return statusFilter === 'All'
+      ? result.rows
+      : result.rows.filter(row => row.status === statusFilter);
+  });
+  readonly musicFolderImportPreviewRows = computed(() => this.filteredMusicFolderImportRows().slice(0, 25));
+  readonly musicFolderImportWarnings = computed(() => {
+    const result = this.musicFolderImportResult();
+    if (!result) {
+      return [];
+    }
+
+    return result.messages.slice(0, 8);
+  });
+  readonly importerSettingsSummaryCards = computed<LookupSummaryCard[]>(() => [
+    {
+      label: 'Steam',
+      value: Number(Boolean(this.steamImporterSettings().apiKey?.trim()) && Boolean(this.steamImporterSettings().steamId?.trim())),
+      detail: this.steamImporterStatus()
+    },
+    {
+      label: 'BoardGameGeek',
+      value: Number(Boolean(this.boardGameGeekImporterSettings().username?.trim())),
+      detail: this.boardGameGeekImporterStatus()
+    }
+  ]);
+  readonly importerSettingsWarnings = computed(() => {
+    const warnings: string[] = [];
+    const steam = this.steamImporterSettings();
+    const boardGameGeek = this.boardGameGeekImporterSettings();
+    if (!steam.apiKey?.trim()) {
+      warnings.push('Steam imports need a Steam Web API key.');
+    }
+    if (!steam.steamId?.trim()) {
+      warnings.push('Steam imports need a Steam ID.');
+    }
+    if (!boardGameGeek.username?.trim()) {
+      warnings.push('BoardGameGeek imports need a username.');
+    }
+    if (!boardGameGeek.includeOwned && !boardGameGeek.includeWishlist) {
+      warnings.push('BoardGameGeek imports should include owned games, wishlist games, or both.');
+    }
+    return warnings;
+  });
   readonly financeSettings = signal<FinanceTrackerSettings>(this.defaultFinanceSettings());
   readonly externalSites = signal<ExternalSitesSettings>(this.defaultExternalSites());
   readonly sortedExternalSiteRows = computed<ExternalSiteRow[]>(() => this.externalSites().sites
@@ -78,6 +215,16 @@ export class AdminSettings implements OnInit {
   readonly financeAccountCategoryText = signal(this.defaultFinanceSettings().accountCategories.join('\n'));
   readonly financeBillCategoryText = signal(this.defaultFinanceSettings().billCategories.join('\n'));
   readonly financeDonationMethodText = signal(this.defaultFinanceSettings().donationMethods.join('\n'));
+  readonly financeLookupSummaryCards = computed<LookupSummaryCard[]>(() => [
+    ...this.lookupSummaryCards('Account categories', this.financeAccountCategoryText()),
+    ...this.lookupSummaryCards('Bill categories', this.financeBillCategoryText()),
+    ...this.lookupSummaryCards('Donation methods', this.financeDonationMethodText())
+  ]);
+  readonly financeLookupWarnings = computed(() => [
+    ...this.lookupWarnings('Account categories', this.financeAccountCategoryText()),
+    ...this.lookupWarnings('Bill categories', this.financeBillCategoryText()),
+    ...this.lookupWarnings('Donation methods', this.financeDonationMethodText())
+  ]);
   readonly softwarePlatforms = signal<SoftwarePlatformSetting[]>([]);
   readonly selectedSoftwarePlatformId = signal<number | null>(null);
   readonly softwarePlatformForm = signal<SoftwarePlatformForm>({ id: null, name: '' });
@@ -90,6 +237,13 @@ export class AdminSettings implements OnInit {
   readonly recipeLookupsLoading = signal(false);
   readonly alcoholLookupsLoading = signal(false);
   readonly barcodeLookupsLoading = signal(false);
+  readonly mainAppearanceLoading = signal(false);
+  readonly cdSiteAppearanceLoading = signal(false);
+  readonly dinoSiteAppearanceLoading = signal(false);
+  readonly blogAppearanceLoading = signal(false);
+  readonly filmReviewAppearanceLoading = signal(false);
+  readonly importerSettingsLoading = signal(false);
+  readonly musicFolderImportLoading = signal(false);
   readonly financeSettingsLoading = signal(false);
   readonly externalSitesLoading = signal(false);
   readonly softwarePlatformsLoading = signal(false);
@@ -106,6 +260,12 @@ export class AdminSettings implements OnInit {
     this.loadRecipeLookups();
     this.loadAlcoholLookups();
     this.loadBarcodeLookups();
+    this.loadMainAppearance();
+    this.loadCdSiteAppearance();
+    this.loadDinoSiteAppearance();
+    this.loadBlogAppearance();
+    this.loadFilmReviewAppearance();
+    this.loadImporterSettings();
     this.loadFinanceSettings();
     this.loadExternalSites();
     this.loadSoftwarePlatforms();
@@ -770,6 +930,307 @@ export class AdminSettings implements OnInit {
     this.barcodeProviders.set(this.defaultBarcodeProviders());
   }
 
+  loadMainAppearance(): void {
+    this.loadAppearance(
+      this.mainAppearance,
+      this.mainAppearanceLoading,
+      () => this.service.getMainAppearance(),
+      'Failed to load main appearance settings.');
+  }
+
+  saveMainAppearance(): void {
+    this.saveAppearance(
+      this.mainAppearance,
+      this.mainAppearanceLoading,
+      settings => this.service.updateMainAppearance(settings),
+      'Brand name is required before saving main appearance settings.',
+      'Main appearance settings saved.',
+      'Failed to save main appearance settings.');
+  }
+
+  resetMainAppearance(): void {
+    this.mainAppearance.set(this.defaultMainAppearance());
+  }
+
+  loadCdSiteAppearance(): void {
+    this.loadAppearance(
+      this.cdSiteAppearance,
+      this.cdSiteAppearanceLoading,
+      () => this.service.getCdSiteAppearance(),
+      'Failed to load CD site appearance settings.');
+  }
+
+  saveCdSiteAppearance(): void {
+    this.saveAppearance(
+      this.cdSiteAppearance,
+      this.cdSiteAppearanceLoading,
+      settings => this.service.updateCdSiteAppearance(settings),
+      'Brand name is required before saving CD site appearance settings.',
+      'CD site appearance settings saved.',
+      'Failed to save CD site appearance settings.');
+  }
+
+  resetCdSiteAppearance(): void {
+    this.cdSiteAppearance.set(this.defaultCdSiteAppearance());
+  }
+
+  loadDinoSiteAppearance(): void {
+    this.loadAppearance(
+      this.dinoSiteAppearance,
+      this.dinoSiteAppearanceLoading,
+      () => this.service.getDinoSiteAppearance(),
+      'Failed to load Dino site appearance settings.');
+  }
+
+  saveDinoSiteAppearance(): void {
+    this.saveAppearance(
+      this.dinoSiteAppearance,
+      this.dinoSiteAppearanceLoading,
+      settings => this.service.updateDinoSiteAppearance(settings),
+      'Brand name is required before saving Dino site appearance settings.',
+      'Dino site appearance settings saved.',
+      'Failed to save Dino site appearance settings.');
+  }
+
+  resetDinoSiteAppearance(): void {
+    this.dinoSiteAppearance.set(this.defaultDinoSiteAppearance());
+  }
+
+  loadBlogAppearance(): void {
+    this.loadAppearance(
+      this.blogAppearance,
+      this.blogAppearanceLoading,
+      () => this.service.getBlogAppearance(),
+      'Failed to load blog appearance settings.');
+  }
+
+  saveBlogAppearance(): void {
+    this.saveAppearance(
+      this.blogAppearance,
+      this.blogAppearanceLoading,
+      settings => this.service.updateBlogAppearance(settings),
+      'Brand name is required before saving blog appearance settings.',
+      'Blog appearance settings saved.',
+      'Failed to save blog appearance settings.');
+  }
+
+  resetBlogAppearance(): void {
+    this.blogAppearance.set(this.defaultBlogAppearance());
+  }
+
+  loadFilmReviewAppearance(): void {
+    this.loadAppearance(
+      this.filmReviewAppearance,
+      this.filmReviewAppearanceLoading,
+      () => this.service.getFilmReviewAppearance(),
+      'Failed to load film review appearance settings.');
+  }
+
+  saveFilmReviewAppearance(): void {
+    this.saveAppearance(
+      this.filmReviewAppearance,
+      this.filmReviewAppearanceLoading,
+      settings => this.service.updateFilmReviewAppearance(settings),
+      'Brand name is required before saving film review appearance settings.',
+      'Film review appearance settings saved.',
+      'Failed to save film review appearance settings.');
+  }
+
+  resetFilmReviewAppearance(): void {
+    this.filmReviewAppearance.set(this.defaultFilmReviewAppearance());
+  }
+
+  loadImporterSettings(): void {
+    this.importerSettingsLoading.set(true);
+    forkJoin({
+      steam: this.service.getSteamImporterSettings(),
+      boardGameGeek: this.service.getBoardGameGeekImporterSettings(),
+      musicFolders: this.service.getMusicFolderImporterSettings()
+    }).subscribe({
+      next: settings => {
+        this.steamImporterSettings.set(settings.steam);
+        this.boardGameGeekImporterSettings.set(settings.boardGameGeek);
+        this.musicFolderImportRoot.set(settings.musicFolders.rootPath);
+      },
+      error: err => this.error.set(err.error ?? err.message ?? 'Failed to load importer settings.'),
+      complete: () => this.importerSettingsLoading.set(false)
+    });
+  }
+
+  setSteamImporterSetting<K extends keyof SteamImporterSettings>(field: K, value: SteamImporterSettings[K] | string): void {
+    this.steamImporterSettings.update(settings => ({
+      ...settings,
+      [field]: typeof value === 'string' ? value.trim() || null : value
+    }));
+  }
+
+  setBoardGameGeekImporterSetting<K extends keyof BoardGameGeekImporterSettings>(field: K, value: BoardGameGeekImporterSettings[K] | string): void {
+    this.boardGameGeekImporterSettings.update(settings => ({
+      ...settings,
+      [field]: typeof value === 'string' ? value.trim() || null : value
+    }));
+  }
+
+  saveImporterSettings(): void {
+    this.importerSettingsLoading.set(true);
+    this.error.set(null);
+    this.message.set(null);
+
+    forkJoin({
+      steam: this.service.updateSteamImporterSettings(this.steamImporterSettings()),
+      boardGameGeek: this.service.updateBoardGameGeekImporterSettings(this.boardGameGeekImporterSettings()),
+      musicFolders: this.service.updateMusicFolderImporterSettings({
+        rootPath: this.musicFolderImportRoot().trim() || 'Z:\\Rips'
+      })
+    }).subscribe({
+      next: settings => {
+        this.steamImporterSettings.set(settings.steam);
+        this.boardGameGeekImporterSettings.set(settings.boardGameGeek);
+        this.musicFolderImportRoot.set(settings.musicFolders.rootPath);
+        this.message.set('Importer settings saved.');
+      },
+      error: err => this.error.set(err.error ?? err.message ?? 'Failed to save importer settings.'),
+      complete: () => this.importerSettingsLoading.set(false)
+    });
+  }
+
+  resetImporterSettings(): void {
+    this.steamImporterSettings.set(this.defaultSteamImporterSettings());
+    this.boardGameGeekImporterSettings.set(this.defaultBoardGameGeekImporterSettings());
+    this.musicFolderImportRoot.set('Z:\\Rips');
+  }
+
+  previewMusicFolderImport(): void {
+    this.runMusicFolderImport(false);
+  }
+
+  applyMusicFolderImport(): void {
+    const result = this.musicFolderImportResult();
+    if (result && result.albumsCreated === 0 && result.artistsCreated === 0) {
+      this.message.set('Music folder import has nothing new to add.');
+      return;
+    }
+
+    const confirmed = window.confirm(`Import missing CDs from ${this.musicFolderImportRoot().trim() || 'Z:\\Rips'}?`);
+    if (!confirmed) {
+      return;
+    }
+
+    this.runMusicFolderImport(true);
+  }
+
+  exportMusicFolderImportCsv(): void {
+    const result = this.musicFolderImportResult();
+    if (!result) {
+      this.error.set('Run a music folder preview before exporting.');
+      return;
+    }
+
+    this.downloadCsv(`music-folder-import-${result.applied ? 'applied' : 'preview'}-${this.today()}.csv`, [
+      ['Root path', result.rootPath],
+      ['Applied', result.applied],
+      ['Artist folders scanned', result.artistFoldersScanned],
+      ['Album folders scanned', result.albumFoldersScanned],
+      ['Artists created', result.artistsCreated],
+      ['Albums created', result.albumsCreated],
+      ['Existing albums', result.existingAlbums],
+      ['Database-only albums', result.databaseOnlyAlbums],
+      ['Skipped folders', result.skippedFolders],
+      [],
+      ['Artist', 'Album', 'Status', 'Relative path', 'Artist ID', 'Album ID'],
+      ...this.filteredMusicFolderImportRows().map(row => [
+        row.artist,
+        row.album,
+        this.musicFolderImportStatusLabel(row.status),
+        row.relativePath,
+        row.artistId,
+        row.albumId
+      ]),
+      [],
+      ['Messages'],
+      ...result.messages.map(message => [message])
+    ]);
+  }
+
+  musicFolderImportStatusLabel(status: string): string {
+    switch (status) {
+      case 'Existing':
+        return 'Existing';
+      case 'CreatedAlbum':
+        return 'Added album';
+      case 'CreatedArtistAndAlbum':
+        return 'Added artist + album';
+      case 'WouldCreateAlbum':
+        return 'Would add album';
+      case 'WouldCreateArtistAndAlbum':
+        return 'Would add artist + album';
+      case 'DuplicateFolder':
+        return 'Duplicate folder';
+      case 'DatabaseOnly':
+        return 'DB only';
+      default:
+        return status;
+    }
+  }
+
+  musicFolderImportStatusTone(status: string): string {
+    if (status === 'Existing' || status === 'DatabaseOnly') {
+      return 'bg-slate-100 text-slate-600';
+    }
+
+    if (status === 'DuplicateFolder') {
+      return 'bg-amber-50 text-amber-700';
+    }
+
+    return 'bg-emerald-50 text-emerald-700';
+  }
+
+  private runMusicFolderImport(applyChanges: boolean): void {
+    const rootPath = this.musicFolderImportRoot().trim() || 'Z:\\Rips';
+    this.musicFolderImportLoading.set(true);
+    this.error.set(null);
+    this.message.set(null);
+
+    this.service.importMusicFolders({ rootPath, applyChanges }).subscribe({
+      next: result => {
+        this.musicFolderImportRoot.set(result.rootPath);
+        this.musicFolderImportResult.set(result);
+        this.musicFolderImportStatusFilter.set('All');
+        this.message.set(applyChanges
+          ? `Music folder import added ${result.albumsCreated} album(s) and ${result.artistsCreated} artist(s).`
+          : `Music folder preview found ${result.albumsCreated} missing album(s).`);
+      },
+      error: err => this.error.set(err.error ?? err.message ?? 'Failed to scan music folders.'),
+      complete: () => this.musicFolderImportLoading.set(false)
+    });
+  }
+
+  steamImporterStatus(): string {
+    const settings = this.steamImporterSettings();
+    if (!settings.apiKey?.trim() || !settings.steamId?.trim()) {
+      return 'Missing required import credentials';
+    }
+
+    return [
+      settings.includePlayedFreeGames ? 'Played free games included' : 'Played free games skipped',
+      settings.includeAppInfo ? 'App details enabled' : 'App details skipped'
+    ].join(' / ');
+  }
+
+  boardGameGeekImporterStatus(): string {
+    const settings = this.boardGameGeekImporterSettings();
+    if (!settings.username?.trim()) {
+      return 'Missing username';
+    }
+
+    const scopes = [
+      settings.includeOwned ? 'owned' : null,
+      settings.includeWishlist ? 'wishlist' : null,
+      settings.includeExpansions ? 'expansions' : null
+    ].filter(Boolean);
+    return scopes.length ? `Imports ${scopes.join(', ')}` : 'No collection scopes selected';
+  }
+
   loadFinanceSettings(): void {
     this.financeSettingsLoading.set(true);
     this.service.getFinanceTrackerSettings().subscribe({
@@ -835,11 +1296,37 @@ export class AdminSettings implements OnInit {
   }
 
   private parseShoppingCategoryText(): string[] {
-    return Array.from(new Set(this.shoppingCategoryText()
+    return Array.from(new Set(this.shoppingCategoryRawRows()))
+      .sort((left, right) => left.localeCompare(right));
+  }
+
+  private shoppingCategoryRawRows(): string[] {
+    return this.shoppingCategoryText()
       .split(/\r?\n|,/)
       .map(category => category.trim())
-      .filter(Boolean)))
+      .filter(Boolean);
+  }
+
+  private duplicateLookupValues(values: string[]): string[] {
+    const counts = values.reduce((map, value) => {
+      const key = value.toLocaleLowerCase();
+      const existing = map.get(key) ?? { label: value, count: 0 };
+      map.set(key, { label: existing.label, count: existing.count + 1 });
+      return map;
+    }, new Map<string, { label: string; count: number }>());
+
+    return [...counts.values()]
+      .filter(item => item.count > 1)
+      .map(item => item.label)
       .sort((left, right) => left.localeCompare(right));
+  }
+
+  private isHexColor(value: string | null | undefined): boolean {
+    return /^#[0-9a-fA-F]{6}$/.test(value ?? '');
+  }
+
+  private looksLikeUrl(value: string): boolean {
+    return /^(https?:\/\/|\/)/i.test(value.trim());
   }
 
   private defaultShoppingCategories(): string[] {
@@ -847,11 +1334,79 @@ export class AdminSettings implements OnInit {
   }
 
   private parseLookupText(value: string): string[] {
-    return Array.from(new Set(value
+    return Array.from(new Set(this.lookupRawRows(value)))
+      .sort((left, right) => left.localeCompare(right));
+  }
+
+  private lookupRawRows(value: string): string[] {
+    return value
       .split(/\r?\n|,/)
       .map(item => item.trim())
-      .filter(Boolean)))
-      .sort((left, right) => left.localeCompare(right));
+      .filter(Boolean);
+  }
+
+  private lookupSummaryCards(label: string, value: string): LookupSummaryCard[] {
+    const rawRows = this.lookupRawRows(value);
+    const parsed = this.parseLookupText(value);
+    const duplicates = this.duplicateLookupValues(rawRows);
+    return [
+      { label, value: parsed.length, detail: 'Unique values saved' },
+      { label: `${label} duplicates`, value: duplicates.length, detail: 'Ignored when saving' }
+    ];
+  }
+
+  private lookupWarnings(label: string, value: string): string[] {
+    const rawRows = this.lookupRawRows(value);
+    const duplicates = this.duplicateLookupValues(rawRows);
+    const warnings: string[] = [];
+    if (duplicates.length) {
+      warnings.push(`${label} duplicates ignored on save: ${duplicates.join(', ')}`);
+    }
+    if (rawRows.length > 0 && this.parseLookupText(value).length === 0) {
+      warnings.push(`${label} has no valid values.`);
+    }
+    return warnings;
+  }
+
+  private loadAppearance(
+    settingsSignal: WritableSignal<MainAppearanceSettings>,
+    loadingSignal: WritableSignal<boolean>,
+    getRequest: () => Observable<MainAppearanceSettings>,
+    errorMessage: string
+  ): void {
+    loadingSignal.set(true);
+    getRequest().subscribe({
+      next: settings => settingsSignal.set(settings),
+      error: err => this.error.set(err.error ?? err.message ?? errorMessage),
+      complete: () => loadingSignal.set(false)
+    });
+  }
+
+  private saveAppearance(
+    settingsSignal: WritableSignal<MainAppearanceSettings>,
+    loadingSignal: WritableSignal<boolean>,
+    updateRequest: (settings: MainAppearanceSettings) => Observable<MainAppearanceSettings>,
+    requiredMessage: string,
+    savedMessage: string,
+    errorMessage: string
+  ): void {
+    const settings = settingsSignal();
+    if (!settings.brandName.trim()) {
+      this.error.set(requiredMessage);
+      return;
+    }
+
+    loadingSignal.set(true);
+    this.error.set(null);
+    this.message.set(null);
+    updateRequest(settings).subscribe({
+      next: saved => {
+        settingsSignal.set(saved);
+        this.message.set(savedMessage);
+      },
+      error: err => this.error.set(err.error ?? err.message ?? errorMessage),
+      complete: () => loadingSignal.set(false)
+    });
   }
 
   private defaultRecipeCategories(): string[] {
@@ -887,6 +1442,107 @@ export class AdminSettings implements OnInit {
     ];
   }
 
+  private defaultMainAppearance(): MainAppearanceSettings {
+    return {
+      brandName: 'Verdelak',
+      tagline: 'Collections, schedules, and household systems',
+      primaryColor: '#2563eb',
+      accentColor: '#0f766e',
+      logoUrl: null,
+      heroImageUrl: null,
+      faviconUrl: null
+    };
+  }
+
+  private defaultCdSiteAppearance(): MainAppearanceSettings {
+    return {
+      brandName: 'Verdelak CD Collection',
+      tagline: 'Browse the collection by band and read CD reviews.',
+      primaryColor: '#0d6efd',
+      accentColor: '#6f42c1',
+      logoUrl: null,
+      heroImageUrl: null,
+      faviconUrl: null
+    };
+  }
+
+  private defaultDinoSiteAppearance(): MainAppearanceSettings {
+    return {
+      brandName: 'Verdelak Dino Archive',
+      tagline: 'Browse published dinosaurs by name, taxonomy, and discovery notes.',
+      primaryColor: '#198754',
+      accentColor: '#0f766e',
+      logoUrl: null,
+      heroImageUrl: null,
+      faviconUrl: null
+    };
+  }
+
+  private defaultBlogAppearance(): MainAppearanceSettings {
+    return {
+      brandName: 'Verdelak Blog',
+      tagline: 'Notes, updates, and personal writing.',
+      primaryColor: '#4f46e5',
+      accentColor: '#0f766e',
+      logoUrl: null,
+      heroImageUrl: null,
+      faviconUrl: null
+    };
+  }
+
+  private defaultFilmReviewAppearance(): MainAppearanceSettings {
+    return {
+      brandName: 'Verdelak Film Review',
+      tagline: 'Movie notes, ratings, and review writing.',
+      primaryColor: '#7c3aed',
+      accentColor: '#be123c',
+      logoUrl: null,
+      heroImageUrl: null,
+      faviconUrl: null
+    };
+  }
+
+  private appearanceWarnings(settings: MainAppearanceSettings): string[] {
+    const warnings: string[] = [];
+    if (!settings.brandName.trim()) {
+      warnings.push('Brand name is required before saving.');
+    }
+    if (!this.isHexColor(settings.primaryColor)) {
+      warnings.push('Primary color should be a hex color like #2563eb.');
+    }
+    if (!this.isHexColor(settings.accentColor)) {
+      warnings.push('Accent color should be a hex color like #0f766e.');
+    }
+    for (const [label, value] of [
+      ['Logo URL', settings.logoUrl],
+      ['Hero image URL', settings.heroImageUrl],
+      ['Favicon URL', settings.faviconUrl]
+    ] as const) {
+      if (value && !this.looksLikeUrl(value)) {
+        warnings.push(`${label} should start with http://, https://, or /.`);
+      }
+    }
+    return warnings;
+  }
+
+  private defaultSteamImporterSettings(): SteamImporterSettings {
+    return {
+      apiKey: null,
+      steamId: null,
+      includePlayedFreeGames: true,
+      includeAppInfo: true
+    };
+  }
+
+  private defaultBoardGameGeekImporterSettings(): BoardGameGeekImporterSettings {
+    return {
+      username: null,
+      includeOwned: true,
+      includeWishlist: false,
+      includeExpansions: false
+    };
+  }
+
   private normalizeBarcodeProviderPriorities(providers: BarcodeLookupProviderSetting[]): BarcodeLookupProviderSetting[] {
     return [...providers]
       .sort((left, right) => left.priority - right.priority || left.provider.localeCompare(right.provider))
@@ -918,6 +1574,10 @@ export class AdminSettings implements OnInit {
 
     const text = String(value);
     return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+  }
+
+  private today(): string {
+    return new Date().toISOString().slice(0, 10);
   }
 
   private defaultFinanceSettings(): FinanceTrackerSettings {

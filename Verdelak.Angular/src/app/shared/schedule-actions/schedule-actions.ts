@@ -22,7 +22,7 @@ export class ScheduleActionsComponent {
   @Input() moveDate = '';
   @Input() showActionNotes = false;
   @Input() actionNote = '';
-  @Input() moveButtonClass = 'rounded bg-blue-700 px-3 py-1.5 text-xs font-bold text-white disabled:opacity-50';
+  @Input() moveButtonClass = 'app-primary-action rounded px-3 py-1.5 text-xs font-bold disabled:opacity-50';
 
   @Output() complete = new EventEmitter<string | null>();
   @Output() startMove = new EventEmitter<void>();

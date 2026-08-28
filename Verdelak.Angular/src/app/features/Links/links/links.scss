@@ -1,0 +1,97 @@
+.links-toolbar {
+  display: grid;
+  grid-template-columns: minmax(180px, 280px) minmax(220px, 1fr);
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.form-field {
+  display: grid;
+  gap: 6px;
+}
+
+.form-field span {
+  color: #475569;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.links-accordion {
+  display: grid;
+  gap: 12px;
+}
+
+.topic-panel,
+.subtopic-panel {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.06);
+  overflow: clip;
+}
+
+.topic-summary,
+.subtopic-summary {
+  cursor: pointer;
+  font-weight: 700;
+  list-style: none;
+  padding: 12px 14px;
+}
+
+.topic-summary {
+  color: #0f172a;
+  font-size: 16px;
+}
+
+.subtopic-summary {
+  background: #f8fafc;
+  color: #334155;
+  font-size: 14px;
+}
+
+.topic-summary::-webkit-details-marker,
+.subtopic-summary::-webkit-details-marker {
+  display: none;
+}
+
+.topic-summary::after,
+.subtopic-summary::after {
+  content: "+";
+  float: right;
+  font-weight: 800;
+}
+
+.topic-panel[open] > .topic-summary::after,
+.subtopic-panel[open] > .subtopic-summary::after {
+  content: "-";
+}
+
+.subtopic-list {
+  display: grid;
+  gap: 10px;
+  padding: 0 12px 12px;
+}
+
+.link-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 12px 14px 14px 32px;
+}
+
+.link-list a {
+  color: #075985;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.link-list a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+  .links-toolbar {
+    grid-template-columns: 1fr;
+  }
+}

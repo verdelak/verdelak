@@ -196,7 +196,7 @@ export class MetalArchivesGapFinder {
       case 'Owned':
         return 'bg-emerald-50 text-emerald-800 ring-emerald-200';
       case 'Wanted':
-        return 'bg-blue-50 text-blue-800 ring-blue-200';
+        return 'app-token-soft-surface app-token-text-strong';
       case 'Missing':
         return 'bg-amber-50 text-amber-800 ring-amber-200';
       default:

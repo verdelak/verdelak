@@ -18,8 +18,14 @@ public class AdminSettingsController(VerdelakDbContext context) : ControllerBase
     public const string AlcoholLookupSettingsKey = "Alcohol.LookupSettings";
     private const string FinanceTrackerSettingsKey = "Finance.TrackerSettings";
     private const string ExternalSitesSettingsKey = "ExternalSites.Settings";
+    private const string MainAppearanceSettingsKey = "Appearance.Main";
+    private const string CdSiteAppearanceSettingsKey = "Appearance.CdSite";
+    private const string DinoSiteAppearanceSettingsKey = "Appearance.DinoSite";
+    private const string BlogAppearanceSettingsKey = "Appearance.Blog";
+    private const string FilmReviewAppearanceSettingsKey = "Appearance.FilmReview";
     public const string SteamImporterSettingsKey = "Imports.Steam";
     public const string BoardGameGeekImporterSettingsKey = "Imports.BoardGameGeek";
+    public const string MusicFolderImporterSettingsKey = "Imports.MusicFolders";
     public const string BarcodeLookupSettingsKey = "Barcode.LookupSettings";
     private static readonly string[] DefaultAlcoholCategories = ["Absinthe", "Beer", "Cider", "Mead", "Wine", "Liquor", "Mixes", "Drinks"];
     private static readonly string[] DefaultAlcoholLocations = ["Refrigerator", "Wine Rack", "Pantry", "Basement", "Turtle Room", "Kitchen", "Closet"];
@@ -223,6 +229,136 @@ public class AdminSettingsController(VerdelakDbContext context) : ControllerBase
         return normalized;
     }
 
+    [HttpGet("main-appearance")]
+    public async Task<ActionResult<MainAppearanceSettingsDto>> GetMainAppearance(CancellationToken cancellationToken)
+    {
+        return await ReadMainAppearance(cancellationToken);
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPut("main-appearance")]
+    public async Task<ActionResult<MainAppearanceSettingsDto>> UpdateMainAppearance(
+        MainAppearanceSettingsDto dto,
+        CancellationToken cancellationToken)
+    {
+        var normalized = Normalize(dto);
+        var setting = await context.AppSettings.SingleOrDefaultAsync(item => item.Key == MainAppearanceSettingsKey, cancellationToken);
+        if (setting is null)
+        {
+            setting = new AppSetting { Key = MainAppearanceSettingsKey };
+            context.AppSettings.Add(setting);
+        }
+
+        setting.ValueJson = JsonSerializer.Serialize(normalized);
+        setting.UpdatedAt = DateTime.UtcNow;
+        await context.SaveChangesAsync(cancellationToken);
+        return normalized;
+    }
+
+    [HttpGet("cd-site-appearance")]
+    public async Task<ActionResult<MainAppearanceSettingsDto>> GetCdSiteAppearance(CancellationToken cancellationToken)
+    {
+        return await ReadAppearance(CdSiteAppearanceSettingsKey, CdSiteAppearanceDefaults(), cancellationToken);
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPut("cd-site-appearance")]
+    public async Task<ActionResult<MainAppearanceSettingsDto>> UpdateCdSiteAppearance(
+        MainAppearanceSettingsDto dto,
+        CancellationToken cancellationToken)
+    {
+        var normalized = Normalize(dto, CdSiteAppearanceDefaults());
+        var setting = await context.AppSettings.SingleOrDefaultAsync(item => item.Key == CdSiteAppearanceSettingsKey, cancellationToken);
+        if (setting is null)
+        {
+            setting = new AppSetting { Key = CdSiteAppearanceSettingsKey };
+            context.AppSettings.Add(setting);
+        }
+
+        setting.ValueJson = JsonSerializer.Serialize(normalized);
+        setting.UpdatedAt = DateTime.UtcNow;
+        await context.SaveChangesAsync(cancellationToken);
+        return normalized;
+    }
+
+    [HttpGet("dino-site-appearance")]
+    public async Task<ActionResult<MainAppearanceSettingsDto>> GetDinoSiteAppearance(CancellationToken cancellationToken)
+    {
+        return await ReadAppearance(DinoSiteAppearanceSettingsKey, DinoSiteAppearanceDefaults(), cancellationToken);
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPut("dino-site-appearance")]
+    public async Task<ActionResult<MainAppearanceSettingsDto>> UpdateDinoSiteAppearance(
+        MainAppearanceSettingsDto dto,
+        CancellationToken cancellationToken)
+    {
+        var normalized = Normalize(dto, DinoSiteAppearanceDefaults());
+        var setting = await context.AppSettings.SingleOrDefaultAsync(item => item.Key == DinoSiteAppearanceSettingsKey, cancellationToken);
+        if (setting is null)
+        {
+            setting = new AppSetting { Key = DinoSiteAppearanceSettingsKey };
+            context.AppSettings.Add(setting);
+        }
+
+        setting.ValueJson = JsonSerializer.Serialize(normalized);
+        setting.UpdatedAt = DateTime.UtcNow;
+        await context.SaveChangesAsync(cancellationToken);
+        return normalized;
+    }
+
+    [HttpGet("blog-appearance")]
+    public async Task<ActionResult<MainAppearanceSettingsDto>> GetBlogAppearance(CancellationToken cancellationToken)
+    {
+        return await ReadAppearance(BlogAppearanceSettingsKey, BlogAppearanceDefaults(), cancellationToken);
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPut("blog-appearance")]
+    public async Task<ActionResult<MainAppearanceSettingsDto>> UpdateBlogAppearance(
+        MainAppearanceSettingsDto dto,
+        CancellationToken cancellationToken)
+    {
+        var normalized = Normalize(dto, BlogAppearanceDefaults());
+        var setting = await context.AppSettings.SingleOrDefaultAsync(item => item.Key == BlogAppearanceSettingsKey, cancellationToken);
+        if (setting is null)
+        {
+            setting = new AppSetting { Key = BlogAppearanceSettingsKey };
+            context.AppSettings.Add(setting);
+        }
+
+        setting.ValueJson = JsonSerializer.Serialize(normalized);
+        setting.UpdatedAt = DateTime.UtcNow;
+        await context.SaveChangesAsync(cancellationToken);
+        return normalized;
+    }
+
+    [HttpGet("film-review-appearance")]
+    public async Task<ActionResult<MainAppearanceSettingsDto>> GetFilmReviewAppearance(CancellationToken cancellationToken)
+    {
+        return await ReadAppearance(FilmReviewAppearanceSettingsKey, FilmReviewAppearanceDefaults(), cancellationToken);
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPut("film-review-appearance")]
+    public async Task<ActionResult<MainAppearanceSettingsDto>> UpdateFilmReviewAppearance(
+        MainAppearanceSettingsDto dto,
+        CancellationToken cancellationToken)
+    {
+        var normalized = Normalize(dto, FilmReviewAppearanceDefaults());
+        var setting = await context.AppSettings.SingleOrDefaultAsync(item => item.Key == FilmReviewAppearanceSettingsKey, cancellationToken);
+        if (setting is null)
+        {
+            setting = new AppSetting { Key = FilmReviewAppearanceSettingsKey };
+            context.AppSettings.Add(setting);
+        }
+
+        setting.ValueJson = JsonSerializer.Serialize(normalized);
+        setting.UpdatedAt = DateTime.UtcNow;
+        await context.SaveChangesAsync(cancellationToken);
+        return normalized;
+    }
+
     [Authorize(Roles = "Admin")]
     [HttpGet("steam-importer")]
     public async Task<ActionResult<SteamImporterSettingsDto>> GetSteamImporterSettings(CancellationToken cancellationToken)
@@ -268,6 +404,33 @@ public class AdminSettingsController(VerdelakDbContext context) : ControllerBase
         if (setting is null)
         {
             setting = new AppSetting { Key = BoardGameGeekImporterSettingsKey };
+            context.AppSettings.Add(setting);
+        }
+
+        setting.ValueJson = JsonSerializer.Serialize(normalized);
+        setting.UpdatedAt = DateTime.UtcNow;
+        await context.SaveChangesAsync(cancellationToken);
+        return normalized;
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpGet("music-folder-importer")]
+    public async Task<ActionResult<MusicFolderImporterSettingsDto>> GetMusicFolderImporterSettings(CancellationToken cancellationToken)
+    {
+        return await ReadMusicFolderImporterSettings(cancellationToken);
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPut("music-folder-importer")]
+    public async Task<ActionResult<MusicFolderImporterSettingsDto>> UpdateMusicFolderImporterSettings(
+        MusicFolderImporterSettingsDto dto,
+        CancellationToken cancellationToken)
+    {
+        var normalized = Normalize(dto);
+        var setting = await context.AppSettings.SingleOrDefaultAsync(item => item.Key == MusicFolderImporterSettingsKey, cancellationToken);
+        if (setting is null)
+        {
+            setting = new AppSetting { Key = MusicFolderImporterSettingsKey };
             context.AppSettings.Add(setting);
         }
 
@@ -736,6 +899,79 @@ public class AdminSettingsController(VerdelakDbContext context) : ControllerBase
         new("film-review", "Film Review", null, null, true, true, 50)
     ]);
 
+    private async Task<MainAppearanceSettingsDto> ReadMainAppearance(CancellationToken cancellationToken)
+    {
+        return await ReadAppearance(MainAppearanceSettingsKey, MainAppearanceDefaults(), cancellationToken);
+    }
+
+    private async Task<MainAppearanceSettingsDto> ReadAppearance(
+        string key,
+        MainAppearanceSettingsDto defaults,
+        CancellationToken cancellationToken)
+    {
+        var setting = await context.AppSettings
+            .AsNoTracking()
+            .SingleOrDefaultAsync(item => item.Key == key, cancellationToken);
+        if (setting is null || string.IsNullOrWhiteSpace(setting.ValueJson))
+        {
+            return defaults;
+        }
+
+        try
+        {
+            return Normalize(JsonSerializer.Deserialize<MainAppearanceSettingsDto>(setting.ValueJson) ?? defaults, defaults);
+        }
+        catch (JsonException)
+        {
+            return defaults;
+        }
+    }
+
+    private static MainAppearanceSettingsDto MainAppearanceDefaults() => new(
+        "Verdelak",
+        "Collections, schedules, and household systems",
+        "#2563eb",
+        "#0f766e",
+        null,
+        null,
+        null);
+
+    private static MainAppearanceSettingsDto CdSiteAppearanceDefaults() => new(
+        "Verdelak CD Collection",
+        "Browse the collection by band and read CD reviews.",
+        "#0d6efd",
+        "#6f42c1",
+        null,
+        null,
+        null);
+
+    private static MainAppearanceSettingsDto DinoSiteAppearanceDefaults() => new(
+        "Verdelak Dino Archive",
+        "Browse published dinosaurs by name, taxonomy, and discovery notes.",
+        "#198754",
+        "#0f766e",
+        null,
+        null,
+        null);
+
+    private static MainAppearanceSettingsDto BlogAppearanceDefaults() => new(
+        "Verdelak Blog",
+        "Notes, updates, and personal writing.",
+        "#4f46e5",
+        "#0f766e",
+        null,
+        null,
+        null);
+
+    private static MainAppearanceSettingsDto FilmReviewAppearanceDefaults() => new(
+        "Verdelak Film Review",
+        "Movie notes, ratings, and review writing.",
+        "#7c3aed",
+        "#be123c",
+        null,
+        null,
+        null);
+
     public async Task<SteamImporterSettingsDto> ReadSteamImporterSettings(CancellationToken cancellationToken)
     {
         var setting = await context.AppSettings
@@ -779,6 +1015,28 @@ public class AdminSettingsController(VerdelakDbContext context) : ControllerBase
     }
 
     private static BoardGameGeekImporterSettingsDto BoardGameGeekImporterDefaults() => new(null, true, false, false);
+
+    public async Task<MusicFolderImporterSettingsDto> ReadMusicFolderImporterSettings(CancellationToken cancellationToken)
+    {
+        var setting = await context.AppSettings
+            .AsNoTracking()
+            .SingleOrDefaultAsync(item => item.Key == MusicFolderImporterSettingsKey, cancellationToken);
+        if (setting is null || string.IsNullOrWhiteSpace(setting.ValueJson))
+        {
+            return MusicFolderImporterDefaults();
+        }
+
+        try
+        {
+            return Normalize(JsonSerializer.Deserialize<MusicFolderImporterSettingsDto>(setting.ValueJson) ?? MusicFolderImporterDefaults());
+        }
+        catch (JsonException)
+        {
+            return MusicFolderImporterDefaults();
+        }
+    }
+
+    private static MusicFolderImporterSettingsDto MusicFolderImporterDefaults() => new(@"Z:\Rips");
 
     private static FishReportThresholdsDto Normalize(FishReportThresholdsDto dto) => new(
         Clamp(dto.WaterTestDueDays, 0, 365),
@@ -887,6 +1145,23 @@ public class AdminSettingsController(VerdelakDbContext context) : ControllerBase
                 .ToList());
     }
 
+    private static MainAppearanceSettingsDto Normalize(MainAppearanceSettingsDto dto)
+    {
+        return Normalize(dto, MainAppearanceDefaults());
+    }
+
+    private static MainAppearanceSettingsDto Normalize(MainAppearanceSettingsDto dto, MainAppearanceSettingsDto fallback)
+    {
+        return new MainAppearanceSettingsDto(
+            TrimOrDefault(dto.BrandName, fallback.BrandName),
+            TrimOrDefault(dto.Tagline, fallback.Tagline),
+            HexColorOrDefault(dto.PrimaryColor, fallback.PrimaryColor),
+            HexColorOrDefault(dto.AccentColor, fallback.AccentColor),
+            TrimUrl(dto.LogoUrl),
+            TrimUrl(dto.HeroImageUrl),
+            TrimUrl(dto.FaviconUrl));
+    }
+
     private static SteamImporterSettingsDto Normalize(SteamImporterSettingsDto dto) => new(
         TrimOrNull(dto.ApiKey, 200),
         DigitsOrNull(dto.SteamId, 32),
@@ -898,6 +1173,17 @@ public class AdminSettingsController(VerdelakDbContext context) : ControllerBase
         dto.IncludeOwned || (!dto.IncludeOwned && !dto.IncludeWishlist),
         dto.IncludeWishlist,
         dto.IncludeExpansions);
+
+    private static MusicFolderImporterSettingsDto Normalize(MusicFolderImporterSettingsDto dto)
+    {
+        var rootPath = dto.RootPath?.Trim();
+        if (string.IsNullOrWhiteSpace(rootPath))
+        {
+            rootPath = MusicFolderImporterDefaults().RootPath;
+        }
+
+        return new MusicFolderImporterSettingsDto(rootPath.Length > 500 ? rootPath[..500] : rootPath);
+    }
 
     private static IReadOnlyList<string> NormalizeList(IEnumerable<string> values, IReadOnlyList<string> fallback)
     {
@@ -940,6 +1226,17 @@ public class AdminSettingsController(VerdelakDbContext context) : ControllerBase
         }
 
         return url.Length > 500 ? url[..500] : url;
+    }
+
+    private static string HexColorOrDefault(string? value, string fallback)
+    {
+        var color = value?.Trim();
+        if (string.IsNullOrWhiteSpace(color) || color.Length != 7 || color[0] != '#')
+        {
+            return fallback;
+        }
+
+        return color.Skip(1).All(Uri.IsHexDigit) ? color.ToLowerInvariant() : fallback;
     }
 
     private static string? TrimOrNull(string? value, int maxLength)

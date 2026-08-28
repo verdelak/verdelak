@@ -1,14 +1,23 @@
 <section class="grid gap-4">
-  <header class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-    <p class="text-xs font-bold uppercase tracking-wider text-blue-600">Verdelak</p>
-    <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">Home</h1>
+  <header class="grid gap-4 overflow-hidden rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-5 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,28rem)] lg:items-stretch">
+    <div class="min-w-0 self-center">
+      <p class="text-xs font-bold uppercase tracking-wider" [style.color]="'var(--verd-accent)'">{{ appearance.settings().brandName }}</p>
+      <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">Home</h1>
+      <p class="mt-2 max-w-3xl text-sm font-medium leading-6 text-slate-600 sm:text-base">{{ appearance.settings().tagline }}</p>
+    </div>
+    <img
+      *ngIf="appearance.settings().heroImageUrl as heroImageUrl"
+      class="h-36 w-full rounded-md object-cover sm:h-44 lg:h-full"
+      [src]="heroImageUrl"
+      [alt]="appearance.settings().brandName + ' hero image'"
+    />
   </header>
 
   <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
     <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
       <div class="flex items-start justify-between gap-3">
         <div>
-          <p class="text-xs font-bold uppercase tracking-wider text-blue-600">Today</p>
+          <p class="app-token-kicker text-xs font-bold uppercase tracking-wider">Today</p>
           <h2 class="mt-1 text-lg font-bold text-slate-950">Tasks</h2>
         </div>
         <a routerLink="/tasks" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50">Schedule</a>
@@ -74,7 +83,7 @@
     <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
       <div class="flex items-start justify-between gap-3">
         <div>
-          <p class="text-xs font-bold uppercase tracking-wider text-blue-600">Current</p>
+          <p class="app-token-kicker text-xs font-bold uppercase tracking-wider">Current</p>
           <h2 class="mt-1 text-lg font-bold text-slate-950">Grocery List</h2>
         </div>
         <a routerLink="/shopping-list" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50">Open list</a>
@@ -94,14 +103,14 @@
 
       <form class="mt-4 grid gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3" (ngSubmit)="addQuickShoppingItem()">
         <div class="grid gap-2 sm:grid-cols-[minmax(0,1fr)_9rem]">
-          <input class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="quickShoppingItem" placeholder="Add item" [ngModel]="quickShoppingItemName()" (ngModelChange)="quickShoppingItemName.set($event)" />
-          <select class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="quickShoppingCategory" [ngModel]="quickShoppingCategory()" (ngModelChange)="quickShoppingCategory.set($event)">
+          <input class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-semibold text-slate-900 outline-none" name="quickShoppingItem" placeholder="Add item" [ngModel]="quickShoppingItemName()" (ngModelChange)="quickShoppingItemName.set($event)" />
+          <select class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-semibold text-slate-900 outline-none" name="quickShoppingCategory" [ngModel]="quickShoppingCategory()" (ngModelChange)="quickShoppingCategory.set($event)">
             <option *ngFor="let category of shoppingCategories()" [value]="category">{{ category }}</option>
           </select>
         </div>
         <div class="grid gap-2 sm:grid-cols-[7rem_7rem_minmax(6rem,auto)]">
-          <input type="number" min="0" step="0.01" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="quickShoppingQuantity" placeholder="Qty" [ngModel]="quickShoppingQuantity()" (ngModelChange)="quickShoppingQuantity.set($event === '' ? null : +$event)" />
-          <input class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="quickShoppingUnit" placeholder="Unit" [ngModel]="quickShoppingUnit()" (ngModelChange)="quickShoppingUnit.set($event)" />
+          <input type="number" min="0" step="0.01" class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-semibold text-slate-900 outline-none" name="quickShoppingQuantity" placeholder="Qty" [ngModel]="quickShoppingQuantity()" (ngModelChange)="quickShoppingQuantity.set($event === '' ? null : +$event)" />
+          <input class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-semibold text-slate-900 outline-none" name="quickShoppingUnit" placeholder="Unit" [ngModel]="quickShoppingUnit()" (ngModelChange)="quickShoppingUnit.set($event)" />
           <button type="submit" class="rounded-md bg-emerald-700 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-800 disabled:cursor-wait disabled:opacity-60" [disabled]="shoppingSaving()">
             {{ shoppingSaving() ? 'Adding.' : 'Add' }}
           </button>
@@ -136,7 +145,7 @@
     <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
       <div class="flex items-start justify-between gap-3">
         <div>
-          <p class="text-xs font-bold uppercase tracking-wider text-blue-600">Latest Blog</p>
+          <p class="app-token-kicker text-xs font-bold uppercase tracking-wider">Latest Blog</p>
           <h2 class="mt-1 text-lg font-bold text-slate-950">Most Recent Entry</h2>
         </div>
         <a routerLink="/blog" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50">All posts</a>
@@ -152,14 +161,14 @@
 
       <div *ngIf="!blogLoading() && !blogError() && latestBlogPost() as post" class="mt-4 grid gap-3">
         <div>
-          <a [routerLink]="['/blog', post.slug]" class="text-xl font-bold text-slate-950 transition hover:text-blue-700">{{ post.title }}</a>
+          <a [routerLink]="['/blog', post.slug]" class="app-token-link text-xl font-bold transition">{{ post.title }}</a>
           <p class="mt-1 text-sm font-medium text-slate-500">{{ post.postedDate | date:'mediumDate' }}</p>
         </div>
         <p class="text-sm leading-6 text-slate-600">{{ post.excerpt }}</p>
         <div class="flex flex-wrap gap-2" *ngIf="post.tags.length">
-          <span *ngFor="let tag of post.tags" class="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-bold text-indigo-700">{{ tag.name }}</span>
+          <span *ngFor="let tag of post.tags" class="app-token-soft-surface app-token-text-primary rounded-full px-2.5 py-1 text-xs font-bold">{{ tag.name }}</span>
         </div>
-        <a [routerLink]="['/blog', post.slug]" class="w-fit text-sm font-bold text-blue-700 transition hover:text-blue-900">Read entry</a>
+        <a [routerLink]="['/blog', post.slug]" class="app-token-link w-fit text-sm font-bold transition">Read entry</a>
       </div>
 
       <div *ngIf="!blogLoading() && !blogError() && !latestBlogPost()" class="mt-4 rounded-lg border border-dashed border-slate-300 p-4 text-sm text-slate-500">

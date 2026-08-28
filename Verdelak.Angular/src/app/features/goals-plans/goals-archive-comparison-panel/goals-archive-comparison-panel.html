@@ -9,19 +9,19 @@
   <div class="mt-3 grid gap-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
     <label class="grid gap-1 text-sm font-semibold text-slate-700">
       Base year
-      <select class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="vm.archiveCompareLeftPlanId()" (ngModelChange)="vm.archiveCompareLeftPlanId.set($event); vm.archiveComparison.set(null)" [ngModelOptions]="{standalone: true}">
+      <select class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" [ngModel]="vm.archiveCompareLeftPlanId()" (ngModelChange)="vm.archiveCompareLeftPlanId.set($event); vm.archiveComparison.set(null)" [ngModelOptions]="{standalone: true}">
         <option [ngValue]="null">Choose archived year</option>
         <option *ngFor="let item of vm.archivedPlans()" [ngValue]="item.id">{{ item.year }} - {{ item.title }}</option>
       </select>
     </label>
     <label class="grid gap-1 text-sm font-semibold text-slate-700">
       Compare to
-      <select class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="vm.archiveCompareRightPlanId()" (ngModelChange)="vm.archiveCompareRightPlanId.set($event); vm.archiveComparison.set(null)" [ngModelOptions]="{standalone: true}">
+      <select class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" [ngModel]="vm.archiveCompareRightPlanId()" (ngModelChange)="vm.archiveCompareRightPlanId.set($event); vm.archiveComparison.set(null)" [ngModelOptions]="{standalone: true}">
         <option [ngValue]="null">Choose archived year</option>
         <option *ngFor="let item of vm.archivedPlans()" [ngValue]="item.id">{{ item.year }} - {{ item.title }}</option>
       </select>
     </label>
-    <button type="button" class="self-end rounded-md bg-blue-600 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="vm.archiveComparisonLoading() || vm.archivedPlans().length < 2" (click)="vm.loadArchiveComparison()">{{ vm.archiveComparisonLoading() ? 'Loading' : 'Compare' }}</button>
+    <button type="button" class="app-primary-action self-end px-3 py-2 text-sm" [disabled]="vm.archiveComparisonLoading() || vm.archivedPlans().length < 2" (click)="vm.loadArchiveComparison()">{{ vm.archiveComparisonLoading() ? 'Loading' : 'Compare' }}</button>
   </div>
   <p *ngIf="vm.archivedPlans().length < 2" class="mt-3 rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-600">Archive at least two annual plans to compare years.</p>
 

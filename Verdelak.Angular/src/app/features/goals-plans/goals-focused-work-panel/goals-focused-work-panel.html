@@ -1,0 +1,112 @@
+<section *ngIf="workView() !== 'all'" class="mt-4 grid gap-3">
+      <div class="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 class="text-base font-bold text-slate-950">{{ workView() === 'active' ? 'Active Tasks' : workView() === 'overdue' ? 'Overdue Tasks' : workView() === 'unscheduled' ? 'Unscheduled Work' : 'Blocked Work' }}</h2>
+          <p class="text-sm text-slate-600">{{ focusDescription() }}</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <p class="text-sm font-semibold text-slate-600">{{ focusedItems().length | number }} matching tasks</p>
+          <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="downloadFocusedTaskReport()">Export task CSV</button>
+        </div>
+      </div>
+      <div *ngIf="workView() === 'active'" class="flex flex-wrap items-center gap-2">
+        <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Scope</p>
+        <div class="inline-flex rounded-md border border-slate-300 bg-white p-1 shadow-sm">
+          <button type="button" class="rounded px-3 py-1.5 text-sm font-bold transition" [class.bg-slate-900]="activeScope() === 'today'" [class.text-white]="activeScope() === 'today'" [class.text-slate-700]="activeScope() !== 'today'" (click)="setActiveScope('today')">Today</button>
+          <button type="button" class="rounded px-3 py-1.5 text-sm font-bold transition" [class.bg-slate-900]="activeScope() === 'week'" [class.text-white]="activeScope() === 'week'" [class.text-slate-700]="activeScope() !== 'week'" (click)="setActiveScope('week')">This Week</button>
+          <button type="button" class="rounded px-3 py-1.5 text-sm font-bold transition" [class.bg-slate-900]="activeScope() === 'month'" [class.text-white]="activeScope() === 'month'" [class.text-slate-700]="activeScope() !== 'month'" (click)="setActiveScope('month')">This Month</button>
+        </div>
+      </div>
+      <div *ngIf="(workView() === 'overdue' || workView() === 'unscheduled' || workView() === 'blocked') && focusedReportGroups().length" class="flex flex-wrap items-center gap-2">
+        <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Sections</p>
+        <button *ngFor="let group of focusedReportGroups()" type="button" class="inline-flex items-center gap-1 rounded-full border bg-white px-3 py-1.5 text-sm font-bold shadow-sm transition"
+          [class.border-rose-200]="workView() === 'overdue'"
+          [class.text-rose-800]="workView() === 'overdue'"
+          [class.hover:bg-rose-50]="workView() === 'overdue'"
+          [class.border-cyan-200]="workView() === 'unscheduled'"
+          [class.text-cyan-900]="workView() === 'unscheduled'"
+          [class.hover:bg-cyan-50]="workView() === 'unscheduled'"
+          [class.border-amber-200]="workView() === 'blocked'"
+          [class.text-amber-900]="workView() === 'blocked'"
+          [class.hover:bg-amber-50]="workView() === 'blocked'"
+          [attr.aria-label]="'Jump to ' + group.section + ' report section'" (click)="jumpToOverdueGroup(group.section)">
+          {{ group.section }}
+          <span class="rounded-full px-1.5 py-0.5 text-xs"
+            [class.bg-rose-100]="workView() === 'overdue'"
+            [class.text-rose-700]="workView() === 'overdue'"
+            [class.bg-cyan-100]="workView() === 'unscheduled'"
+            [class.text-cyan-800]="workView() === 'unscheduled'"
+            [class.bg-amber-100]="workView() === 'blocked'"
+            [class.text-amber-800]="workView() === 'blocked'">{{ group.totalCount | number }}</span>
+        </button>
+      </div>
+      <p *ngIf="workView() === 'active' && focusedItems().length > focusedItemLimit" class="rounded-md bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800">
+        Showing the first {{ focusedItemLimit | number }} matching tasks. Narrow the filters to focus the report.
+      </p>
+      <p *ngIf="(workView() === 'overdue' || workView() === 'unscheduled' || workView() === 'blocked') && hasTruncatedFocusedGroups()" class="rounded-md bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800">
+        Showing up to {{ focusedSectionItemLimit | number }} tasks per section. Narrow the filters to focus a section.
+      </p>
+
+      <div class="overflow-x-auto rounded-lg border border-slate-200">
+        <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
+          <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+            <tr>
+              <th class="px-3 py-3 font-bold">Task</th>
+              <th class="px-3 py-3 font-bold">Progress</th>
+              <th class="px-3 py-3 font-bold">Target</th>
+              <th class="px-3 py-3 font-bold">Schedule</th>
+              <th class="px-3 py-3 font-bold">Imported</th>
+              <th class="px-3 py-3 font-bold"></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 bg-white">
+            <ng-container *ngFor="let group of focusedReportGroups()">
+              <tr *ngIf="workView() === 'overdue' || workView() === 'unscheduled' || workView() === 'blocked'" [class.bg-rose-50]="workView() === 'overdue'" [class.bg-cyan-50]="workView() === 'unscheduled'" [class.bg-amber-50]="workView() === 'blocked'" [attr.id]="overdueGroupId(group.section)">
+                <td colspan="6" class="px-3 py-2">
+                  <div class="flex flex-wrap items-center justify-between gap-2">
+                    <p class="font-bold" [class.text-rose-950]="workView() === 'overdue'" [class.text-cyan-950]="workView() === 'unscheduled'" [class.text-amber-950]="workView() === 'blocked'">{{ group.section }}</p>
+                    <p class="text-xs font-bold uppercase tracking-wide" [class.text-rose-700]="workView() === 'overdue'" [class.text-cyan-800]="workView() === 'unscheduled'" [class.text-amber-800]="workView() === 'blocked'">{{ group.items.length | number }} of {{ group.totalCount | number }} shown</p>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngFor="let item of group.items" class="align-top">
+                <td class="min-w-80 px-3 py-2">
+                  <p class="font-semibold text-slate-950">{{ item.title }}</p>
+                  <p class="mt-1 max-w-96 break-words text-xs text-slate-500">{{ outlinePathLabel(item) }}</p>
+                  <p *ngIf="item.notes" class="mt-1 max-w-96 break-words text-xs text-slate-600">{{ item.notes }}</p>
+                </td>
+                <td class="whitespace-nowrap px-3 py-2">
+                  <p class="font-bold text-slate-950">{{ item.percentComplete }}%</p>
+                  <p class="text-xs text-slate-500">{{ item.status }}</p>
+                </td>
+                <td class="whitespace-nowrap px-3 py-2 text-slate-600">
+                  <p class="font-semibold text-slate-800">{{ item.planningWindowType }}</p>
+                  <p>
+                    <span *ngIf="item.targetStartDate">{{ item.targetStartDate | date:'shortDate' }}</span>
+                    <span *ngIf="item.targetEndDate"> - {{ item.targetEndDate | date:'shortDate' }}</span>
+                  </p>
+                </td>
+                <td class="whitespace-nowrap px-3 py-2">
+                  <span class="rounded bg-slate-100 px-2 py-1 text-xs font-bold text-slate-700" [title]="scheduleModeTitle(item.scheduleSurfaceMode)">{{ scheduleModeLabel(item.scheduleSurfaceMode) }}</span>
+                  <p *ngIf="item.unfinishedPredecessorCount" class="mt-1 text-xs font-bold text-amber-700">{{ item.unfinishedPredecessorCount | number }} unfinished of {{ item.importedPredecessorCount | number }}</p>
+                </td>
+                <td class="whitespace-nowrap px-3 py-2 text-xs text-slate-600">
+                  <p *ngIf="item.importedStart || item.importedFinish">{{ item.importedStart | date:'shortDate' }} - {{ item.importedFinish | date:'shortDate' }}</p>
+                  <p>{{ item.importedDuration || '' }}</p>
+                </td>
+                <td class="whitespace-nowrap px-3 py-2">
+                  <div class="flex gap-2">
+                    <button *ngIf="workView() === 'unscheduled'" type="button" class="app-primary-soft-action px-3 py-1.5 text-sm" [disabled]="isSaving(item) || selectedPlanArchived()" (click)="quickScheduleMode(item, 'DuringTargetWindow')">Use window</button>
+                    <button type="button" class="rounded-md bg-emerald-600 px-3 py-1.5 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="isSaving(item) || selectedPlanArchived()" (click)="quickProgress(item, 100)">{{ isSaving(item) ? 'Saving' : 'Done' }}</button>
+                    <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="inspectFocusedItem(item)">Open outline</button>
+                  </div>
+                </td>
+              </tr>
+            </ng-container>
+            <tr *ngIf="focusedReportItems().length === 0 && !loading()">
+              <td colspan="6" class="px-3 py-8 text-center text-sm text-slate-500">No matching tasks found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>

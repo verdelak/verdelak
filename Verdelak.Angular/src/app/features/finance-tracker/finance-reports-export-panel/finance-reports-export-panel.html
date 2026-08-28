@@ -26,7 +26,7 @@
           <button class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold hover:bg-slate-50" type="button" (click)="vm.printDonationReport()">Print Donations</button>
           <button class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold hover:bg-slate-50" type="button" (click)="vm.printNetWorthHistoryReport()">Print Net Worth</button>
           <button *ngIf="vm.accountHistory().length" class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold hover:bg-slate-50" type="button" (click)="vm.printSelectedAccountHistoryReport()">Print Account History</button>
-          <button class="rounded-md border border-blue-300 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-100" type="button" (click)="vm.exportFinanceWorkbook()">Full .xlsx Workbook</button>
+          <button class="app-primary-soft-action px-3 py-2 text-sm" type="button" (click)="vm.exportFinanceWorkbook()">Full .xlsx Workbook</button>
         </div>
         <div class="flex flex-wrap gap-2">
           <button class="rounded-md border border-slate-300 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50" type="button" (click)="vm.exportBalancesCsv()">Balances CSV</button>

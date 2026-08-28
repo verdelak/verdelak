@@ -2,8 +2,18 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { BlogService } from '../blog.service';
+import { BlogAppearanceSettings, BlogService } from '../blog.service';
 import { BlogArchiveMonth, BlogPostSummary, BlogTag } from '../models/blog.models';
+
+const defaultBlogAppearance: BlogAppearanceSettings = {
+  brandName: 'Verdelak Blog',
+  tagline: 'Notes, updates, and personal writing.',
+  primaryColor: '#4f46e5',
+  accentColor: '#0f766e',
+  logoUrl: null,
+  heroImageUrl: null,
+  faviconUrl: null
+};
 
 @Component({
   selector: 'app-blog-list',
@@ -25,6 +35,7 @@ export class BlogList implements OnInit {
   readonly totalCount = signal(0);
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
+  readonly appearance = signal<BlogAppearanceSettings>(defaultBlogAppearance);
 
   readonly canGoPrevious = computed(() => this.page() > 1);
   readonly canGoNext = computed(() => this.totalPages() > this.page());
@@ -36,6 +47,10 @@ export class BlogList implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.service.getAppearance().subscribe({
+      next: appearance => this.appearance.set(this.normalizeAppearance(appearance)),
+      error: () => this.appearance.set(defaultBlogAppearance)
+    });
     this.service.getTags().subscribe(tags => this.tags.set(tags));
     this.service.getArchive().subscribe(archive => this.archive.set(archive));
 
@@ -119,5 +134,17 @@ export class BlogList implements OnInit {
 
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  private normalizeAppearance(appearance: BlogAppearanceSettings): BlogAppearanceSettings {
+    return {
+      brandName: appearance.brandName?.trim() || defaultBlogAppearance.brandName,
+      tagline: appearance.tagline?.trim() || defaultBlogAppearance.tagline,
+      primaryColor: appearance.primaryColor?.trim() || defaultBlogAppearance.primaryColor,
+      accentColor: appearance.accentColor?.trim() || defaultBlogAppearance.accentColor,
+      logoUrl: appearance.logoUrl?.trim() || null,
+      heroImageUrl: appearance.heroImageUrl?.trim() || null,
+      faviconUrl: appearance.faviconUrl?.trim() || null
+    };
   }
 }

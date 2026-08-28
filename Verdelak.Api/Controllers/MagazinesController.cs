@@ -19,6 +19,9 @@ public class MagazinesController(VerdelakDbContext context) : ControllerBase
     public async Task<PagedResult<MagazineIssueDto>> List(
         [FromQuery] string? q,
         [FromQuery] int? seriesId,
+        [FromQuery] short? number,
+        [FromQuery] short? numberFrom,
+        [FromQuery] short? numberTo,
         [FromQuery] short? year,
         [FromQuery] short? month,
         [FromQuery] string? season,
@@ -32,54 +35,7 @@ public class MagazinesController(VerdelakDbContext context) : ControllerBase
         CancellationToken cancellationToken = default)
     {
         var query = IssueIncludes().AsNoTracking();
-        query = ApplyStatusFilter(query, status);
-
-        if (!string.IsNullOrWhiteSpace(q))
-        {
-            var term = q.Trim();
-            query = query.Where(issue =>
-                (issue.Title != null && issue.Title.Contains(term)) ||
-                (issue.Info != null && issue.Info.Contains(term)) ||
-                (issue.CoverID != null && issue.CoverID.Contains(term)) ||
-                issue.Series!.Title.Contains(term));
-        }
-
-        if (seriesId is not null)
-        {
-            query = query.Where(issue => issue.SeriesId == seriesId);
-        }
-
-        if (year is not null)
-        {
-            query = query.Where(issue => issue.Year == year);
-        }
-
-        if (month is not null)
-        {
-            query = query.Where(issue => issue.Month == month);
-        }
-
-        if (!string.IsNullOrWhiteSpace(season))
-        {
-            var normalizedSeason = season.Trim();
-            query = query.Where(issue => issue.Season == normalizedSeason);
-        }
-
-        if (special is not null)
-        {
-            query = query.Where(issue => issue.Special == special);
-        }
-
-        if (alternate is not null)
-        {
-            query = query.Where(issue => issue.Alternate == alternate);
-        }
-
-        if (!string.IsNullOrWhiteSpace(coverId))
-        {
-            var normalizedCover = coverId.Trim();
-            query = query.Where(issue => issue.CoverID == normalizedCover);
-        }
+        query = ApplyFilters(query, q, seriesId, number, numberFrom, numberTo, year, month, season, special, alternate, coverId, status);
 
         query = sort?.ToLowerInvariant() switch
         {
@@ -103,6 +59,97 @@ public class MagazinesController(VerdelakDbContext context) : ControllerBase
             .ToListAsync(cancellationToken);
 
         return new PagedResult<MagazineIssueDto>(items, total);
+    }
+
+    [AllowAnonymous]
+    [HttpGet("report")]
+    public async Task<MagazineReportDto> GetReport(
+        [FromQuery] string? q,
+        [FromQuery] int? seriesId,
+        [FromQuery] short? number,
+        [FromQuery] short? numberFrom,
+        [FromQuery] short? numberTo,
+        [FromQuery] short? year,
+        [FromQuery] short? month,
+        [FromQuery] string? season,
+        [FromQuery] bool? special,
+        [FromQuery] bool? alternate,
+        [FromQuery] string? coverId,
+        [FromQuery] string? status = OwnedStatus,
+        CancellationToken cancellationToken = default)
+    {
+        var query = ApplyFilters(
+            IssueIncludes().AsNoTracking(),
+            q,
+            seriesId,
+            number,
+            numberFrom,
+            numberTo,
+            year,
+            month,
+            season,
+            special,
+            alternate,
+            coverId,
+            status);
+
+        var rows = await query
+            .Select(issue => new
+            {
+                issue.SeriesId,
+                Series = issue.Series!.Title,
+                issue.Number,
+                issue.Year,
+                issue.Month,
+                issue.Season,
+                issue.StatusID,
+                issue.Special,
+                issue.Alternate
+            })
+            .ToListAsync(cancellationToken);
+
+        var seriesBreakdown = rows
+            .GroupBy(row => row.Series)
+            .OrderByDescending(group => group.Count())
+            .ThenBy(group => group.Key)
+            .Select(group => new MagazineBreakdownDto(group.Key, group.Count()))
+            .ToList();
+
+        var yearBreakdown = rows
+            .Where(row => row.Year is not null)
+            .GroupBy(row => row.Year!.Value)
+            .OrderByDescending(group => group.Key)
+            .Select(group => new MagazineBreakdownDto(group.Key.ToString(), group.Count()))
+            .ToList();
+
+        var duplicateNumbers = rows
+            .Where(row => row.Number is not null)
+            .GroupBy(row => new { row.SeriesId, row.Series, Number = row.Number!.Value })
+            .Where(group => group.Count() > 1)
+            .OrderBy(group => group.Key.Series)
+            .ThenBy(group => group.Key.Number)
+            .Select(group => new MagazineDuplicateNumberDto(group.Key.SeriesId, group.Key.Series, group.Key.Number, group.Count()))
+            .ToList();
+
+        var missingRanges = rows
+            .Where(row => row.Number is not null)
+            .GroupBy(row => new { row.SeriesId, row.Series })
+            .OrderBy(group => group.Key.Series)
+            .SelectMany(group => MissingRanges(group.Key.SeriesId, group.Key.Series, group.Select(row => row.Number!.Value)))
+            .ToList();
+
+        return new MagazineReportDto(
+            rows.Count,
+            rows.Count(row => row.StatusID == OwnedStatus),
+            rows.Count(row => row.StatusID == WantedStatus),
+            rows.Count(row => row.Number is null),
+            rows.Count(row => row.Year is null && row.Month is null && string.IsNullOrWhiteSpace(row.Season)),
+            rows.Count(row => row.Special),
+            rows.Count(row => row.Alternate),
+            seriesBreakdown,
+            yearBreakdown,
+            missingRanges,
+            duplicateNumbers);
     }
 
     [AllowAnonymous]
@@ -171,6 +218,88 @@ public class MagazinesController(VerdelakDbContext context) : ControllerBase
 
     private IQueryable<Magazine> IssueIncludes() =>
         context.Magazines.Include(issue => issue.Series);
+
+    private static IQueryable<Magazine> ApplyFilters(
+        IQueryable<Magazine> query,
+        string? q,
+        int? seriesId,
+        short? number,
+        short? numberFrom,
+        short? numberTo,
+        short? year,
+        short? month,
+        string? season,
+        bool? special,
+        bool? alternate,
+        string? coverId,
+        string? status)
+    {
+        query = ApplyStatusFilter(query, status);
+
+        if (!string.IsNullOrWhiteSpace(q))
+        {
+            var term = q.Trim();
+            query = query.Where(issue =>
+                (issue.Title != null && issue.Title.Contains(term)) ||
+                (issue.Info != null && issue.Info.Contains(term)) ||
+                (issue.CoverID != null && issue.CoverID.Contains(term)) ||
+                issue.Series!.Title.Contains(term));
+        }
+
+        if (seriesId is not null)
+        {
+            query = query.Where(issue => issue.SeriesId == seriesId);
+        }
+
+        if (number is not null)
+        {
+            query = query.Where(issue => issue.Number == number);
+        }
+
+        if (numberFrom is not null)
+        {
+            query = query.Where(issue => issue.Number >= numberFrom);
+        }
+
+        if (numberTo is not null)
+        {
+            query = query.Where(issue => issue.Number <= numberTo);
+        }
+
+        if (year is not null)
+        {
+            query = query.Where(issue => issue.Year == year);
+        }
+
+        if (month is not null)
+        {
+            query = query.Where(issue => issue.Month == month);
+        }
+
+        if (!string.IsNullOrWhiteSpace(season))
+        {
+            var normalizedSeason = season.Trim();
+            query = query.Where(issue => issue.Season == normalizedSeason);
+        }
+
+        if (special is not null)
+        {
+            query = query.Where(issue => issue.Special == special);
+        }
+
+        if (alternate is not null)
+        {
+            query = query.Where(issue => issue.Alternate == alternate);
+        }
+
+        if (!string.IsNullOrWhiteSpace(coverId))
+        {
+            var normalizedCover = coverId.Trim();
+            query = query.Where(issue => issue.CoverID == normalizedCover);
+        }
+
+        return query;
+    }
 
     private static IQueryable<Magazine> ApplyStatusFilter(IQueryable<Magazine> query, string? status)
     {
@@ -295,6 +424,44 @@ public class MagazinesController(VerdelakDbContext context) : ControllerBase
         month is >= 1 and <= 12
             ? new DateTime(2000, month, 1).ToString("MMMM")
             : month.ToString();
+
+    private static IEnumerable<MagazineMissingRangeDto> MissingRanges(int seriesId, string series, IEnumerable<short> numbers)
+    {
+        var orderedNumbers = numbers
+            .Distinct()
+            .Order()
+            .ToList();
+
+        if (orderedNumbers.Count < 2)
+        {
+            yield break;
+        }
+
+        short? start = null;
+        short? previous = null;
+        for (var number = orderedNumbers.First(); number <= orderedNumbers.Last(); number++)
+        {
+            if (orderedNumbers.Contains(number))
+            {
+                if (start is not null && previous is not null)
+                {
+                    yield return new MagazineMissingRangeDto(seriesId, series, start.Value, previous.Value, previous.Value - start.Value + 1);
+                    start = null;
+                    previous = null;
+                }
+
+                continue;
+            }
+
+            start ??= number;
+            previous = number;
+        }
+
+        if (start is not null && previous is not null)
+        {
+            yield return new MagazineMissingRangeDto(seriesId, series, start.Value, previous.Value, previous.Value - start.Value + 1);
+        }
+    }
 
     private static string NormalizeStatus(string? value) =>
         value?.Trim().Equals(WantedStatus, StringComparison.OrdinalIgnoreCase) == true ? WantedStatus : OwnedStatus;

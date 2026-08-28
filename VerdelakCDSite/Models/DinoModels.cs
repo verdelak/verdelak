@@ -2,6 +2,8 @@ namespace VerdelakCDSite.Models;
 
 public sealed class DinoIndexViewModel
 {
+    public PublicAppearanceSettings Appearance { get; init; } = PublicAppearanceSettings.DinoSiteDefault;
+
     public string? SearchTerm { get; init; }
 
     public string? TaxonomyFilter { get; init; }
@@ -25,6 +27,8 @@ public sealed class DinoIndexViewModel
 
 public sealed class DinoDetailViewModel
 {
+    public PublicAppearanceSettings Appearance { get; init; } = PublicAppearanceSettings.DinoSiteDefault;
+
     public PublicDinosaurDetail? Dinosaur { get; init; }
 
     public string? ErrorMessage { get; init; }

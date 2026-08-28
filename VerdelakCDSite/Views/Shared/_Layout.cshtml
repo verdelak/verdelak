@@ -1,19 +1,39 @@
 ﻿<!DOCTYPE html>
+@{
+    var appearance = ViewData["Appearance"] as PublicAppearanceSettings ?? PublicAppearanceSettings.CdSiteDefault;
+    var pageTitle = ViewData["Title"] as string;
+}
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Verdelak</title>
+    <title>@(string.IsNullOrWhiteSpace(pageTitle) ? appearance.BrandName : $"{pageTitle} - {appearance.BrandName}")</title>
+    @if (!string.IsNullOrWhiteSpace(appearance.FaviconUrl))
+    {
+        <link rel="icon" href="@appearance.FaviconUrl" />
+    }
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/VerdelakCDSite.styles.css" asp-append-version="true" />
+    <style>
+        :root {
+            --verd-primary: @appearance.PrimaryColor;
+            --verd-accent: @appearance.AccentColor;
+        }
+    </style>
 </head>
 <body>
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow">
             <div class="container-fluid">
-                <a class="navbar-brand fw-semibold" asp-area="" asp-controller="Home" asp-action="Index">Verdelak</a>
+                <a class="navbar-brand fw-semibold d-inline-flex align-items-center gap-2" asp-area="" asp-controller="Home" asp-action="Index">
+                    @if (!string.IsNullOrWhiteSpace(appearance.LogoUrl))
+                    {
+                        <img class="site-logo" src="@appearance.LogoUrl" alt="@($"{appearance.BrandName} logo")" />
+                    }
+                    <span>@appearance.BrandName</span>
+                </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -42,7 +62,7 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2026 - Verdelak
+            &copy; 2026 - @appearance.BrandName
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

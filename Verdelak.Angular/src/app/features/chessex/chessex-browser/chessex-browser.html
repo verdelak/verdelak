@@ -2,7 +2,7 @@
   <header class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
     <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
       <div>
-        <p class="text-xs font-bold uppercase tracking-wider text-blue-600">Inventory / Gaming</p>
+        <p class="app-token-kicker text-xs font-bold uppercase tracking-wider">Inventory / Gaming</p>
         <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">Chessex</h1>
         <p class="mt-1 text-sm text-slate-600">{{ total() }} {{ statusLabel() }} sets</p>
       </div>
@@ -19,23 +19,23 @@
 
   <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
     <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-      <input class="rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 xl:col-span-2" type="search" [ngModel]="query()" (ngModelChange)="query.set($event)" placeholder="Search name, code, color, or notes" />
-      <select class="rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="categoryId()" (ngModelChange)="categoryId.set($event ? +$event : null)">
+      <input class="app-token-control rounded-md border px-3 py-2 text-sm shadow-sm outline-none xl:col-span-2" type="search" [ngModel]="query()" (ngModelChange)="query.set($event)" placeholder="Search name, code, color, or notes" />
+      <select class="app-token-control rounded-md border px-3 py-2 text-sm shadow-sm outline-none" [ngModel]="categoryId()" (ngModelChange)="categoryId.set($event ? +$event : null)">
         <option [ngValue]="null">All categories</option>
         <option *ngFor="let category of categories()" [ngValue]="category.id">{{ category.name }}</option>
       </select>
-      <select class="rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="setTypeId()" (ngModelChange)="setTypeId.set($event ? +$event : null)">
+      <select class="app-token-control rounded-md border px-3 py-2 text-sm shadow-sm outline-none" [ngModel]="setTypeId()" (ngModelChange)="setTypeId.set($event ? +$event : null)">
         <option [ngValue]="null">All set types</option>
         <option *ngFor="let setType of setTypes()" [ngValue]="setType.id">{{ setType.name }}</option>
       </select>
-      <select class="rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="status()" (ngModelChange)="status.set($event)">
+      <select class="app-token-control rounded-md border px-3 py-2 text-sm shadow-sm outline-none" [ngModel]="status()" (ngModelChange)="status.set($event)">
         <option value="H">Have</option>
         <option value="W">Want</option>
         <option value="all">All</option>
       </select>
     </div>
     <div class="mt-3 flex flex-wrap gap-2">
-      <button type="button" class="rounded-md bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700" (click)="applyFilters()">Apply</button>
+      <button type="button" class="app-primary-action rounded-md px-4 py-2 text-sm font-bold shadow-sm transition" (click)="applyFilters()">Apply</button>
       <button type="button" class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="clearFilters()">Clear</button>
     </div>
   </section>
@@ -68,7 +68,7 @@
           <tbody class="divide-y divide-slate-100">
             <tr *ngFor="let row of categoryReportRows()" class="align-top hover:bg-slate-50">
               <td class="px-4 py-3">
-                <button type="button" class="text-left font-bold text-blue-700 hover:text-blue-900" (click)="applyCategoryReport(row)">{{ row.name }}</button>
+                <button type="button" class="app-token-link text-left font-bold" (click)="applyCategoryReport(row)">{{ row.name }}</button>
                 <div class="text-xs font-semibold text-slate-500">{{ row.missingCodeCount | number }} missing product codes</div>
               </td>
               <td class="whitespace-nowrap px-4 py-3 font-semibold text-slate-700">{{ row.setCount | number }}</td>
@@ -100,7 +100,7 @@
           <tbody class="divide-y divide-slate-100">
             <tr *ngFor="let row of setTypeReportRows()" class="align-top hover:bg-slate-50">
               <td class="px-4 py-3">
-                <button type="button" class="text-left font-bold text-blue-700 hover:text-blue-900" (click)="applySetTypeReport(row)">{{ row.name }}</button>
+                <button type="button" class="app-token-link text-left font-bold" (click)="applySetTypeReport(row)">{{ row.name }}</button>
                 <div class="text-xs font-semibold text-slate-500">{{ row.missingCodeCount | number }} missing product codes</div>
               </td>
               <td class="whitespace-nowrap px-4 py-3 font-semibold text-slate-700">{{ row.setCount | number }}</td>
@@ -135,17 +135,17 @@
         <table class="min-w-full divide-y divide-slate-200 text-sm">
           <thead class="bg-slate-50 text-left text-xs font-bold uppercase text-slate-600">
             <tr>
-              <th class="px-4 py-3"><button type="button" class="font-bold hover:text-blue-700" (click)="sortBy('name')">Name <span class="normal-case text-slate-400">{{ sortLabel('name') }}</span></button></th>
+              <th class="px-4 py-3"><button type="button" class="app-token-link font-bold" (click)="sortBy('name')">Name <span class="normal-case text-slate-400">{{ sortLabel('name') }}</span></button></th>
               <th class="px-4 py-3">Code</th>
-              <th class="px-4 py-3"><button type="button" class="font-bold hover:text-blue-700" (click)="sortBy('category')">Category <span class="normal-case text-slate-400">{{ sortLabel('category') }}</span></button></th>
-              <th class="px-4 py-3"><button type="button" class="font-bold hover:text-blue-700" (click)="sortBy('setType')">Set Type <span class="normal-case text-slate-400">{{ sortLabel('setType') }}</span></button></th>
+              <th class="px-4 py-3"><button type="button" class="app-token-link font-bold" (click)="sortBy('category')">Category <span class="normal-case text-slate-400">{{ sortLabel('category') }}</span></button></th>
+              <th class="px-4 py-3"><button type="button" class="app-token-link font-bold" (click)="sortBy('setType')">Set Type <span class="normal-case text-slate-400">{{ sortLabel('setType') }}</span></button></th>
               <th class="px-4 py-3">Dice</th>
-              <th class="px-4 py-3"><button type="button" class="font-bold hover:text-blue-700" (click)="sortBy('qty')">Qty <span class="normal-case text-slate-400">{{ sortLabel('qty') }}</span></button></th>
+              <th class="px-4 py-3"><button type="button" class="app-token-link font-bold" (click)="sortBy('qty')">Qty <span class="normal-case text-slate-400">{{ sortLabel('qty') }}</span></button></th>
               <th class="px-4 py-3">Status</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
-            <tr *ngFor="let item of items()" class="cursor-pointer hover:bg-blue-50/60" [class.bg-blue-50]="form().id === item.id" (click)="selectItem(item)">
+            <tr *ngFor="let item of items()" class="app-token-selectable-row cursor-pointer" [class.app-token-selected-row]="form().id === item.id" (click)="selectItem(item)">
               <td class="px-4 py-3">
                 <div class="font-semibold text-slate-900">{{ item.name }}</div>
                 <div *ngIf="item.color" class="text-xs text-slate-500">{{ item.color }}</div>
@@ -177,16 +177,16 @@
       <form class="mt-4 grid gap-4" (ngSubmit)="save()">
         <label class="grid gap-1 text-sm font-semibold text-slate-700">
           Name
-          <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" name="name" [ngModel]="form().name" (ngModelChange)="setFormField('name', $event)" [disabled]="!canManage()" />
+          <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" type="text" name="name" [ngModel]="form().name" (ngModelChange)="setFormField('name', $event)" [disabled]="!canManage()" />
         </label>
         <div class="grid gap-4 sm:grid-cols-2">
           <label class="grid gap-1 text-sm font-semibold text-slate-700">
             Product Code
-            <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" name="productCode" [ngModel]="form().productCode" (ngModelChange)="setFormField('productCode', $event)" [disabled]="!canManage()" />
+            <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" type="text" name="productCode" [ngModel]="form().productCode" (ngModelChange)="setFormField('productCode', $event)" [disabled]="!canManage()" />
           </label>
           <label class="grid gap-1 text-sm font-semibold text-slate-700">
             Status
-            <select class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="wantStatusID" [ngModel]="form().wantStatusID" (ngModelChange)="setFormField('wantStatusID', $event)" [disabled]="!canManage()">
+            <select class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" name="wantStatusID" [ngModel]="form().wantStatusID" (ngModelChange)="setFormField('wantStatusID', $event)" [disabled]="!canManage()">
               <option value="H">Have</option>
               <option value="W">Want</option>
             </select>
@@ -195,50 +195,50 @@
         <div class="grid gap-4 sm:grid-cols-2">
           <label class="grid gap-1 text-sm font-semibold text-slate-700">
             Category
-            <select class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="categoryId" [ngModel]="form().categoryId" (ngModelChange)="setFormField('categoryId', $event ? +$event : null)" [disabled]="!canManage()">
+            <select class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" name="categoryId" [ngModel]="form().categoryId" (ngModelChange)="setFormField('categoryId', $event ? +$event : null)" [disabled]="!canManage()">
               <option [ngValue]="null">New category</option>
               <option *ngFor="let category of categories()" [ngValue]="category.id">{{ category.name }}</option>
             </select>
           </label>
           <label class="grid gap-1 text-sm font-semibold text-slate-700">
             New Category
-            <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" name="categoryName" [ngModel]="form().categoryName" (ngModelChange)="setFormField('categoryName', $event)" [disabled]="!canManage() || !!form().categoryId" />
+            <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" type="text" name="categoryName" [ngModel]="form().categoryName" (ngModelChange)="setFormField('categoryName', $event)" [disabled]="!canManage() || !!form().categoryId" />
           </label>
         </div>
         <div class="grid gap-4 sm:grid-cols-2">
           <label class="grid gap-1 text-sm font-semibold text-slate-700">
             Set Type
-            <select class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="setTypeId" [ngModel]="form().setTypeId" (ngModelChange)="setFormField('setTypeId', $event ? +$event : null)" [disabled]="!canManage()">
+            <select class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" name="setTypeId" [ngModel]="form().setTypeId" (ngModelChange)="setFormField('setTypeId', $event ? +$event : null)" [disabled]="!canManage()">
               <option [ngValue]="null">New set type</option>
               <option *ngFor="let setType of setTypes()" [ngValue]="setType.id">{{ setType.name }}</option>
             </select>
           </label>
           <label class="grid gap-1 text-sm font-semibold text-slate-700">
             New Set Type
-            <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" name="setTypeName" [ngModel]="form().setTypeName" (ngModelChange)="setFormField('setTypeName', $event)" [disabled]="!canManage() || !!form().setTypeId" />
+            <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" type="text" name="setTypeName" [ngModel]="form().setTypeName" (ngModelChange)="setFormField('setTypeName', $event)" [disabled]="!canManage() || !!form().setTypeId" />
           </label>
         </div>
         <div class="grid gap-4 sm:grid-cols-3">
           <label class="grid gap-1 text-sm font-semibold text-slate-700">
             Dice Count
-            <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="number" name="diceCount" [ngModel]="form().diceCount" (ngModelChange)="setFormField('diceCount', $event ? +$event : null)" [disabled]="!canManage()" />
+            <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" type="number" name="diceCount" [ngModel]="form().diceCount" (ngModelChange)="setFormField('diceCount', $event ? +$event : null)" [disabled]="!canManage()" />
           </label>
           <label class="grid gap-1 text-sm font-semibold text-slate-700">
             Qty
-            <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="number" name="qty" [ngModel]="form().qty" (ngModelChange)="setFormField('qty', $event ? +$event : null)" [disabled]="!canManage()" />
+            <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" type="number" name="qty" [ngModel]="form().qty" (ngModelChange)="setFormField('qty', $event ? +$event : null)" [disabled]="!canManage()" />
           </label>
           <label class="grid gap-1 text-sm font-semibold text-slate-700 sm:col-span-1">
             Color
-            <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" name="color" [ngModel]="form().color" (ngModelChange)="setFormField('color', $event)" [disabled]="!canManage()" />
+            <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" type="text" name="color" [ngModel]="form().color" (ngModelChange)="setFormField('color', $event)" [disabled]="!canManage()" />
           </label>
         </div>
         <label class="grid gap-1 text-sm font-semibold text-slate-700">
           Notes
-          <textarea class="min-h-24 rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" name="notes" [ngModel]="form().notes" (ngModelChange)="setFormField('notes', $event)" [disabled]="!canManage()"></textarea>
+          <textarea class="app-token-control min-h-24 rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" name="notes" [ngModel]="form().notes" (ngModelChange)="setFormField('notes', $event)" [disabled]="!canManage()"></textarea>
         </label>
 
         <div class="flex flex-col gap-2 sm:flex-row" *ngIf="canManage()">
-          <button type="submit" class="rounded-md bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60" [disabled]="loading()">Save</button>
+          <button type="submit" class="app-primary-action rounded-md px-4 py-2 text-sm font-bold shadow-sm transition disabled:cursor-wait disabled:opacity-60" [disabled]="loading()">Save</button>
           <button type="button" class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="startNew()">Clear</button>
           <button type="button" class="rounded-md border border-red-200 bg-white px-4 py-2 text-sm font-bold text-red-700 shadow-sm transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50" (click)="deleteSelected()" [disabled]="loading() || !form().id">Delete</button>
         </div>

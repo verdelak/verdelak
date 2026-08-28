@@ -4,11 +4,13 @@ import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/auth/auth.service';
-import { AlcoholItem, AlcoholReport, UpsertAlcoholItem } from '../models/alcohol.models';
+import { AlcoholItem, AlcoholLookupCleanup, AlcoholLookupCleanupSuggestion, AlcoholProductDuplicateCluster, AlcoholProductDuplicateReport, AlcoholReport, UpsertAlcoholItem } from '../models/alcohol.models';
 import { AlcoholService } from '../alcohol.service';
 
 type StatusFilter = 'all' | 'H' | 'W' | 'unknown';
-type SortKey = 'name' | 'category' | 'producer' | 'location' | 'quantity' | 'rating';
+type SortKey = 'name' | 'category' | 'type' | 'style' | 'country' | 'region' | 'producer' | 'location' | 'quantity' | 'rating';
+type LookupField = 'Category' | 'Type' | 'Style' | 'Location' | 'Country' | 'Region';
+type AlcoholReportItemListKey = 'priceReviewItems' | 'ratingReviewItems' | 'highValueItems' | 'topRatedItems' | 'vintageReviewItems';
 
 interface AlcoholImportRow {
   rowNumber: number;
@@ -40,6 +42,23 @@ interface AlcoholForm {
   sourceRowLabel: string;
 }
 
+interface LookupMergeForm {
+  field: LookupField;
+  sourceValue: string;
+  targetValue: string;
+  clearTarget: boolean;
+}
+
+const alcoholCsvHeader = ['id', 'category', 'name', 'producer', 'style', 'type', 'variety', 'color', 'country', 'region', 'year', 'size', 'price', 'rating', 'qty', 'location', 'status', 'notes', 'sourceSheet', 'sourceRow'];
+
+const focusedReportExports: Record<AlcoholReportItemListKey, string> = {
+  priceReviewItems: 'alcohol-price-review.csv',
+  ratingReviewItems: 'alcohol-rating-review.csv',
+  highValueItems: 'alcohol-high-value.csv',
+  topRatedItems: 'alcohol-top-rated.csv',
+  vintageReviewItems: 'alcohol-vintage-review.csv'
+};
+
 @Component({
   selector: 'app-alcohol-browser',
   imports: [CommonModule, FormsModule, RouterLink],
@@ -50,7 +69,16 @@ export class AlcoholBrowser implements OnInit {
   readonly items = signal<AlcoholItem[]>([]);
   readonly categories = signal<string[]>([]);
   readonly locations = signal<string[]>([]);
+  readonly types = signal<string[]>([]);
+  readonly styles = signal<string[]>([]);
+  readonly regions = signal<string[]>([]);
+  readonly countries = signal<string[]>([]);
   readonly report = signal<AlcoholReport | null>(null);
+  readonly lookupCleanup = signal<AlcoholLookupCleanup | null>(null);
+  readonly productDuplicates = signal<AlcoholProductDuplicateReport | null>(null);
+  readonly inventoryDuplicateKeys = signal<Set<string>>(new Set());
+  readonly applyingLookupCleanup = signal<string | null>(null);
+  readonly mergingProductDuplicates = signal<string | null>(null);
   readonly reportLoading = signal(false);
   readonly loading = signal(false);
   readonly detailLoading = signal(false);
@@ -61,6 +89,10 @@ export class AlcoholBrowser implements OnInit {
   readonly pageSize = signal(50);
   readonly query = signal('');
   readonly category = signal('');
+  readonly type = signal('');
+  readonly style = signal('');
+  readonly country = signal('');
+  readonly region = signal('');
   readonly location = signal('');
   readonly status = signal<StatusFilter>('all');
   readonly sortKey = signal<SortKey>('name');
@@ -70,6 +102,8 @@ export class AlcoholBrowser implements OnInit {
   readonly form = signal<AlcoholForm>(this.emptyForm());
   readonly importText = signal('');
   readonly importing = signal(false);
+  readonly mergeForm = signal<LookupMergeForm>(this.emptyMergeForm());
+  readonly mergingLookup = signal(false);
   readonly importPreview = computed(() => this.parseImportRows(this.importText()));
   readonly validImportRows = computed(() => this.importPreview().filter(row => row.warnings.length === 0));
   readonly warningImportRows = computed(() => this.importPreview().filter(row => row.warnings.length > 0));
@@ -82,6 +116,7 @@ export class AlcoholBrowser implements OnInit {
     const role = this.auth.user()?.role;
     return role === 'Admin' || role === 'Contributor';
   });
+  readonly canApplyLookupCleanup = computed(() => this.auth.user()?.role === 'Admin');
   readonly totalPages = computed(() => Math.max(1, Math.ceil(this.total() / this.pageSize())));
   readonly quantityOnPage = computed(() => this.items().reduce((sum, item) => sum + (item.quantityOnHand ?? 0), 0));
 
@@ -93,6 +128,9 @@ export class AlcoholBrowser implements OnInit {
   ngOnInit(): void {
     this.loadLookups();
     this.loadReport();
+    this.loadLookupCleanup();
+    this.loadProductDuplicates();
+    this.loadInventoryDuplicateKeys();
     this.load();
   }
 
@@ -103,6 +141,10 @@ export class AlcoholBrowser implements OnInit {
     this.service.list({
       q: this.query(),
       category: this.category(),
+      type: this.type(),
+      style: this.style(),
+      country: this.country(),
+      region: this.region(),
       location: this.location(),
       status: this.status(),
       sort: this.sort(),
@@ -127,9 +169,47 @@ export class AlcoholBrowser implements OnInit {
       complete: () => this.reportLoading.set(false)
     });
   }
+
+  loadLookupCleanup(): void {
+    this.service.lookupCleanup().subscribe({
+      next: cleanup => this.lookupCleanup.set(cleanup),
+      error: err => this.error.set(err.error ?? err.message ?? 'Failed to load alcohol lookup cleanup suggestions.')
+    });
+  }
+
+  loadProductDuplicates(): void {
+    this.service.productDuplicates().subscribe({
+      next: report => this.productDuplicates.set(report),
+      error: err => this.error.set(err.error ?? err.message ?? 'Failed to load alcohol product duplicate suggestions.')
+    });
+  }
+
+  loadInventoryDuplicateKeys(): void {
+    this.service.importDuplicateKeys().subscribe({
+      next: rows => this.inventoryDuplicateKeys.set(new Set(rows.map(row => row.key))),
+      error: err => this.error.set(err.error ?? err.message ?? 'Failed to load alcohol duplicate check keys.')
+    });
+  }
+
   loadLookups(): void {
-    this.service.categories().subscribe({ next: values => this.categories.set(values) });
-    this.service.locations().subscribe({ next: values => this.locations.set(values) });
+    forkJoin({
+      categories: this.service.categories(),
+      locations: this.service.locations(),
+      types: this.service.types(),
+      styles: this.service.styles(),
+      regions: this.service.regions(),
+      countries: this.service.countries()
+    }).subscribe({
+      next: values => {
+        this.categories.set(values.categories);
+        this.locations.set(values.locations);
+        this.types.set(values.types);
+        this.styles.set(values.styles);
+        this.regions.set(values.regions);
+        this.countries.set(values.countries);
+      },
+      error: err => this.error.set(err.error ?? err.message ?? 'Failed to load alcohol lookups.')
+    });
   }
 
   applyFilters(): void {
@@ -139,6 +219,10 @@ export class AlcoholBrowser implements OnInit {
   clearFilters(): void {
     this.query.set('');
     this.category.set('');
+    this.type.set('');
+    this.style.set('');
+    this.country.set('');
+    this.region.set('');
     this.location.set('');
     this.status.set('all');
     this.load(1);
@@ -211,6 +295,9 @@ export class AlcoholBrowser implements OnInit {
         this.message.set(`${saved.name} saved.`);
         this.loadLookups();
         this.loadReport();
+        this.loadLookupCleanup();
+        this.loadProductDuplicates();
+        this.loadInventoryDuplicateKeys();
         this.load(this.page());
       },
       error: err => this.message.set(err.error ?? err.message ?? 'Failed to save alcohol item.')
@@ -230,6 +317,9 @@ export class AlcoholBrowser implements OnInit {
         this.message.set(`${item.name} deleted.`);
         this.loadLookups();
         this.loadReport();
+        this.loadLookupCleanup();
+        this.loadProductDuplicates();
+        this.loadInventoryDuplicateKeys();
         this.load(1);
       },
       error: err => this.message.set(err.error ?? err.message ?? 'Failed to delete alcohol item.')
@@ -269,6 +359,9 @@ export class AlcoholBrowser implements OnInit {
         this.importText.set('');
         this.loadLookups();
         this.loadReport();
+        this.loadLookupCleanup();
+        this.loadProductDuplicates();
+        this.loadInventoryDuplicateKeys();
         this.load(1);
       },
       error: err => this.error.set(err.error ?? err.message ?? 'Alcohol import failed.'),
@@ -278,6 +371,60 @@ export class AlcoholBrowser implements OnInit {
 
   clearImport(): void {
     this.importText.set('');
+  }
+
+  patchMergeForm(patch: Partial<LookupMergeForm>): void {
+    this.mergeForm.update(form => ({ ...form, ...patch }));
+  }
+
+  mergeLookup(): void {
+    if (!this.canApplyLookupCleanup()) {
+      return;
+    }
+
+    const form = this.mergeForm();
+    const sourceValue = form.sourceValue.trim();
+    const targetValue = form.clearTarget ? null : this.nullIfBlank(form.targetValue);
+    if (!sourceValue) {
+      this.error.set('Choose a source lookup value to merge or clear.');
+      return;
+    }
+
+    const targetLabel = targetValue ?? 'clear this value';
+    if (!confirm(`Merge Alcohol ${form.field} "${sourceValue}" -> ${targetLabel}?`)) {
+      return;
+    }
+
+    this.mergingLookup.set(true);
+    this.error.set(null);
+    this.message.set(null);
+    this.service.mergeLookup({
+      field: form.field,
+      sourceValue,
+      targetValue
+    }).subscribe({
+      next: result => {
+        const replacement = result.targetValue ?? 'cleared';
+        this.message.set(`${result.field} "${result.sourceValue}" ${replacement}; ${result.updatedRows} row${result.updatedRows === 1 ? '' : 's'} updated, ${result.removedRows} lookup row${result.removedRows === 1 ? '' : 's'} removed.`);
+        this.mergeForm.set(this.emptyMergeForm(form.field));
+        this.loadLookups();
+        this.loadReport();
+        this.loadLookupCleanup();
+        this.loadProductDuplicates();
+        this.loadInventoryDuplicateKeys();
+        this.load(this.page());
+      },
+      error: err => this.error.set(err.error ?? err.message ?? 'Failed to merge alcohol lookup value.'),
+      complete: () => this.mergingLookup.set(false)
+    });
+  }
+
+  mergeSourceOptions(): string[] {
+    return this.lookupOptions(this.mergeForm().field);
+  }
+
+  mergeTargetOptions(): string[] {
+    return this.lookupOptions(this.mergeForm().field).filter(value => value !== this.mergeForm().sourceValue);
   }
 
 
@@ -299,6 +446,139 @@ export class AlcoholBrowser implements OnInit {
     this.downloadAlcoholCsv('alcohol-cleanup-review.csv', this.report()?.cleanupItems ?? []);
   }
 
+  downloadPriceReviewCsv(): void {
+    this.downloadFocusedReportCsv('priceReviewItems');
+  }
+
+  downloadRatingReviewCsv(): void {
+    this.downloadFocusedReportCsv('ratingReviewItems');
+  }
+
+  downloadHighValueCsv(): void {
+    this.downloadFocusedReportCsv('highValueItems');
+  }
+
+  downloadTopRatedCsv(): void {
+    this.downloadFocusedReportCsv('topRatedItems');
+  }
+
+  downloadVintageReviewCsv(): void {
+    this.downloadFocusedReportCsv('vintageReviewItems');
+  }
+
+  downloadLookupCleanupCsv(): void {
+    const rows = [
+      ['field', 'currentValue', 'suggestedValue', 'count', 'reason'],
+      ...(this.lookupCleanup()?.suggestions ?? []).map(row => [
+        row.field,
+        row.currentValue,
+        row.suggestedValue ?? '',
+        String(row.count),
+        row.reason
+      ])
+    ];
+    this.downloadCsv('alcohol-lookup-cleanup.csv', rows);
+  }
+
+  applyLookupCleanup(row: AlcoholLookupCleanupSuggestion): void {
+    if (!this.canApplyLookupCleanup()) {
+      return;
+    }
+
+    const target = row.suggestedValue ?? 'clear this value';
+    if (!confirm(`Apply Alcohol lookup cleanup: ${row.field} "${row.currentValue}" -> ${target}?`)) {
+      return;
+    }
+
+    const key = this.lookupCleanupKey(row);
+    this.applyingLookupCleanup.set(key);
+    this.error.set(null);
+    this.message.set(null);
+    this.service.applyLookupCleanup({
+      field: row.field,
+      currentValue: row.currentValue,
+      suggestedValue: row.suggestedValue
+    }).subscribe({
+      next: result => {
+        const replacement = result.suggestedValue ?? 'cleared';
+        this.message.set(`${result.field} "${result.currentValue}" ${replacement}; ${result.updatedRows} row${result.updatedRows === 1 ? '' : 's'} updated.`);
+        this.loadLookups();
+        this.loadReport();
+        this.loadLookupCleanup();
+        this.load(this.page());
+      },
+      error: err => this.error.set(err.error ?? err.message ?? 'Failed to apply alcohol lookup cleanup.'),
+      complete: () => this.applyingLookupCleanup.set(null)
+    });
+  }
+
+  lookupCleanupKey(row: AlcoholLookupCleanupSuggestion): string {
+    return `${row.field}:${row.currentValue}:${row.suggestedValue ?? ''}`;
+  }
+
+  downloadProductDuplicatesCsv(): void {
+    const rows = [
+      ['product', 'category', 'producer', 'style', 'type', 'country', 'region', 'year', 'size', 'productId', 'inventoryRows', 'quantity', 'locations', 'price', 'rating', 'sourceSheet', 'sourceRow'],
+      ...(this.productDuplicates()?.clusters ?? []).flatMap(cluster => cluster.members.map(member => [
+        cluster.product,
+        cluster.category,
+        cluster.producer ?? '',
+        cluster.style ?? '',
+        cluster.type ?? '',
+        cluster.country ?? '',
+        cluster.region ?? '',
+        cluster.vintageOrYear ?? '',
+        cluster.size ?? '',
+        String(member.productId),
+        String(member.inventoryRows),
+        String(member.quantity),
+        member.locations ?? '',
+        member.price?.toString() ?? '',
+        member.rating?.toString() ?? '',
+        member.sourceSheet ?? '',
+        member.sourceRowLabel ?? ''
+      ]))
+    ];
+    this.downloadCsv('alcohol-product-duplicates.csv', rows);
+  }
+
+  mergeProductDuplicateCluster(cluster: AlcoholProductDuplicateCluster): void {
+    if (!this.canApplyLookupCleanup() || cluster.members.length < 2) {
+      return;
+    }
+
+    const target = cluster.members[0];
+    const productIds = cluster.members.map(member => member.productId);
+    if (!confirm(`Merge ${cluster.productRows} Alcohol product rows for "${cluster.product}" into product #${target.productId}?`)) {
+      return;
+    }
+
+    const key = this.productDuplicateKey(cluster);
+    this.mergingProductDuplicates.set(key);
+    this.error.set(null);
+    this.message.set(null);
+    this.service.mergeProductDuplicates({
+      targetProductId: target.productId,
+      productIds
+    }).subscribe({
+      next: result => {
+        this.message.set(`Product #${result.targetProductId} kept; ${result.mergedProductRows} duplicate product row${result.mergedProductRows === 1 ? '' : 's'} merged with ${result.movedInventoryRows} inventory row${result.movedInventoryRows === 1 ? '' : 's'} moved.`);
+        this.loadLookups();
+        this.loadReport();
+        this.loadLookupCleanup();
+        this.loadProductDuplicates();
+        this.loadInventoryDuplicateKeys();
+        this.load(this.page());
+      },
+      error: err => this.error.set(err.error ?? err.message ?? 'Failed to merge alcohol product duplicates.'),
+      complete: () => this.mergingProductDuplicates.set(null)
+    });
+  }
+
+  productDuplicateKey(cluster: AlcoholProductDuplicateCluster): string {
+    return cluster.members.map(member => member.productId).join(':');
+  }
+
   downloadReportCsv(): void {
     const report = this.report();
     if (!report) {
@@ -314,6 +594,10 @@ export class AlcoholBrowser implements OnInit {
       ['summary', 'Missing location', String(report.missingLocationItems), '', ''],
       ['summary', 'Cleanup needed', String(report.cleanupNeededItems), '', ''],
       ...report.categoryBreakdown.map(row => ['category', row.label, String(row.count), String(row.quantity), row.value?.toString() ?? '']),
+      ...report.typeBreakdown.map(row => ['type', row.label, String(row.count), String(row.quantity), row.value?.toString() ?? '']),
+      ...report.styleBreakdown.map(row => ['style', row.label, String(row.count), String(row.quantity), row.value?.toString() ?? '']),
+      ...report.countryBreakdown.map(row => ['country', row.label, String(row.count), String(row.quantity), row.value?.toString() ?? '']),
+      ...report.regionBreakdown.map(row => ['region', row.label, String(row.count), String(row.quantity), row.value?.toString() ?? '']),
       ...report.locationBreakdown.map(row => ['location', row.label, String(row.count), String(row.quantity), row.value?.toString() ?? '']),
       ...report.statusBreakdown.map(row => ['status', row.label, String(row.count), String(row.quantity), row.value?.toString() ?? ''])
     ];
@@ -339,34 +623,47 @@ export class AlcoholBrowser implements OnInit {
     return value === 'W' ? 'Wanted' : value === 'H' ? 'Owned' : 'Unknown';
   }
 
+  itemValue(item: AlcoholItem): string {
+    if (item.price === null || item.price === undefined) {
+      return '-';
+    }
+
+    return '$' + (item.price * Math.max(item.quantityOnHand ?? 0, 0)).toLocaleString(undefined, { maximumFractionDigits: 2 });
+  }
+
 
   private downloadAlcoholCsv(filename: string, items: AlcoholItem[]): void {
-    const rows = [
-      ['id', 'category', 'name', 'producer', 'style', 'type', 'variety', 'color', 'country', 'region', 'year', 'size', 'price', 'rating', 'qty', 'location', 'status', 'notes', 'sourceSheet', 'sourceRow'],
-      ...items.map(item => [
-        String(item.id),
-        item.category,
-        item.name,
-        item.producer ?? '',
-        item.style ?? '',
-        item.type ?? '',
-        item.variety ?? '',
-        item.color ?? '',
-        item.country ?? '',
-        item.region ?? '',
-        item.vintageOrYear ?? '',
-        item.size ?? '',
-        item.price?.toString() ?? '',
-        item.rating?.toString() ?? '',
-        item.quantityOnHand?.toString() ?? '',
-        item.location ?? '',
-        item.statusID,
-        item.notes ?? '',
-        item.sourceSheet ?? '',
-        item.sourceRowLabel ?? ''
-      ])
-    ];
+    const rows = [alcoholCsvHeader, ...items.map(item => this.alcoholCsvRow(item))];
     this.downloadCsv(filename, rows);
+  }
+
+  private downloadFocusedReportCsv(key: AlcoholReportItemListKey): void {
+    this.downloadAlcoholCsv(focusedReportExports[key], this.report()?.[key] ?? []);
+  }
+
+  private alcoholCsvRow(item: AlcoholItem): string[] {
+    return [
+      String(item.id),
+      item.category,
+      item.name,
+      item.producer ?? '',
+      item.style ?? '',
+      item.type ?? '',
+      item.variety ?? '',
+      item.color ?? '',
+      item.country ?? '',
+      item.region ?? '',
+      item.vintageOrYear ?? '',
+      item.size ?? '',
+      item.price?.toString() ?? '',
+      item.rating?.toString() ?? '',
+      item.quantityOnHand?.toString() ?? '',
+      item.location ?? '',
+      item.statusID,
+      item.notes ?? '',
+      item.sourceSheet ?? '',
+      item.sourceRowLabel ?? ''
+    ];
   }
 
   private downloadCsv(filename: string, rows: string[][]): void {
@@ -455,6 +752,32 @@ export class AlcoholBrowser implements OnInit {
       sourceSheet: '',
       sourceRowLabel: ''
     };
+  }
+
+  private emptyMergeForm(field: LookupField = 'Category'): LookupMergeForm {
+    return {
+      field,
+      sourceValue: '',
+      targetValue: '',
+      clearTarget: false
+    };
+  }
+
+  private lookupOptions(field: LookupField): string[] {
+    switch (field) {
+      case 'Category':
+        return this.categories();
+      case 'Type':
+        return this.types();
+      case 'Style':
+        return this.styles();
+      case 'Location':
+        return this.locations();
+      case 'Country':
+        return this.countries();
+      case 'Region':
+        return this.regions();
+    }
   }
 
   private sort(): string {
@@ -547,8 +870,8 @@ export class AlcoholBrowser implements OnInit {
       warnings.push('Rating is not numeric');
     }
 
-    if (item.rating !== null && (item.rating < 0 || item.rating > 10)) {
-      warnings.push('Rating should be 0 to 10');
+    if (item.rating !== null && (item.rating < 0 || item.rating > 100)) {
+      warnings.push('Rating should be 0 to 100');
     }
 
     if (rawQuantity.trim() && item.quantityOnHand === null) {
@@ -559,12 +882,8 @@ export class AlcoholBrowser implements OnInit {
       warnings.push('Quantity cannot be negative');
     }
 
-    const duplicate = this.items().some(existing =>
-      existing.name.toLowerCase() === item.name.toLowerCase() &&
-      (existing.producer ?? '').toLowerCase() === (item.producer ?? '').toLowerCase() &&
-      (existing.vintageOrYear ?? '').toLowerCase() === (item.vintageOrYear ?? '').toLowerCase());
-    if (duplicate) {
-      warnings.push('Possible duplicate on current page');
+    if (item.name && this.inventoryDuplicateKeys().has(this.importDuplicateKey(item))) {
+      warnings.push('Possible duplicate in Alcohol inventory');
     }
 
     if (item.category.toLowerCase() === 'wine' && !item.variety && !item.color) {
@@ -658,13 +977,22 @@ export class AlcoholBrowser implements OnInit {
     return knownValues.some(known => known.toLowerCase() === value.toLowerCase());
   }
 
+  private importDuplicateKey(item: UpsertAlcoholItem): string {
+    return [
+      item.category,
+      item.name,
+      item.producer,
+      item.vintageOrYear,
+      item.size
+    ].map(value => this.keyPart(value)).join('\u001f');
+  }
+
+  private keyPart(value: string | null): string {
+    return (value ?? '').trim().toUpperCase();
+  }
+
   private nullIfBlank(value: string): string | null {
     const trimmed = value.trim();
     return trimmed ? trimmed : null;
   }
 }
-
-
-
-
-

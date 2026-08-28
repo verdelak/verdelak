@@ -1,11 +1,15 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../environments/environments';
-import { AlcoholItem, AlcoholReport, PagedResult, UpsertAlcoholItem } from './models/alcohol.models';
+import { AlcoholImportDuplicateKey, AlcoholItem, AlcoholLookupCleanup, AlcoholProductDuplicateReport, AlcoholReport, ApplyAlcoholLookupCleanup, ApplyAlcoholLookupCleanupResult, MergeAlcoholLookup, MergeAlcoholLookupResult, MergeAlcoholProductDuplicates, MergeAlcoholProductDuplicatesResult, PagedResult, UpsertAlcoholItem } from './models/alcohol.models';
 
 export interface AlcoholListFilters {
   q?: string;
   category?: string;
+  type?: string;
+  style?: string;
+  country?: string;
+  region?: string;
   location?: string;
   status?: string;
   sort?: string;
@@ -41,8 +45,48 @@ export class AlcoholService {
     return this.http.get<string[]>(`${this.base}/locations`);
   }
 
+  types() {
+    return this.http.get<string[]>(`${this.base}/types`);
+  }
+
+  styles() {
+    return this.http.get<string[]>(`${this.base}/styles`);
+  }
+
+  regions() {
+    return this.http.get<string[]>(`${this.base}/regions`);
+  }
+
+  countries() {
+    return this.http.get<string[]>(`${this.base}/countries`);
+  }
+
   report() {
     return this.http.get<AlcoholReport>(`${this.base}/report`);
+  }
+
+  lookupCleanup() {
+    return this.http.get<AlcoholLookupCleanup>(`${this.base}/lookup-cleanup`);
+  }
+
+  productDuplicates() {
+    return this.http.get<AlcoholProductDuplicateReport>(`${this.base}/product-duplicates`);
+  }
+
+  importDuplicateKeys() {
+    return this.http.get<AlcoholImportDuplicateKey[]>(`${this.base}/import-duplicate-keys`);
+  }
+
+  applyLookupCleanup(dto: ApplyAlcoholLookupCleanup) {
+    return this.http.post<ApplyAlcoholLookupCleanupResult>(`${this.base}/lookup-cleanup/apply`, dto);
+  }
+
+  mergeLookup(dto: MergeAlcoholLookup) {
+    return this.http.post<MergeAlcoholLookupResult>(`${this.base}/lookups/merge`, dto);
+  }
+
+  mergeProductDuplicates(dto: MergeAlcoholProductDuplicates) {
+    return this.http.post<MergeAlcoholProductDuplicatesResult>(`${this.base}/product-duplicates/merge`, dto);
   }
 
   create(dto: UpsertAlcoholItem) {

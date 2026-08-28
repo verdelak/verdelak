@@ -1,0 +1,102 @@
+<section class="rounded border border-slate-200 bg-white shadow-sm">
+  <div class="flex flex-col gap-3 border-b border-slate-200 p-4 lg:flex-row lg:items-center lg:justify-between">
+    <div>
+      <h2 class="text-lg font-bold text-slate-950">Livestock Events</h2>
+      <p class="text-sm text-slate-600">{{ visibleLivestockEvents().length }} shown</p>
+    </div>
+    <select class="rounded border border-slate-300 px-3 py-2 text-sm" [ngModel]="livestockTankFilter()" (ngModelChange)="livestockTankFilter.set($event ? +$event : null)">
+      <option [ngValue]="null">All tanks</option>
+      <option *ngFor="let tank of tanks()" [ngValue]="tank.id">{{ tank.name }}</option>
+    </select>
+  </div>
+
+  <section class="border-b border-slate-200 bg-slate-50 p-4">
+    <div class="mb-3 flex items-center justify-between gap-3">
+      <div>
+        <h3 class="text-base font-bold text-slate-950">Quarantine Tracking</h3>
+        <p class="text-sm text-slate-600">{{ quarantineEvents().length }} quarantine event{{ quarantineEvents().length === 1 ? '' : 's' }}</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button type="button" class="rounded border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 disabled:opacity-50" [disabled]="quarantineEvents().length === 0" (click)="exportQuarantineEvents()">CSV</button>
+        <span class="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-bold text-amber-800">{{ quarantineEvents().length }} tracked</span>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto rounded border border-slate-200 bg-white">
+      <table class="min-w-full divide-y divide-slate-200 text-sm">
+        <thead class="bg-white text-left text-xs font-bold uppercase text-slate-500">
+          <tr>
+            <th class="px-3 py-2">Started</th>
+            <th class="px-3 py-2">Duration</th>
+            <th class="px-3 py-2">Route</th>
+            <th class="px-3 py-2">Species</th>
+            <th class="px-3 py-2">Qty</th>
+            <th class="px-3 py-2">Notes</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <tr *ngFor="let event of quarantineEvents().slice(0, 10)" class="align-top">
+            <td class="whitespace-nowrap px-3 py-3 text-slate-700">{{ event.eventDate | date: 'MMM d, y' }}</td>
+            <td class="px-3 py-3 font-semibold text-slate-950">{{ quarantineDuration(event) }}</td>
+            <td class="px-3 py-3 text-slate-700">{{ livestockRoute(event) }}</td>
+            <td class="px-3 py-3 text-slate-700">
+              <div>{{ event.commonName }}</div>
+              <div *ngIf="event.scientificName" class="text-xs text-slate-500">{{ event.scientificName }}</div>
+            </td>
+            <td class="px-3 py-3 text-slate-700">{{ event.quantity }}</td>
+            <td class="max-w-md px-3 py-3 text-slate-600">{{ event.notes || '-' }}</td>
+          </tr>
+          <tr *ngIf="quarantineEvents().length === 0">
+            <td colspan="6" class="px-3 py-6 text-center text-sm text-slate-500">No quarantine events found.</td>
+          </tr>
+        </tbody>
+      </table>
+      <p *ngIf="quarantineEvents().length > 10" class="border-t border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-600">Showing newest 10 quarantine events.</p>
+    </div>
+  </section>
+
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-slate-200 text-sm">
+      <thead class="bg-slate-50 text-left text-xs font-bold uppercase text-slate-500">
+        <tr>
+          <th class="px-3 py-2">When</th>
+          <th class="px-3 py-2">Type</th>
+          <th class="px-3 py-2">Route</th>
+          <th class="px-3 py-2">Species</th>
+          <th class="px-3 py-2">Qty</th>
+          <th class="px-3 py-2">Stock</th>
+          <th class="px-3 py-2 text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        <tr *ngFor="let event of visibleLivestockEvents()" class="align-top">
+          <td class="whitespace-nowrap px-3 py-3 text-slate-700">{{ formatDate(event.eventDate) }}</td>
+          <td class="px-3 py-3 font-semibold text-slate-950">{{ event.eventType }}</td>
+          <td class="px-3 py-3 text-slate-700">{{ livestockRoute(event) }}</td>
+          <td class="px-3 py-3 text-slate-700">
+            <div>{{ event.commonName }}</div>
+            <div *ngIf="event.scientificName" class="text-xs text-slate-500">{{ event.scientificName }}</div>
+          </td>
+          <td class="px-3 py-3 text-slate-700">{{ event.quantity }}</td>
+          <td class="px-3 py-3">
+            <span class="rounded border px-2 py-1 text-xs font-bold" [ngClass]="event.updatesStock ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-slate-200 bg-slate-50 text-slate-700'">
+              {{ event.updatesStock ? 'Updated' : 'Log only' }}
+            </span>
+          </td>
+          <td class="px-3 py-3">
+            <div class="flex flex-wrap justify-end gap-2">
+              <button type="button" class="rounded border border-slate-300 px-3 py-1.5 text-xs font-bold text-slate-700" (click)="editLivestockEvent(event)">Edit</button>
+              <button type="button" class="rounded border border-rose-200 px-3 py-1.5 text-xs font-bold text-rose-700" (click)="deleteLivestockEvent(event)">Delete</button>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="!livestockLoading() && visibleLivestockEvents().length === 0">
+          <td colspan="7" class="px-3 py-8 text-center text-sm text-slate-500">No livestock events found.</td>
+        </tr>
+        <tr *ngIf="livestockLoading()">
+          <td colspan="7" class="px-3 py-8 text-center text-sm text-slate-500">Loading livestock events.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>

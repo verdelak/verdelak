@@ -1,0 +1,281 @@
+    <div class="mt-4 grid gap-3 xl:grid-cols-[minmax(0,1fr)_22rem]">
+      <div class="overflow-x-auto rounded-lg border border-slate-200">
+      <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
+        <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+          <tr>
+            <th class="px-3 py-3 font-bold">Plan item</th>
+            <th class="px-3 py-3 font-bold">Type</th>
+            <th class="px-3 py-3 font-bold">Progress</th>
+            <th class="px-3 py-3 font-bold">Native planning</th>
+            <th class="px-3 py-3 font-bold">Imported window</th>
+            <th class="px-3 py-3 font-bold">Duration</th>
+            <th class="px-3 py-3 font-bold">Links</th>
+            <th class="px-3 py-3 font-bold">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 bg-white">
+          <tr *ngFor="let item of visibleItems()" class="app-token-selectable-row" [class.app-token-selected-row]="isSelectedOutlineItem(item)" [class.bg-slate-50]="item.isSummary && !isSelectedOutlineItem(item)">
+            <td class="min-w-80 px-3 py-2">
+              <div class="flex items-center gap-2" [style.padding-left.px]="item.outlineLevel * 18">
+                <button *ngIf="hasChildren(item); else leafMarker" type="button" class="grid h-5 w-5 shrink-0 place-items-center rounded border border-slate-300 bg-white text-sm font-bold leading-none text-slate-700 shadow-sm transition hover:bg-slate-100" (click)="toggleBranch(item)" [attr.aria-label]="(isCollapsed(item) ? 'Expand ' : 'Collapse ') + item.title" [attr.aria-expanded]="!isCollapsed(item)">
+                  {{ isCollapsed(item) ? '+' : '-' }}
+                </button>
+                <ng-template #leafMarker>
+                  <span class="grid h-5 w-5 shrink-0 place-items-center"><span class="inline-block h-2 w-2 rounded-full bg-slate-300"></span></span>
+                </ng-template>
+                <button type="button" class="app-token-link text-left font-semibold" [class.font-bold]="item.isSummary" (click)="selectOutlineItem(item)">{{ item.title }}</button>
+                <span *ngIf="item.notes" class="rounded bg-amber-50 px-1.5 py-0.5 text-xs font-bold text-amber-700" [title]="item.notes">Notes</span>
+              </div>
+              <p class="mt-1 text-xs text-slate-500" [style.padding-left.px]="item.outlineLevel * 18 + 16">{{ item.topLevelSection || 'Plan root' }}</p>
+            </td>
+            <td class="whitespace-nowrap px-3 py-2"><span class="rounded bg-slate-100 px-2 py-1 text-xs font-bold text-slate-700">{{ item.itemType }}</span></td>
+            <td class="whitespace-nowrap px-3 py-2">
+              <span class="font-bold text-slate-950">{{ item.percentComplete }}%</span>
+              <span class="ml-2 text-xs text-slate-500">{{ item.status }}</span>
+            </td>
+            <td class="whitespace-nowrap px-3 py-2 text-slate-600">
+              <span class="font-semibold text-slate-800">{{ item.planningWindowType }}</span>
+              <span *ngIf="item.targetStartDate" class="ml-2">{{ item.targetStartDate | date:'shortDate' }}</span>
+              <span *ngIf="item.targetEndDate"> - {{ item.targetEndDate | date:'shortDate' }}</span>
+              <span class="ml-2 rounded bg-slate-100 px-1.5 py-0.5 text-xs font-bold text-slate-600" [title]="scheduleModeTitle(item.scheduleSurfaceMode)">{{ scheduleModeLabel(item.scheduleSurfaceMode) }}</span>
+            </td>
+            <td class="whitespace-nowrap px-3 py-2 text-slate-600">
+              <span *ngIf="item.importedStart">{{ item.importedStart | date:'shortDate' }}</span>
+              <span *ngIf="item.importedFinish"> - {{ item.importedFinish | date:'shortDate' }}</span>
+            </td>
+            <td class="whitespace-nowrap px-3 py-2 text-slate-600">
+              {{ item.importedDuration || '' }}
+              <span *ngIf="item.sourceManualSchedule" class="app-token-soft-surface app-token-text-primary ml-2 rounded px-1.5 py-0.5 text-xs font-bold">Manual</span>
+            </td>
+            <td class="whitespace-nowrap px-3 py-2 text-slate-600">{{ item.importedPredecessorCount || '' }}</td>
+            <td class="whitespace-nowrap px-3 py-2">
+              <button type="button" class="rounded-md border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="selectOutlineItem(item)">Select</button>
+            </td>
+          </tr>
+          <tr *ngIf="visibleItems().length === 0 && !loading()">
+            <td colspan="8" class="px-3 py-8 text-center text-sm text-slate-500">No plan items found.</td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+
+      <aside class="grid content-start gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3" *ngIf="selectedOutlineItem() as selectedItem">
+        <div class="min-w-0">
+          <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Selected</p>
+          <h3 class="mt-1 break-words text-base font-bold text-slate-950">{{ selectedItem.title }}</h3>
+          <p class="mt-1 break-words text-xs text-slate-600">{{ outlinePathLabel(selectedItem) }}</p>
+        </div>
+
+        <dl class="grid grid-cols-2 gap-2 text-sm">
+          <div class="rounded-md border border-slate-200 bg-white px-2 py-1.5">
+            <dt class="text-xs font-bold uppercase text-slate-500">Type</dt>
+            <dd class="font-semibold text-slate-900">{{ selectedItem.itemType }}</dd>
+          </div>
+          <div class="rounded-md border border-slate-200 bg-white px-2 py-1.5">
+            <dt class="text-xs font-bold uppercase text-slate-500">Complete</dt>
+            <dd class="font-semibold text-slate-900">{{ selectedItem.percentComplete }}%</dd>
+          </div>
+          <div class="rounded-md border border-slate-200 bg-white px-2 py-1.5">
+            <dt class="text-xs font-bold uppercase text-slate-500">Level</dt>
+            <dd class="font-semibold text-slate-900">{{ selectedItem.outlineLevel }}</dd>
+          </div>
+          <div class="rounded-md border border-slate-200 bg-white px-2 py-1.5">
+            <dt class="text-xs font-bold uppercase text-slate-500">Children</dt>
+            <dd class="font-semibold text-slate-900">{{ descendantCount(selectedItem) }}</dd>
+          </div>
+          <div class="rounded-md border border-slate-200 bg-white px-2 py-1.5">
+            <dt class="text-xs font-bold uppercase text-slate-500">Rollover</dt>
+            <dd class="font-semibold text-slate-900">{{ selectedItem.rolloverPolicy }}</dd>
+          </div>
+        </dl>
+
+        <p class="break-words text-xs text-slate-600">
+          Parent: <span class="font-semibold text-slate-800">{{ outlineParent(selectedItem)?.title || 'Plan root' }}</span>
+        </p>
+
+        <section *ngIf="canQuickProgress(selectedItem)" class="grid gap-2 rounded-md border border-emerald-200 bg-emerald-50 p-2">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <p class="text-sm font-bold text-emerald-950">Quick progress</p>
+            <span class="text-xs font-bold uppercase text-emerald-700">{{ selectedItem.percentComplete }}%</span>
+          </div>
+          <div class="grid grid-cols-5 gap-1">
+            <button *ngFor="let percent of quickProgressValues" type="button" class="rounded border px-1.5 py-1 text-xs font-bold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50"
+              [class.border-emerald-600]="selectedItem.percentComplete === percent"
+              [class.bg-emerald-600]="selectedItem.percentComplete === percent"
+              [class.text-white]="selectedItem.percentComplete === percent"
+              [class.border-emerald-200]="selectedItem.percentComplete !== percent"
+              [class.bg-white]="selectedItem.percentComplete !== percent"
+              [class.text-emerald-800]="selectedItem.percentComplete !== percent"
+              [disabled]="isSaving(selectedItem)"
+              (click)="quickProgress(selectedItem, percent)">{{ percent === 100 ? 'Done' : percent + '%' }}</button>
+          </div>
+          <p *ngIf="rowError(selectedItem)" class="text-xs font-bold text-red-700">{{ rowError(selectedItem) }}</p>
+        </section>
+
+        <section *ngIf="canQuickProgress(selectedItem)" class="app-token-soft-surface grid gap-2 rounded-md border p-2">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <p class="app-token-text-primary text-sm font-bold">Schedule feed</p>
+            <span class="app-token-bg-accent app-token-text-strong rounded px-2 py-0.5 text-xs font-bold" [title]="scheduleModeTitle(selectedItem.scheduleSurfaceMode)">{{ scheduleModeLabel(selectedItem.scheduleSurfaceMode) }}</span>
+          </div>
+          <div class="grid grid-cols-2 gap-1">
+            <button *ngFor="let mode of scheduleSurfaceModes" type="button" class="px-2 py-1 text-xs"
+              [class.app-primary-action]="selectedItem.scheduleSurfaceMode === mode"
+              [class.app-primary-soft-action]="selectedItem.scheduleSurfaceMode !== mode"
+              [title]="scheduleModeTitle(mode)"
+              [disabled]="isSaving(selectedItem)"
+              (click)="quickScheduleMode(selectedItem, mode)">{{ scheduleModeLabel(mode) }}</button>
+          </div>
+        </section>
+
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40" title="Move earlier among siblings" [disabled]="selectedPlanArchived() || !previousSibling(selectedItem) || outlineMoving()" (click)="moveOutlineUp(selectedItem)">Up</button>
+          <button type="button" class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40" title="Move later among siblings" [disabled]="selectedPlanArchived() || !nextSibling(selectedItem) || outlineMoving()" (click)="moveOutlineDown(selectedItem)">Down</button>
+          <button type="button" class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40" [disabled]="selectedPlanArchived() || selectedItem.outlineLevel === 0" (click)="openOutlineMove(selectedItem)">Move</button>
+          <button type="button" class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40" [disabled]="selectedPlanArchived()" (click)="openOutlineCreate(selectedItem)">Add child</button>
+          <button type="button" class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40" [disabled]="selectedPlanArchived()" (click)="openOutlineEdit(selectedItem)">Edit</button>
+          <button type="button" class="rounded-md border border-red-200 bg-white px-2 py-1.5 text-sm font-bold text-red-700 shadow-sm transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40" [disabled]="selectedPlanArchived() || selectedItem.outlineLevel === 0" (click)="deleteOutlineItem(selectedItem)">Delete</button>
+        </div>
+
+        <section class="grid gap-2 rounded-md border border-slate-200 bg-white p-2">
+          <div class="flex items-center justify-between gap-2">
+            <p class="text-sm font-bold text-slate-950">Dependencies</p>
+            <span class="text-xs font-bold uppercase text-slate-500" *ngIf="dependencyLoading()">Loading</span>
+          </div>
+
+          <form class="grid gap-2 rounded-md bg-slate-50 p-2" (ngSubmit)="addDependency(selectedItem)">
+            <input class="app-token-control rounded-md border px-2 py-1.5 text-sm shadow-sm outline-none" type="search" name="dependencySearch" [ngModel]="dependencySearch()" (ngModelChange)="dependencySearch.set($event)" placeholder="Filter predecessor items" [disabled]="selectedPlanArchived()" />
+            <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">
+              Add predecessor
+              <select class="app-token-control min-w-0 rounded-md border px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none" name="dependencyCandidate" [ngModel]="dependencyCandidateId()" (ngModelChange)="setDependencyCandidate($event)" [disabled]="selectedPlanArchived()">
+                <option [ngValue]="null">Choose item</option>
+                <option *ngFor="let candidate of dependencyCandidates()" [ngValue]="candidate.id">{{ outlinePathLabel(candidate) }}</option>
+              </select>
+            </label>
+            <div class="grid grid-cols-[minmax(0,1fr)_7rem] gap-2">
+              <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">
+                Type
+                <select class="app-token-control w-full min-w-0 rounded-md border px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none" name="dependencyCreateType" [ngModel]="dependencyCreateType()" (ngModelChange)="dependencyCreateType.set($event)" [disabled]="selectedPlanArchived()">
+                  <option *ngFor="let type of dependencyTypes" [value]="type">{{ type }}</option>
+                </select>
+              </label>
+              <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">
+                Lag min
+                <input class="app-token-control w-full min-w-0 rounded-md border px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none" name="dependencyCreateLagMinutes" type="number" [ngModel]="dependencyCreateLagMinutes()" (ngModelChange)="updateDependencyCreateLag($event)" [disabled]="selectedPlanArchived()" />
+              </label>
+            </div>
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-xs font-semibold text-slate-600">{{ dependencyCandidates().length | number }} matches</span>
+              <button type="submit" class="app-primary-action px-3 py-1.5 text-sm" [disabled]="selectedPlanArchived() || !dependencyCandidateId() || dependencySaving()">Add</button>
+            </div>
+          </form>
+
+          <div class="grid gap-1">
+            <p class="text-xs font-bold uppercase text-slate-500">Predecessors</p>
+            <div *ngFor="let dependency of dependencies()?.predecessors" class="grid gap-1 rounded-md border border-slate-200 px-2 py-1.5">
+              <div class="flex items-start justify-between gap-2">
+                <p class="min-w-0 break-words text-sm font-semibold text-slate-900">{{ dependencyLabel(dependency) }}</p>
+                <button type="button" class="rounded border border-red-200 bg-white px-1.5 py-0.5 text-xs font-bold text-red-700 transition hover:bg-red-50 disabled:opacity-40" [disabled]="selectedPlanArchived() || dependencySaving()" (click)="deleteDependency(selectedItem, dependency)">Remove</button>
+              </div>
+              <p class="text-xs text-slate-500">
+                {{ dependency.itemType || 'Imported' }}
+                <span *ngIf="dependency.importedLinkType"> / Project link {{ dependency.importedLinkType }}</span>
+              </p>
+              <div class="grid grid-cols-[minmax(0,1fr)_7rem_auto] gap-1">
+                <select class="app-token-control min-w-0 rounded border px-1.5 py-1 text-xs font-bold text-slate-800 outline-none" [ngModel]="dependencyEditFor(dependency).dependencyType" (ngModelChange)="updateDependencyEdit(dependency, { dependencyType: $event })" [ngModelOptions]="{standalone: true}" aria-label="Dependency type" [disabled]="selectedPlanArchived()">
+                  <option *ngFor="let type of dependencyTypes" [value]="type">{{ type }}</option>
+                </select>
+                <input class="app-token-control min-w-0 rounded border px-1.5 py-1 text-xs font-semibold text-slate-800 outline-none" type="number" [ngModel]="dependencyEditFor(dependency).lagMinutes" (ngModelChange)="updateDependencyLag(dependency, $event)" [ngModelOptions]="{standalone: true}" aria-label="Dependency lag minutes" [disabled]="selectedPlanArchived()" />
+                <button type="button" class="app-primary-action px-2 py-1 text-xs" [disabled]="selectedPlanArchived() || !isDependencyDirty(dependency) || dependencySaving()" (click)="saveDependency(selectedItem, dependency)">Save</button>
+              </div>
+            </div>
+            <p *ngIf="!dependencies()?.predecessors?.length && !dependencyLoading()" class="rounded-md bg-slate-50 px-2 py-1.5 text-sm text-slate-600">No predecessors.</p>
+          </div>
+
+          <div class="grid gap-1">
+            <p class="text-xs font-bold uppercase text-slate-500">Successors</p>
+            <div *ngFor="let dependency of dependencies()?.successors" class="grid gap-1 rounded-md border border-slate-200 px-2 py-1.5">
+              <div class="flex items-start justify-between gap-2">
+                <p class="min-w-0 break-words text-sm font-semibold text-slate-900">{{ successorLabel(dependency) }}</p>
+                <button type="button" class="rounded border border-red-200 bg-white px-1.5 py-0.5 text-xs font-bold text-red-700 transition hover:bg-red-50 disabled:opacity-40" [disabled]="selectedPlanArchived() || dependencySaving()" (click)="deleteSuccessorDependency(dependency)">Remove</button>
+              </div>
+              <p class="text-xs text-slate-500">{{ dependency.itemType || 'Plan item' }} / {{ dependency.dependencyType }} / {{ dependency.lagMinutes }} min</p>
+            </div>
+            <p *ngIf="!dependencies()?.successors?.length && !dependencyLoading()" class="rounded-md bg-slate-50 px-2 py-1.5 text-sm text-slate-600">No successors.</p>
+          </div>
+        </section>
+
+        <form *ngIf="movingOutlineItem() as item" class="app-token-soft-surface grid gap-2 rounded-md border p-2" (ngSubmit)="moveOutlineUnder()">
+          <div class="flex items-start justify-between gap-2">
+            <p class="text-sm font-bold text-slate-950">Move parent</p>
+            <button type="button" class="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="closeOutlineMove()">Close</button>
+          </div>
+          <input class="app-token-control rounded-md border px-2 py-1.5 text-sm shadow-sm outline-none" type="search" name="outlineMoveSearch" [ngModel]="outlineMoveSearch()" (ngModelChange)="outlineMoveSearch.set($event)" placeholder="Filter parents" />
+          <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">
+            Destination
+            <select class="app-token-control min-w-0 rounded-md border px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none" name="outlineMoveParent" [ngModel]="outlineMoveParentId()" (ngModelChange)="outlineMoveParentId.set($event)">
+              <option [ngValue]="null">Choose parent</option>
+              <option *ngFor="let parent of moveParentsFor(item)" [ngValue]="parent.id">{{ outlinePathLabel(parent) }}</option>
+            </select>
+          </label>
+          <p class="text-xs font-semibold text-slate-600">{{ moveParentsFor(item).length | number }} available</p>
+          <button type="submit" class="app-primary-action px-3 py-2 text-sm" [disabled]="!outlineMoveParentId() || outlineMoving()">Move</button>
+        </form>
+
+        <form *ngIf="editingOutlineItem() as item" class="grid gap-2 rounded-md border border-slate-200 bg-white p-2" (ngSubmit)="saveItem(item)">
+          <div class="flex items-start justify-between gap-2">
+            <p class="text-sm font-bold text-slate-950">Edit item</p>
+            <button type="button" class="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="closeOutlineEdit()">Close</button>
+          </div>
+          <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">Title
+            <input class="app-token-control rounded-md border px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none" name="outlineEditTitle" type="text" required [ngModel]="editFor(item).title" (ngModelChange)="updateEdit(item, { title: $event })" />
+          </label>
+          <div class="grid grid-cols-2 gap-2">
+            <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">Type
+              <select class="app-token-control rounded-md border px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none" name="outlineEditType" [ngModel]="editFor(item).itemType" (ngModelChange)="updateEdit(item, { itemType: $event })">
+                <option *ngFor="let type of editableItemTypes" [value]="type">{{ type }}</option>
+              </select>
+            </label>
+            <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">Complete
+              <input class="app-token-control rounded-md border px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none" name="outlineEditPercent" type="number" min="0" max="100" [ngModel]="editFor(item).percentComplete" (ngModelChange)="updatePercent(item, $event)" />
+            </label>
+          </div>
+          <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">Window
+            <select class="app-token-control rounded-md border px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none" name="outlineEditWindow" [ngModel]="editFor(item).planningWindowType" (ngModelChange)="updateEdit(item, { planningWindowType: $event })">
+              <option *ngFor="let type of planningWindowTypes" [value]="type">{{ type }}</option>
+            </select>
+          </label>
+          <div class="grid grid-cols-2 gap-2">
+            <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">Start
+              <input class="app-token-control rounded-md border px-2 py-1.5 text-sm font-normal normal-case text-slate-900 outline-none" name="outlineEditStart" type="date" [ngModel]="editFor(item).targetStartDate" (ngModelChange)="updateEdit(item, { targetStartDate: $event })" />
+            </label>
+            <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">End
+              <input class="app-token-control rounded-md border px-2 py-1.5 text-sm font-normal normal-case text-slate-900 outline-none" name="outlineEditEnd" type="date" [ngModel]="editFor(item).targetEndDate" (ngModelChange)="updateEdit(item, { targetEndDate: $event })" />
+            </label>
+          </div>
+          <div class="flex flex-wrap items-center gap-1">
+            <span class="mr-1 text-xs font-bold uppercase text-slate-500">Nudge window</span>
+            <button type="button" class="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="nudgeEditWindow(item, -7)">-1 week</button>
+            <button type="button" class="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="nudgeEditWindow(item, 7)">+1 week</button>
+            <button type="button" class="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="nudgeEditWindow(item, 28)">+4 weeks</button>
+          </div>
+          <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">Schedule
+            <select class="app-token-control rounded-md border px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none" name="outlineEditSchedule" [ngModel]="editFor(item).scheduleSurfaceMode" (ngModelChange)="updateEdit(item, { scheduleSurfaceMode: $event })">
+              <option *ngFor="let mode of scheduleSurfaceModes" [value]="mode">{{ scheduleModeLabel(mode) }}</option>
+            </select>
+          </label>
+          <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">Rollover
+            <select class="app-token-control rounded-md border px-2 py-1.5 text-sm font-semibold normal-case text-slate-900 outline-none" name="outlineEditRollover" [ngModel]="editFor(item).rolloverPolicy" (ngModelChange)="updateEdit(item, { rolloverPolicy: $event })">
+              <option *ngFor="let policy of rolloverPolicies" [value]="policy">{{ policy }}</option>
+            </select>
+          </label>
+          <label class="grid gap-1 text-xs font-bold uppercase text-slate-600">Notes
+            <textarea class="app-token-control min-h-16 rounded-md border px-2 py-1.5 text-sm font-normal normal-case text-slate-900 outline-none" name="outlineEditNotes" [ngModel]="editFor(item).notes" (ngModelChange)="updateEdit(item, { notes: $event })"></textarea>
+          </label>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="submit" class="app-primary-action px-3 py-2 text-sm" [disabled]="!isDirty(item) || isSaving(item)">{{ isSaving(item) ? 'Saving' : 'Save' }}</button>
+            <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50" [disabled]="!isDirty(item) || isSaving(item)" (click)="discardEdit(item)">Reset</button>
+          </div>
+          <p *ngIf="rowError(item)" class="text-sm font-bold text-red-700">{{ rowError(item) }}</p>
+        </form>
+      </aside>
+    </div>

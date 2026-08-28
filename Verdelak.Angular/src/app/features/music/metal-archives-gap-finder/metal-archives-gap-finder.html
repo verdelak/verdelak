@@ -8,7 +8,7 @@
       <form class="flex flex-col gap-2 sm:flex-row sm:items-end" (ngSubmit)="search()">
         <label class="grid gap-1 text-sm font-bold text-slate-700">
           Band name
-          <input class="w-full min-w-72 rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="search" [ngModel]="bandQuery()" (ngModelChange)="bandQuery.set($event)" name="bandQuery" placeholder="Amorphis">
+          <input class="app-token-control w-full min-w-72 rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" type="search" [ngModel]="bandQuery()" (ngModelChange)="bandQuery.set($event)" name="bandQuery" placeholder="Amorphis">
         </label>
         <button class="rounded-md bg-slate-900 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-slate-700 disabled:cursor-wait disabled:opacity-60" type="submit" [disabled]="loading()">
           {{ loading() ? 'Searching.' : 'Search' }}
@@ -25,18 +25,18 @@
       <div>
         <h2 class="text-sm font-black uppercase text-slate-500">Direct Compare</h2>
         <p class="mt-1 text-sm text-slate-600">If search is blocked, find the band on Metal Archives, then paste the band URL or numeric id here.</p>
-        <a class="mt-1 inline-block text-xs font-bold text-blue-700 hover:underline" [href]="'https://www.metal-archives.com/search?searchString=' + bandQuery() + '&type=band_name'" target="_blank" rel="noreferrer">Open Metal Archives band search</a>
+        <a class="app-token-link mt-1 inline-block text-xs font-bold hover:underline" [href]="'https://www.metal-archives.com/search?searchString=' + bandQuery() + '&type=band_name'" target="_blank" rel="noreferrer">Open Metal Archives band search</a>
       </div>
       <form class="grid gap-2 lg:grid-cols-[minmax(12rem,18rem)_minmax(18rem,30rem)_auto]" (ngSubmit)="compareManualBand()">
         <label class="grid gap-1 text-sm font-bold text-slate-700">
           Band name
-          <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" [ngModel]="manualBandName()" (ngModelChange)="manualBandName.set($event)" name="manualBandName" placeholder="Haunt">
+          <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" type="text" [ngModel]="manualBandName()" (ngModelChange)="manualBandName.set($event)" name="manualBandName" placeholder="Haunt">
         </label>
         <label class="grid gap-1 text-sm font-bold text-slate-700">
           Metal Archives URL or id
-          <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="text" [ngModel]="manualBandIdOrUrl()" (ngModelChange)="manualBandIdOrUrl.set($event)" name="manualBandIdOrUrl" placeholder="https://www.metal-archives.com/bands/Haunt/3540433299">
+          <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" type="text" [ngModel]="manualBandIdOrUrl()" (ngModelChange)="manualBandIdOrUrl.set($event)" name="manualBandIdOrUrl" placeholder="https://www.metal-archives.com/bands/Haunt/3540433299">
         </label>
-        <button class="rounded-md border border-blue-200 bg-blue-700 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-800 disabled:cursor-wait disabled:opacity-60" type="submit" [disabled]="loading()">Compare URL</button>
+        <button class="app-primary-action rounded-md px-4 py-2 text-sm font-bold shadow-sm transition disabled:cursor-wait disabled:opacity-60" type="submit" [disabled]="loading()">Compare URL</button>
       </form>
     </div>
   </section>
@@ -47,7 +47,7 @@
         <h2 class="text-sm font-black uppercase text-slate-500">Paste Discography Rows</h2>
         <p class="mt-1 text-sm text-slate-600">Use this when Metal Archives blocks automated lookups. Paste rows as Title, Type, Year or copy tab-separated rows from the discography table.</p>
       </div>
-      <textarea class="min-h-36 rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="manualReleaseRows()" (ngModelChange)="manualReleaseRows.set($event)" name="manualReleaseRows" placeholder="Burst Into Flame&#9;Full-length&#9;2018&#10;If Icarus Could Fly&#9;Full-length&#9;2019"></textarea>
+      <textarea class="app-token-control min-h-36 rounded-md border px-3 py-2 text-sm shadow-sm outline-none" [ngModel]="manualReleaseRows()" (ngModelChange)="manualReleaseRows.set($event)" name="manualReleaseRows" placeholder="Burst Into Flame&#9;Full-length&#9;2018&#10;If Icarus Could Fly&#9;Full-length&#9;2019"></textarea>
       <div class="flex justify-end">
         <button class="rounded-md bg-slate-900 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-slate-700 disabled:cursor-wait disabled:opacity-60" type="button" (click)="comparePastedReleases()" [disabled]="loading()">Compare Pasted Releases</button>
       </div>
@@ -62,9 +62,9 @@
           <div>
             <h3 class="text-base font-black text-slate-950">{{ band.name }}</h3>
             <p class="mt-1 text-sm font-semibold text-slate-600">{{ band.country || 'Unknown country' }} · {{ band.genre || 'Unknown genre' }}</p>
-            <a *ngIf="band.url" class="mt-1 inline-block text-xs font-bold text-blue-700 hover:underline" [href]="band.url" target="_blank" rel="noreferrer">Open Metal Archives</a>
+            <a *ngIf="band.url" class="app-token-link mt-1 inline-block text-xs font-bold hover:underline" [href]="band.url" target="_blank" rel="noreferrer">Open Metal Archives</a>
           </div>
-          <button class="rounded-md border border-blue-200 bg-white px-3 py-2 text-sm font-bold text-blue-700 shadow-sm transition hover:bg-blue-50 disabled:cursor-wait disabled:opacity-60" type="button" (click)="compare(band)" [disabled]="loading()">Compare</button>
+          <button class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-wait disabled:opacity-60" type="button" (click)="compare(band)" [disabled]="loading()">Compare</button>
         </div>
       </article>
     </div>
@@ -80,9 +80,9 @@
         <p class="text-xs font-black uppercase text-emerald-700">Owned</p>
         <p class="text-2xl font-black text-emerald-900">{{ ownedReleases().length }}</p>
       </div>
-      <div class="rounded-lg border border-blue-200 bg-blue-50 p-3">
-        <p class="text-xs font-black uppercase text-blue-700">Already Wanted</p>
-        <p class="text-2xl font-black text-blue-900">{{ wantedReleases().length }}</p>
+      <div class="app-token-soft-surface rounded-lg border p-3">
+        <p class="app-token-text-primary text-xs font-black uppercase">Already Wanted</p>
+        <p class="app-token-text-strong text-2xl font-black">{{ wantedReleases().length }}</p>
       </div>
     </div>
 
@@ -111,10 +111,10 @@
           <tbody>
             <tr *ngFor="let release of comparisonData.releases" class="border-t border-slate-100 align-top hover:bg-slate-50">
               <td class="px-3 py-2">
-                <input type="checkbox" [checked]="isSelected(release)" (change)="toggleRelease(release)" [disabled]="release.status !== 'Missing'">
+                <input class="app-token-checkbox" type="checkbox" [checked]="isSelected(release)" (change)="toggleRelease(release)" [disabled]="release.status !== 'Missing'">
               </td>
               <td class="px-3 py-2">
-                <a *ngIf="release.url; else plainTitle" class="font-bold text-blue-700 hover:underline" [href]="release.url" target="_blank" rel="noreferrer">{{ release.title }}</a>
+                <a *ngIf="release.url; else plainTitle" class="app-token-link font-bold hover:underline" [href]="release.url" target="_blank" rel="noreferrer">{{ release.title }}</a>
                 <ng-template #plainTitle><span class="font-bold text-slate-900">{{ release.title }}</span></ng-template>
               </td>
               <td class="px-3 py-2">{{ release.releaseType }}</td>

@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../environments/environments';
-import { MagazineIssue, MagazineLookup, PagedResult, UpsertMagazineIssue } from './models/magazine.models';
+import { MagazineIssue, MagazineLookup, MagazineReport, PagedResult, UpsertMagazineIssue } from './models/magazine.models';
 
 @Injectable({ providedIn: 'root' })
 export class MagazineService {
@@ -11,6 +11,9 @@ export class MagazineService {
   list(opts: {
     q?: string;
     seriesId?: number;
+    number?: number;
+    numberFrom?: number;
+    numberTo?: number;
     year?: number;
     month?: number;
     season?: string;
@@ -30,6 +33,30 @@ export class MagazineService {
     });
 
     return this.http.get<PagedResult<MagazineIssue>>(this.baseUrl, { params });
+  }
+
+  report(opts: {
+    q?: string;
+    seriesId?: number;
+    number?: number;
+    numberFrom?: number;
+    numberTo?: number;
+    year?: number;
+    month?: number;
+    season?: string;
+    special?: boolean;
+    alternate?: boolean;
+    coverId?: string;
+    status?: string;
+  }) {
+    let params = new HttpParams();
+    Object.entries(opts).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        params = params.set(key, String(value));
+      }
+    });
+
+    return this.http.get<MagazineReport>(`${this.baseUrl}/report`, { params });
   }
 
   getSeries() {

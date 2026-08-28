@@ -20,6 +20,40 @@ export interface MagazineIssue {
   displayLabel: string;
 }
 
+export interface MagazineBreakdown {
+  label: string;
+  count: number;
+}
+
+export interface MagazineMissingRange {
+  seriesId: number;
+  series: string;
+  startNumber: number;
+  endNumber: number;
+  count: number;
+}
+
+export interface MagazineDuplicateNumber {
+  seriesId: number;
+  series: string;
+  number: number;
+  count: number;
+}
+
+export interface MagazineReport {
+  totalIssues: number;
+  ownedIssues: number;
+  wantedIssues: number;
+  missingNumberIssues: number;
+  missingDateIssues: number;
+  specialIssues: number;
+  alternateIssues: number;
+  seriesBreakdown: MagazineBreakdown[];
+  yearBreakdown: MagazineBreakdown[];
+  missingRanges: MagazineMissingRange[];
+  duplicateNumbers: MagazineDuplicateNumber[];
+}
+
 export interface UpsertMagazineIssue {
   number: number | null;
   month: number | null;

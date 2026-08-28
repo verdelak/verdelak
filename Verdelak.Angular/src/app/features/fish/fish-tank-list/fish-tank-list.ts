@@ -3,8 +3,15 @@ import { Component, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { TaskOccurrence, TaskOccurrenceUpdateRequest } from '../../tasks/models/scheduled-task.model';
-import { ScheduleActionsComponent } from '../../../shared/schedule-actions/schedule-actions';
 import { FishService } from '../fish-service';
+import { FishLivestockPanel } from '../fish-livestock-panel/fish-livestock-panel';
+import { FishOccurrencesPanel } from '../fish-occurrences-panel/fish-occurrences-panel';
+import { FishProductUsagePanel } from '../fish-product-usage-panel/fish-product-usage-panel';
+import { FishProductsPanel } from '../fish-products-panel/fish-products-panel';
+import { FishReportPanel } from '../fish-report-panel/fish-report-panel';
+import { FishSpeciesPanel } from '../fish-species-panel/fish-species-panel';
+import { FishTasksPanel } from '../fish-tasks-panel/fish-tasks-panel';
+import { FishTimelinePanel } from '../fish-timeline-panel/fish-timeline-panel';
 import { FishWaterTrendPanel } from '../fish-water-trend-panel/fish-water-trend-panel';
 import { FishAquariumProduct, FishAquariumProductRequest, FishAquariumProductUsage, FishAquariumProductUsageRequest, FishLivestockEvent, FishLivestockEventRequest, FishSpeciesFood, FishSpeciesFoodRequest, FishSpeciesProfile, FishSpeciesProfileGap, FishSpeciesProfileRequest, FishStock, FishStockRequest, FishTank, FishTankHistoryItem, FishTankLog, FishTankLogRequest, FishTankRequest, FishTankTask, FishTankTaskRequest } from '../models/fish-tank.model';
 
@@ -203,7 +210,7 @@ interface FishQuarantineReportItem {
 
 @Component({
   selector: 'app-fish-tank-list',
-  imports: [CommonModule, FormsModule, ScheduleActionsComponent, FishWaterTrendPanel],
+  imports: [CommonModule, FormsModule, FishLivestockPanel, FishOccurrencesPanel, FishProductUsagePanel, FishProductsPanel, FishReportPanel, FishSpeciesPanel, FishTasksPanel, FishTimelinePanel, FishWaterTrendPanel],
   templateUrl: './fish-tank-list.html',
   styleUrl: './fish-tank-list.scss'
 })
@@ -1918,7 +1925,7 @@ export class FishTankList {
 
   historyTone(item: FishTankHistoryItem): string {
     if (item.kind === 'Task') {
-      return 'border-cyan-200 bg-cyan-50 text-cyan-900';
+      return 'app-token-soft-surface app-token-text-primary';
     }
 
     if (item.kind === 'Livestock') {
@@ -1926,10 +1933,10 @@ export class FishTankList {
     }
 
     if (item.kind === 'Product') {
-      return 'border-teal-200 bg-teal-50 text-teal-900';
+      return 'app-token-soft-surface app-token-text-primary';
     }
 
-    return 'border-sky-200 bg-sky-50 text-sky-900';
+    return 'app-token-soft-surface app-token-text-strong';
   }
 
   historySummary(item: FishTankHistoryItem): string {

@@ -7,7 +7,9 @@ import { GardenHarvest, GardenHarvestReport, GardenHarvestUpsert, GardenYearComp
 import { GardeningService } from '../gardening.service';
 import { GardeningSchedulePanel } from '../gardening-schedule-panel/gardening-schedule-panel';
 import { GardeningYearComparisonPanel } from '../gardening-year-comparison-panel/gardening-year-comparison-panel';
+import { GardeningHarvestReportPanel } from '../gardening-harvest-report-panel/gardening-harvest-report-panel';
 import { GardeningSeedInventoryPanel } from '../gardening-seed-inventory-panel/gardening-seed-inventory-panel';
+import { GardeningSeedStartReportPanel } from '../gardening-seed-start-report-panel/gardening-seed-start-report-panel';
 import { GardeningTrayGridPanel } from '../gardening-tray-grid-panel/gardening-tray-grid-panel';
 import { GardeningPlotGridPanel } from '../gardening-plot-grid-panel/gardening-plot-grid-panel';
 
@@ -223,7 +225,7 @@ interface GardeningTaskForm {
 
 @Component({
   selector: 'app-gardening-dashboard',
-  imports: [CommonModule, FormsModule, GardeningSchedulePanel, GardeningYearComparisonPanel, GardeningSeedInventoryPanel, GardeningTrayGridPanel, GardeningPlotGridPanel],
+  imports: [CommonModule, FormsModule, GardeningSchedulePanel, GardeningYearComparisonPanel, GardeningHarvestReportPanel, GardeningSeedInventoryPanel, GardeningSeedStartReportPanel, GardeningTrayGridPanel, GardeningPlotGridPanel],
   templateUrl: './gardening-dashboard.html',
   styleUrl: './gardening-dashboard.scss'
 })
@@ -1335,7 +1337,7 @@ export class GardeningDashboard implements OnInit {
     }
 
     if (cell.plant && this.selectedLegendSeedId() === cell.plant.seedId) {
-      return 'border-fuchsia-400 bg-fuchsia-50 text-fuchsia-950 ring-2 ring-fuchsia-200';
+      return 'app-token-border-accent app-token-selected-row app-token-ring';
     }
 
     if (!cell.plant) {
@@ -1350,7 +1352,7 @@ export class GardeningDashboard implements OnInit {
       return 'border-amber-300 bg-amber-50 text-amber-900';
     }
 
-    return 'border-sky-300 bg-sky-50 text-sky-900';
+    return 'app-token-soft-surface app-token-text-strong';
   }
 
   selectCell(cell: TrayCell): void {
@@ -3499,7 +3501,7 @@ export class GardeningDashboard implements OnInit {
     }
 
     if (cell.plant && this.selectedPlotLegendSeedId() === cell.plant.seedId) {
-      return 'border-fuchsia-400 bg-fuchsia-50 text-fuchsia-950 ring-2 ring-fuchsia-200';
+      return 'app-token-border-accent app-token-selected-row app-token-ring';
     }
 
     if (!cell.plant) {

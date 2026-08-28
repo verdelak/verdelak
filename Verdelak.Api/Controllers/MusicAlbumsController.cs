@@ -1,6 +1,7 @@
 using Verdelak.Api.Data;
 using Verdelak.Api.Dtos;
 using Verdelak.Api.Models;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +14,7 @@ namespace Verdelak.Api.Controllers
     public class MusicAlbumsController(VerdelakDbContext context, IMetalArchivesLookupService metalArchivesLookupService) : ControllerBase
     {
         private static readonly string[] Formats = ["CD", "Tape", "Vinyl", "MP3"];
+        private const string DefaultFolderImportRootPath = @"Z:\Rips";
         private readonly VerdelakDbContext _context = context;
 
         [AllowAnonymous]
@@ -224,6 +226,242 @@ namespace Verdelak.Api.Controllers
 
             await _context.SaveChangesAsync(cancellationToken);
             return new MusicMetalArchivesAddWantResultDto(created, skipped, messages);
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost("folder-import")]
+        public async Task<ActionResult<MusicFolderImportResultDto>> ImportFromFolder(
+            MusicFolderImportRequest request,
+            CancellationToken cancellationToken)
+        {
+            var rootPath = await ResolveFolderImportRootPathAsync(request.RootPath, cancellationToken);
+
+            if (!Directory.Exists(rootPath))
+            {
+                return BadRequest($"Music folder was not found: {rootPath}");
+            }
+
+            var root = new DirectoryInfo(rootPath);
+            DirectoryInfo[] artistDirectories;
+            try
+            {
+                artistDirectories = root.GetDirectories();
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                return BadRequest($"Unable to read music folder: {ex.Message}");
+            }
+
+            var rows = new List<MusicFolderImportRowDto>();
+            var messages = new List<string>();
+            var skippedFolders = 0;
+            var albumFoldersScanned = 0;
+            var artistsCreated = 0;
+            var albumsCreated = 0;
+            var existingAlbums = 0;
+            var databaseOnlyAlbums = 0;
+
+            var artists = await _context.MusicArtist
+                .Include(artist => artist.Albums)
+                    .ThenInclude(album => album.Status)
+                .Include(artist => artist.Albums)
+                    .ThenInclude(album => album.Info)
+                .ToListAsync(cancellationToken);
+
+            var artistsByKey = artists
+                .GroupBy(artist => NormalizeComparisonText(artist.Band))
+                .Where(group => !string.IsNullOrWhiteSpace(group.Key))
+                .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
+
+            var albumKeysByArtist = artists
+                .GroupBy(artist => NormalizeComparisonText(artist.Band))
+                .Where(group => !string.IsNullOrWhiteSpace(group.Key))
+                .ToDictionary(
+                    group => group.Key,
+                    group => group
+                        .SelectMany(artist => artist.Albums)
+                        .Select(album => NormalizeComparisonText(album.Title))
+                        .Where(key => !string.IsNullOrWhiteSpace(key))
+                        .ToHashSet(StringComparer.OrdinalIgnoreCase),
+                    StringComparer.OrdinalIgnoreCase);
+            var scannedAlbumKeysByArtist = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var artistDirectory in artistDirectories.OrderBy(directory => directory.Name))
+            {
+                var artistName = artistDirectory.Name.Trim();
+                var artistKey = NormalizeComparisonText(artistName);
+                if (string.IsNullOrWhiteSpace(artistName) || string.IsNullOrWhiteSpace(artistKey))
+                {
+                    skippedFolders++;
+                    messages.Add($"Skipped artist folder with no usable name: {artistDirectory.FullName}");
+                    continue;
+                }
+
+                DirectoryInfo[] albumDirectories;
+                try
+                {
+                    albumDirectories = artistDirectory.GetDirectories();
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    skippedFolders++;
+                    messages.Add($"Skipped {artistName}: {ex.Message}");
+                    continue;
+                }
+
+                if (albumDirectories.Length == 0)
+                {
+                    skippedFolders++;
+                    messages.Add($"Skipped {artistName}: no album folders found.");
+                    continue;
+                }
+
+                var artistExists = artistsByKey.TryGetValue(artistKey, out var artist);
+                var artistAlbumKeys = albumKeysByArtist.GetValueOrDefault(artistKey) ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                if (!scannedAlbumKeysByArtist.TryGetValue(artistKey, out var scannedAlbumKeys))
+                {
+                    scannedAlbumKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    scannedAlbumKeysByArtist[artistKey] = scannedAlbumKeys;
+                }
+
+                if (!artistExists && request.ApplyChanges)
+                {
+                    artist = new MusicArtist { Band = artistName };
+                    _context.MusicArtist.Add(artist);
+                    artistsByKey[artistKey] = artist;
+                    albumKeysByArtist[artistKey] = artistAlbumKeys;
+                    artistsCreated++;
+                }
+                else if (!artistExists)
+                {
+                    artistsCreated++;
+                }
+
+                foreach (var albumDirectory in albumDirectories.OrderBy(directory => directory.Name))
+                {
+                    var albumName = albumDirectory.Name.Trim();
+                    var albumKey = NormalizeComparisonText(albumName);
+                    if (string.IsNullOrWhiteSpace(albumName) || string.IsNullOrWhiteSpace(albumKey))
+                    {
+                        skippedFolders++;
+                        messages.Add($"Skipped album folder with no usable name: {albumDirectory.FullName}");
+                        continue;
+                    }
+
+                    albumFoldersScanned++;
+                    var relativePath = Path.GetRelativePath(root.FullName, albumDirectory.FullName);
+
+                    if (!scannedAlbumKeys.Add(albumKey))
+                    {
+                        skippedFolders++;
+                        messages.Add($"Duplicate folder skipped for {artistName}: {albumName}");
+                        rows.Add(new MusicFolderImportRowDto(
+                            artistName,
+                            albumName,
+                            relativePath,
+                            "DuplicateFolder",
+                            artist?.ID,
+                            null));
+                        continue;
+                    }
+
+                    if (artistAlbumKeys.Contains(albumKey))
+                    {
+                        existingAlbums++;
+                        var matchedAlbum = artist?.Albums.FirstOrDefault(album => NormalizeComparisonText(album.Title) == albumKey);
+                        rows.Add(new MusicFolderImportRowDto(
+                            artistName,
+                            albumName,
+                            relativePath,
+                            "Existing",
+                            artist?.ID,
+                            matchedAlbum?.ID));
+                        continue;
+                    }
+
+                    albumsCreated++;
+                    artistAlbumKeys.Add(albumKey);
+
+                    if (request.ApplyChanges)
+                    {
+                        var album = new MusicAlbum
+                        {
+                            Title = albumName,
+                            ArtistID = artist?.ID ?? 0,
+                            Band = artist,
+                            Info = new MusicAlbumInfo
+                            {
+                                Format = "CD",
+                                InfoText = $"Imported from folder scan: {relativePath}"
+                            },
+                            Status = new MusicAlbumStatus
+                            {
+                                FormatID = "CD",
+                                WantStatusID = "H"
+                            }
+                        };
+                        _context.Albums.Add(album);
+                    }
+
+                    rows.Add(new MusicFolderImportRowDto(
+                        artistName,
+                        albumName,
+                        relativePath,
+                        request.ApplyChanges
+                            ? (artistExists ? "CreatedAlbum" : "CreatedArtistAndAlbum")
+                            : (artistExists ? "WouldCreateAlbum" : "WouldCreateArtistAndAlbum"),
+                        artist?.ID,
+                        null));
+                }
+            }
+
+            foreach (var artist in artists.OrderBy(artist => artist.Band))
+            {
+                var artistKey = NormalizeComparisonText(artist.Band);
+                if (string.IsNullOrWhiteSpace(artistKey))
+                {
+                    continue;
+                }
+
+                scannedAlbumKeysByArtist.TryGetValue(artistKey, out var scannedAlbumKeys);
+                foreach (var album in artist.Albums
+                    .Where(album => IsOwned(album) && GetAlbumFormat(album) == "CD")
+                    .OrderBy(album => album.Title))
+                {
+                    var albumKey = NormalizeComparisonText(album.Title);
+                    if (string.IsNullOrWhiteSpace(albumKey) || scannedAlbumKeys?.Contains(albumKey) == true)
+                    {
+                        continue;
+                    }
+
+                    databaseOnlyAlbums++;
+                    rows.Add(new MusicFolderImportRowDto(
+                        artist.Band,
+                        album.Title,
+                        string.Empty,
+                        "DatabaseOnly",
+                        artist.ID,
+                        album.ID));
+                }
+            }
+
+            if (request.ApplyChanges)
+            {
+                await _context.SaveChangesAsync(cancellationToken);
+            }
+
+            return new MusicFolderImportResultDto(
+                root.FullName,
+                request.ApplyChanges,
+                artistDirectories.Length,
+                albumFoldersScanned,
+                artistsCreated,
+                albumsCreated,
+                existingAlbums,
+                databaseOnlyAlbums,
+                skippedFolders,
+                rows,
+                messages);
         }
 
         [AllowAnonymous]
@@ -458,6 +696,34 @@ namespace Verdelak.Api.Controllers
                 "MP3" => "MP",
                 _ => "CD"
             };
+        }
+
+        private async Task<string> ResolveFolderImportRootPathAsync(string? requestedRootPath, CancellationToken cancellationToken)
+        {
+            if (!string.IsNullOrWhiteSpace(requestedRootPath))
+            {
+                return requestedRootPath.Trim();
+            }
+
+            var setting = await _context.AppSettings
+                .AsNoTracking()
+                .SingleOrDefaultAsync(item => item.Key == AdminSettingsController.MusicFolderImporterSettingsKey, cancellationToken);
+            if (setting is null || string.IsNullOrWhiteSpace(setting.ValueJson))
+            {
+                return DefaultFolderImportRootPath;
+            }
+
+            try
+            {
+                var settings = JsonSerializer.Deserialize<MusicFolderImporterSettingsDto>(setting.ValueJson);
+                return string.IsNullOrWhiteSpace(settings?.RootPath)
+                    ? DefaultFolderImportRootPath
+                    : settings.RootPath.Trim();
+            }
+            catch (JsonException)
+            {
+                return DefaultFolderImportRootPath;
+            }
         }
 
         private async Task<IReadOnlyList<MusicMetalArchivesReleaseComparisonDto>> CompareReleasesToLocalCollectionAsync(

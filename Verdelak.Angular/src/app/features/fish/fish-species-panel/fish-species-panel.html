@@ -1,0 +1,213 @@
+<section class="grid gap-4">
+      <section class="rounded border border-slate-200 bg-white shadow-sm">
+        <div class="flex flex-col gap-3 border-b border-slate-200 p-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <h2 class="text-lg font-bold text-slate-950">Species Profiles</h2>
+            <p class="text-sm text-slate-600">{{ visibleSpeciesProfiles().length }} profiles shown / {{ profilesWithoutFoods() }} without foods</p>
+          </div>
+          <input class="rounded border border-slate-300 px-3 py-2 text-sm" type="search" placeholder="Search profiles or foods" [ngModel]="speciesProfileQuery()" (ngModelChange)="speciesProfileQuery.set($event)" [ngModelOptions]="{standalone: true}">
+        </div>
+
+        <details class="border-b border-slate-200 bg-slate-50 p-4">
+          <summary class="cursor-pointer text-sm font-bold text-slate-900">Bulk import profiles {{ speciesProfileImportPreview().length ? '(' + validSpeciesProfileImportRows().length + ' ready)' : '' }}</summary>
+          <div class="mt-3 grid gap-3 xl:grid-cols-[1fr_1.25fr]">
+            <div class="grid gap-3">
+              <p class="text-sm text-slate-600">CSV/TXT columns: CommonName, ScientificName, AdultSize, Temperament, TemperaturePreference, PhPreference, GhPreference, KhPreference, CareLevel, TankLevel, Quarantine, Notes.</p>
+              <textarea
+                class="min-h-36 rounded border border-slate-300 bg-white px-3 py-2 text-sm"
+                [ngModel]="speciesProfileImportText()"
+                (ngModelChange)="speciesProfileImportText.set($event)"
+                [ngModelOptions]="{standalone: true}"
+                placeholder="CommonName,ScientificName,AdultSize,Temperament,TemperaturePreference,PhPreference,GhPreference,KhPreference,CareLevel,TankLevel,Quarantine,Notes&#10;Neon tetra,Paracheirodon innesi,1.5 in,Peaceful,72-78 F,6.0-7.5,Soft-moderate,Low-moderate,Easy,Middle,true,Schooling fish"></textarea>
+              <div class="flex flex-wrap items-center gap-2">
+                <label class="rounded border border-dashed border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700">
+                  Upload CSV/TXT
+                  <input class="sr-only" type="file" accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values,text/plain" (change)="uploadSpeciesProfileImport($event)">
+                </label>
+                <span class="text-sm text-slate-500">{{ speciesProfileImportFileName() || 'No file selected' }}</span>
+                <button type="button" class="rounded bg-emerald-900 px-3 py-2 text-sm font-bold text-white disabled:opacity-50" [disabled]="speciesProfileImporting() || validSpeciesProfileImportRows().length === 0" (click)="importSpeciesProfileRows()">
+                  {{ speciesProfileImporting() ? 'Importing.' : 'Import Profiles' }}
+                </button>
+                <button type="button" class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700" [disabled]="speciesProfileImporting() || speciesProfileImportText().length === 0" (click)="clearSpeciesProfileImport()">Clear</button>
+              </div>
+            </div>
+            <div class="max-h-72 overflow-auto rounded border border-slate-200 bg-white">
+              <table class="min-w-full divide-y divide-slate-200 text-sm">
+                <thead class="bg-white text-left text-xs font-bold uppercase text-slate-500">
+                  <tr>
+                    <th class="px-3 py-2">Species</th>
+                    <th class="px-3 py-2">Care</th>
+                    <th class="px-3 py-2">Status</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  <tr *ngFor="let row of speciesProfileImportPreview().slice(0, 20)" class="align-top">
+                    <td class="px-3 py-2 font-semibold text-slate-900">
+                      <div>{{ row.commonName || '-' }}</div>
+                      <div class="text-xs font-normal text-slate-500">{{ row.scientificName || '' }}</div>
+                    </td>
+                    <td class="px-3 py-2 text-slate-700">{{ row.adultSize || '-' }} / {{ row.temperament || '-' }}</td>
+                    <td class="px-3 py-2">
+                      <span class="rounded border px-2 py-1 text-xs font-bold" [ngClass]="row.warnings.length ? 'border-amber-200 bg-amber-50 text-amber-800' : 'border-emerald-200 bg-emerald-50 text-emerald-800'">
+                        {{ row.warnings.length ? row.warnings.join(', ') : (row.matchedProfileId ? 'Update' : 'Create') }}
+                      </span>
+                    </td>
+                  </tr>
+                  <tr *ngIf="speciesProfileImportPreview().length === 0">
+                    <td colspan="3" class="px-3 py-6 text-center text-sm text-slate-500">No profile rows staged.</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p *ngIf="speciesProfileImportPreview().length > 20" class="border-t border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-600">Showing first 20 rows.</p>
+            </div>
+          </div>
+        </details>
+
+        <div class="max-h-96 overflow-auto">
+          <table class="min-w-full divide-y divide-slate-200 text-sm">
+            <thead class="bg-slate-50 text-left text-xs font-bold uppercase text-slate-500">
+              <tr>
+                <th class="px-3 py-2">Species</th>
+                <th class="px-3 py-2">Care</th>
+                <th class="px-3 py-2">Foods</th>
+                <th class="px-3 py-2 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr *ngFor="let profile of visibleSpeciesProfiles()" class="align-top">
+                <td class="px-3 py-3 text-slate-700">
+                  <div class="font-semibold text-slate-950">{{ profile.commonName }}</div>
+                  <div class="text-xs text-slate-500">{{ profile.scientificName || '-' }}</div>
+                </td>
+                <td class="px-3 py-3 text-slate-600">
+                  <div>{{ profile.adultSize || '-' }} / {{ profile.temperament || '-' }}</div>
+                  <div class="text-xs text-slate-500">Temp {{ profile.temperaturePreference || '-' }} / pH {{ profile.phPreference || '-' }}</div>
+                </td>
+                <td class="max-w-md px-3 py-3 text-slate-600">{{ speciesFoodsSummary(profile) }}</td>
+                <td class="px-3 py-3">
+                  <div class="flex flex-wrap justify-end gap-2">
+                    <button type="button" class="rounded border border-slate-300 px-3 py-1.5 text-xs font-bold text-slate-700" (click)="editSpeciesProfile(profile)">Edit</button>
+                    <button type="button" class="rounded border border-rose-200 px-3 py-1.5 text-xs font-bold text-rose-700" (click)="deleteSpeciesProfile(profile)">Delete</button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="!speciesProfilesLoading() && visibleSpeciesProfiles().length === 0">
+                <td colspan="4" class="px-3 py-8 text-center text-sm text-slate-500">No species profiles found.</td>
+              </tr>
+              <tr *ngIf="speciesProfilesLoading()">
+                <td colspan="4" class="px-3 py-8 text-center text-sm text-slate-500">Loading species profiles.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="rounded border border-slate-200 bg-white p-4 shadow-sm">
+        <h2 class="text-lg font-bold text-slate-950">Species Foods</h2>
+        <p class="text-sm text-slate-600">{{ selectedSpeciesProfile() ? selectedSpeciesProfile()?.commonName : 'Select or save a species profile' }}</p>
+
+        <details class="mt-4 rounded border border-slate-200 bg-slate-50 p-4">
+          <summary class="cursor-pointer text-sm font-bold text-slate-900">Bulk import foods {{ speciesFoodImportPreview().length ? '(' + validSpeciesFoodImportRows().length + ' ready)' : '' }}</summary>
+          <div class="mt-3 grid gap-3 xl:grid-cols-[1fr_1.25fr]">
+            <div class="grid gap-3">
+              <p class="text-sm text-slate-600">CSV/TXT columns: CommonName, ScientificName, FoodName, FoodType, FeedingFrequency, Staple, Notes. Matching species profiles must exist before food rows import.</p>
+              <textarea
+                class="min-h-32 rounded border border-slate-300 bg-white px-3 py-2 text-sm"
+                [ngModel]="speciesFoodImportText()"
+                (ngModelChange)="speciesFoodImportText.set($event)"
+                [ngModelOptions]="{standalone: true}"
+                placeholder="CommonName,ScientificName,FoodName,FoodType,FeedingFrequency,Staple,Notes&#10;Neon tetra,Paracheirodon innesi,Flake food,Dry,Daily,true,Small pinches&#10;Neon tetra,Paracheirodon innesi,Frozen brine shrimp,Frozen,Weekly,false,Treat food"></textarea>
+              <div class="flex flex-wrap items-center gap-2">
+                <label class="rounded border border-dashed border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700">
+                  Upload CSV/TXT
+                  <input class="sr-only" type="file" accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values,text/plain" (change)="uploadSpeciesFoodImport($event)">
+                </label>
+                <span class="text-sm text-slate-500">{{ speciesFoodImportFileName() || 'No file selected' }}</span>
+                <button type="button" class="rounded bg-emerald-900 px-3 py-2 text-sm font-bold text-white disabled:opacity-50" [disabled]="speciesFoodImporting() || validSpeciesFoodImportRows().length === 0" (click)="importSpeciesFoodRows()">
+                  {{ speciesFoodImporting() ? 'Importing.' : 'Import Foods' }}
+                </button>
+                <button type="button" class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700" [disabled]="speciesFoodImporting() || speciesFoodImportText().length === 0" (click)="clearSpeciesFoodImport()">Clear</button>
+              </div>
+            </div>
+            <div class="max-h-64 overflow-auto rounded border border-slate-200 bg-white">
+              <table class="min-w-full divide-y divide-slate-200 text-sm">
+                <thead class="bg-white text-left text-xs font-bold uppercase text-slate-500">
+                  <tr>
+                    <th class="px-3 py-2">Species</th>
+                    <th class="px-3 py-2">Food</th>
+                    <th class="px-3 py-2">Status</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  <tr *ngFor="let row of speciesFoodImportPreview().slice(0, 20)" class="align-top">
+                    <td class="px-3 py-2 font-semibold text-slate-900">{{ row.commonName || row.scientificName || '-' }}</td>
+                    <td class="px-3 py-2 text-slate-700">
+                      <div>{{ row.foodName || '-' }}</div>
+                      <div class="text-xs text-slate-500">{{ row.foodType || '' }} {{ row.feedingFrequency || '' }}</div>
+                    </td>
+                    <td class="px-3 py-2">
+                      <span class="rounded border px-2 py-1 text-xs font-bold" [ngClass]="row.warnings.length ? 'border-amber-200 bg-amber-50 text-amber-800' : 'border-emerald-200 bg-emerald-50 text-emerald-800'">
+                        {{ row.warnings.length ? row.warnings.join(', ') : 'Ready' }}
+                      </span>
+                    </td>
+                  </tr>
+                  <tr *ngIf="speciesFoodImportPreview().length === 0">
+                    <td colspan="3" class="px-3 py-6 text-center text-sm text-slate-500">No food rows staged.</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p *ngIf="speciesFoodImportPreview().length > 20" class="border-t border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-600">Showing first 20 rows.</p>
+            </div>
+          </div>
+        </details>
+
+        <form class="mt-4 grid gap-3 lg:grid-cols-[1fr_10rem_10rem_auto]" (ngSubmit)="saveSpeciesFood()">
+          <input class="rounded border border-slate-300 px-3 py-2 text-sm" placeholder="Food name" [ngModel]="speciesFoodForm().foodName" (ngModelChange)="setSpeciesFoodForm('foodName', $event)" name="speciesFoodName">
+          <input class="rounded border border-slate-300 px-3 py-2 text-sm" placeholder="Type" [ngModel]="speciesFoodForm().foodType" (ngModelChange)="setSpeciesFoodForm('foodType', $event)" name="speciesFoodType">
+          <input class="rounded border border-slate-300 px-3 py-2 text-sm" placeholder="Frequency" [ngModel]="speciesFoodForm().feedingFrequency" (ngModelChange)="setSpeciesFoodForm('feedingFrequency', $event)" name="speciesFoodFrequency">
+          <button type="submit" class="rounded bg-emerald-900 px-4 py-2 text-sm font-bold text-white disabled:opacity-60" [disabled]="speciesFoodSaving() || !speciesProfileForm().id">{{ speciesFoodSaving() ? 'Saving.' : 'Save Food' }}</button>
+          <label class="flex items-center gap-2 rounded border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 lg:col-span-1">
+            <input type="checkbox" [ngModel]="speciesFoodForm().isStaple" (ngModelChange)="setSpeciesFoodForm('isStaple', $event)" name="speciesFoodStaple">
+            Staple
+          </label>
+          <input class="rounded border border-slate-300 px-3 py-2 text-sm lg:col-span-3" placeholder="Notes" [ngModel]="speciesFoodForm().notes" (ngModelChange)="setSpeciesFoodForm('notes', $event)" name="speciesFoodNotes">
+        </form>
+
+        <div class="mt-4 overflow-x-auto rounded border border-slate-200">
+          <table class="min-w-full divide-y divide-slate-200 text-sm">
+            <thead class="bg-slate-50 text-left text-xs font-bold uppercase text-slate-500">
+              <tr>
+                <th class="px-3 py-2">Food</th>
+                <th class="px-3 py-2">Type</th>
+                <th class="px-3 py-2">Frequency</th>
+                <th class="px-3 py-2">Inventory Product</th>
+                <th class="px-3 py-2">Staple</th>
+                <th class="px-3 py-2 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr *ngFor="let food of selectedSpeciesProfile()?.foods ?? []">
+                <td class="px-3 py-2 font-semibold text-slate-950">{{ food.foodName }}</td>
+                <td class="px-3 py-2 text-slate-700">{{ food.foodType || '-' }}</td>
+                <td class="px-3 py-2 text-slate-700">{{ food.feedingFrequency || '-' }}</td>
+                <td class="px-3 py-2 text-slate-700">
+                  <span class="rounded border px-2 py-1 text-xs font-bold" [ngClass]="matchingFoodProducts(food).length ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-amber-200 bg-amber-50 text-amber-800'">
+                    {{ foodProductSummary(food) }}
+                  </span>
+                </td>
+                <td class="px-3 py-2 text-slate-700">{{ food.isStaple ? 'Yes' : 'No' }}</td>
+                <td class="px-3 py-2">
+                  <div class="flex flex-wrap justify-end gap-2">
+                    <button type="button" class="rounded border border-slate-300 px-3 py-1.5 text-xs font-bold text-slate-700" (click)="editSpeciesFood(food)">Edit</button>
+                    <button type="button" class="rounded border border-rose-200 px-3 py-1.5 text-xs font-bold text-rose-700" (click)="deleteSpeciesFood(food)">Delete</button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="(selectedSpeciesProfile()?.foods?.length ?? 0) === 0">
+                <td colspan="6" class="px-3 py-6 text-center text-sm text-slate-500">No foods listed for this species.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </section>

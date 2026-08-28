@@ -2,20 +2,20 @@
   <header class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
     <div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end">
       <div>
-        <p class="text-xs font-bold uppercase tracking-wider text-blue-600">Schedule</p>
+        <p class="app-token-kicker text-xs font-bold uppercase tracking-wider">Schedule</p>
         <h1 class="mt-1 text-2xl font-bold text-slate-950 sm:text-3xl">Master Schedule</h1>
       </div>
 
       <div class="flex flex-wrap items-end gap-2">
         <label class="grid gap-1 text-sm font-bold text-slate-700">
           Date
-          <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-900 shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="date" [ngModel]="anchorDate()" (ngModelChange)="setAnchorDate($event)" />
+          <input class="app-token-control rounded-md border px-3 py-2 text-sm font-semibold text-slate-900 shadow-sm outline-none" type="date" [ngModel]="anchorDate()" (ngModelChange)="setAnchorDate($event)" />
         </label>
         <div class="inline-flex overflow-hidden rounded-md border border-slate-300 bg-white shadow-sm" role="group" aria-label="Schedule range">
-          <button type="button" class="px-3 py-2 text-sm font-bold transition" [class.bg-blue-600]="scope() === 'overdue'" [class.text-white]="scope() === 'overdue'" [class.text-slate-700]="scope() !== 'overdue'" [class.hover:bg-slate-50]="scope() !== 'overdue'" (click)="selectScope('overdue')">Overdue</button>
-          <button type="button" class="border-l border-slate-300 px-3 py-2 text-sm font-bold transition" [class.bg-blue-600]="scope() === 'today'" [class.text-white]="scope() === 'today'" [class.text-slate-700]="scope() !== 'today'" [class.hover:bg-slate-50]="scope() !== 'today'" (click)="selectScope('today')">Today</button>
-          <button type="button" class="border-l border-slate-300 px-3 py-2 text-sm font-bold transition" [class.bg-blue-600]="scope() === 'week'" [class.text-white]="scope() === 'week'" [class.text-slate-700]="scope() !== 'week'" [class.hover:bg-slate-50]="scope() !== 'week'" (click)="selectScope('week')">Week</button>
-          <button type="button" class="border-l border-slate-300 px-3 py-2 text-sm font-bold transition" [class.bg-blue-600]="scope() === 'month'" [class.text-white]="scope() === 'month'" [class.text-slate-700]="scope() !== 'month'" [class.hover:bg-slate-50]="scope() !== 'month'" (click)="selectScope('month')">Month</button>
+          <button type="button" class="px-3 py-2 text-sm font-bold transition" [class.app-primary-action]="scope() === 'overdue'" [class.text-slate-700]="scope() !== 'overdue'" [class.hover:bg-slate-50]="scope() !== 'overdue'" (click)="selectScope('overdue')">Overdue</button>
+          <button type="button" class="border-l border-slate-300 px-3 py-2 text-sm font-bold transition" [class.app-primary-action]="scope() === 'today'" [class.text-slate-700]="scope() !== 'today'" [class.hover:bg-slate-50]="scope() !== 'today'" (click)="selectScope('today')">Today</button>
+          <button type="button" class="border-l border-slate-300 px-3 py-2 text-sm font-bold transition" [class.app-primary-action]="scope() === 'week'" [class.text-slate-700]="scope() !== 'week'" [class.hover:bg-slate-50]="scope() !== 'week'" (click)="selectScope('week')">Week</button>
+          <button type="button" class="border-l border-slate-300 px-3 py-2 text-sm font-bold transition" [class.app-primary-action]="scope() === 'month'" [class.text-slate-700]="scope() !== 'month'" [class.hover:bg-slate-50]="scope() !== 'month'" (click)="selectScope('month')">Month</button>
         </div>
         <div class="inline-flex overflow-hidden rounded-md border border-slate-300 bg-white shadow-sm" role="group" aria-label="Schedule view">
           <button type="button" class="px-3 py-2 text-sm font-bold transition" [class.bg-slate-900]="view() === 'calendar'" [class.text-white]="view() === 'calendar'" [class.text-slate-700]="view() !== 'calendar'" [class.hover:bg-slate-50]="view() !== 'calendar'" (click)="setView('calendar')">Calendar</button>
@@ -40,30 +40,30 @@
       <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Skipped</p>
       <p class="mt-1 text-2xl font-bold text-slate-950">{{ skippedCount() | number }}</p>
     </div>
-    <div class="rounded-lg border border-blue-200 bg-blue-50 p-3 shadow-sm">
-      <p class="text-xs font-bold uppercase tracking-wide text-blue-700">Actionable</p>
-      <p class="mt-1 text-2xl font-bold text-blue-950">{{ actionableCount() | number }}</p>
+    <div class="app-token-soft-surface rounded-lg border p-3 shadow-sm">
+      <p class="app-token-text-primary text-xs font-bold uppercase tracking-wide">Actionable</p>
+      <p class="app-token-text-strong mt-1 text-2xl font-bold">{{ actionableCount() | number }}</p>
     </div>
   </section>
 
-  <section class="grid gap-3 rounded-lg border border-blue-200 bg-blue-50 p-3 shadow-sm sm:p-4">
+  <section class="app-token-soft-surface grid gap-3 rounded-lg border p-3 shadow-sm sm:p-4">
     <div class="flex flex-wrap items-end justify-between gap-3">
       <div>
-        <p class="text-xs font-bold uppercase tracking-wide text-blue-700">Schedule Maintenance</p>
-        <h2 class="mt-1 text-base font-bold text-blue-950">Generate Missing Occurrences</h2>
+        <p class="app-token-text-primary text-xs font-bold uppercase tracking-wide">Schedule Maintenance</p>
+        <h2 class="app-token-text-strong mt-1 text-base font-bold">Generate Missing Occurrences</h2>
       </div>
       <div class="flex flex-wrap items-end gap-2">
-        <label class="grid gap-1 text-xs font-bold uppercase text-blue-900">
+        <label class="app-token-text-strong grid gap-1 text-xs font-bold uppercase">
           From
-          <input class="rounded-md border border-blue-200 bg-white px-3 py-2 text-sm font-semibold normal-case text-slate-900 shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="date" [ngModel]="generationFrom()" (ngModelChange)="generationFrom.set($event)" />
+          <input class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-semibold normal-case text-slate-900 shadow-sm outline-none" type="date" [ngModel]="generationFrom()" (ngModelChange)="generationFrom.set($event)" />
         </label>
-        <label class="grid gap-1 text-xs font-bold uppercase text-blue-900">
+        <label class="app-token-text-strong grid gap-1 text-xs font-bold uppercase">
           To
-          <input class="rounded-md border border-blue-200 bg-white px-3 py-2 text-sm font-semibold normal-case text-slate-900 shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="date" [ngModel]="generationTo()" (ngModelChange)="generationTo.set($event)" />
+          <input class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-semibold normal-case text-slate-900 shadow-sm outline-none" type="date" [ngModel]="generationTo()" (ngModelChange)="generationTo.set($event)" />
         </label>
-        <label class="grid gap-1 text-xs font-bold uppercase text-blue-900">
+        <label class="app-token-text-strong grid gap-1 text-xs font-bold uppercase">
           Source
-          <select class="rounded-md border border-blue-200 bg-white px-3 py-2 text-sm font-semibold normal-case text-slate-900 shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="generationTaskType()" (ngModelChange)="generationTaskType.set($event)">
+          <select class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-semibold normal-case text-slate-900 shadow-sm outline-none" [ngModel]="generationTaskType()" (ngModelChange)="generationTaskType.set($event)">
             <option value="">All active schedules</option>
             <option value="Chore">Chores</option>
             <option value="Fish">Fish</option>
@@ -71,10 +71,10 @@
             <option value="Backup">Backups</option>
           </select>
         </label>
-        <button type="button" class="rounded-md border border-blue-300 bg-white px-4 py-2 text-sm font-bold text-blue-800 shadow-sm transition hover:bg-blue-100 disabled:opacity-50" [disabled]="generationPreviewLoading() || generationLoading()" (click)="previewMissingOccurrences()">
+        <button type="button" class="app-primary-soft-action rounded-md border px-4 py-2 text-sm font-bold shadow-sm transition disabled:opacity-50" [disabled]="generationPreviewLoading() || generationLoading()" (click)="previewMissingOccurrences()">
           {{ generationPreviewLoading() ? 'Previewing...' : 'Preview Missing' }}
         </button>
-        <button type="button" class="rounded-md bg-blue-700 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-800 disabled:opacity-50" [disabled]="generationLoading() || generationPreviewLoading()" (click)="generateMissingOccurrences()">
+        <button type="button" class="app-primary-action rounded-md px-4 py-2 text-sm font-bold shadow-sm transition disabled:opacity-50" [disabled]="generationLoading() || generationPreviewLoading()" (click)="generateMissingOccurrences()">
           {{ generationLoading() ? 'Generating...' : 'Generate Missing' }}
         </button>
       </div>
@@ -124,13 +124,13 @@
       </div>
     </div>
 
-    <div *ngIf="generationResult() as result" class="grid gap-3 rounded-md border border-blue-200 bg-white p-3">
+    <div *ngIf="generationResult() as result" class="grid gap-3 rounded-md border border-slate-200 bg-white p-3">
       <div class="flex flex-wrap items-center justify-between gap-2">
         <div>
           <p class="text-sm font-bold text-slate-950">Created {{ result.createdCount | number }} occurrence{{ result.createdCount === 1 ? '' : 's' }}</p>
           <p class="text-xs font-semibold text-slate-500">{{ result.activeTaskCount | number }} active schedule{{ result.activeTaskCount === 1 ? '' : 's' }} checked; {{ result.missingCount | number }} were missing before generation / {{ generationReportLabel(result) }}</p>
         </div>
-        <button type="button" class="rounded border border-blue-300 bg-white px-3 py-1.5 text-xs font-bold text-blue-800 disabled:opacity-50" [disabled]="generationTaskRows(result).length === 0" (click)="downloadGenerationReportCsv(result, 'result')">Export Result</button>
+        <button type="button" class="app-primary-soft-action rounded border px-3 py-1.5 text-xs font-bold disabled:opacity-50" [disabled]="generationTaskRows(result).length === 0" (click)="downloadGenerationReportCsv(result, 'result')">Export Result</button>
       </div>
       <div class="flex flex-wrap gap-2">
         <span *ngFor="let source of result.sources" class="rounded-full border bg-slate-50 px-3 py-1 text-xs font-bold" [ngClass]="generationSourceTone(source.source)">
@@ -152,7 +152,7 @@
               <td class="px-3 py-2"><span class="rounded border px-2 py-0.5 text-xs font-bold" [ngClass]="generationSourceTone(task.source)">{{ task.source }}</span></td>
               <td class="px-3 py-2"><div class="font-bold text-slate-950">{{ task.title }}</div><div class="text-xs font-semibold text-slate-500">Task #{{ task.taskID }} / {{ task.taskType }}</div></td>
               <td class="px-3 py-2 text-right font-bold text-slate-700">{{ task.missingCount | number }}</td>
-              <td class="px-3 py-2 text-right font-bold text-blue-900">{{ task.createdCount | number }}</td>
+              <td class="app-token-text-strong px-3 py-2 text-right font-bold">{{ task.createdCount | number }}</td>
             </tr>
             <tr *ngIf="generationTaskRows(result).length === 0">
               <td colspan="4" class="px-3 py-6 text-center text-sm font-semibold text-slate-500">No matching generation rows.</td>
@@ -174,7 +174,7 @@
     <div class="grid gap-3 lg:grid-cols-[minmax(12rem,1fr)_minmax(12rem,1fr)_minmax(10rem,0.75fr)_minmax(14rem,1.25fr)]">
       <label class="grid gap-1 text-xs font-bold uppercase tracking-wide text-slate-600">
         Source
-        <select class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold normal-case text-slate-900 shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="sourceFilter()" (ngModelChange)="setSourceFilter($event)">
+        <select class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-semibold normal-case text-slate-900 shadow-sm outline-none" [ngModel]="sourceFilter()" (ngModelChange)="setSourceFilter($event)">
           <option value="">All sources</option>
           <option *ngFor="let summary of sourceSummaries()" [value]="summary.source">{{ summary.source }} ({{ summary.count }})</option>
         </select>
@@ -182,7 +182,7 @@
 
       <label class="grid gap-1 text-xs font-bold uppercase tracking-wide text-slate-600">
         Category
-        <select class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold normal-case text-slate-900 shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="categoryFilter()" (ngModelChange)="setCategoryFilter($event)">
+        <select class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-semibold normal-case text-slate-900 shadow-sm outline-none" [ngModel]="categoryFilter()" (ngModelChange)="setCategoryFilter($event)">
           <option value="">All categories</option>
           <option *ngFor="let summary of categorySummaries()" [value]="summary.label">{{ summary.label }} ({{ summary.count }})</option>
         </select>
@@ -190,7 +190,7 @@
 
       <label class="grid gap-1 text-xs font-bold uppercase tracking-wide text-slate-600">
         Status
-        <select class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold normal-case text-slate-900 shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" [ngModel]="statusFilter()" (ngModelChange)="setStatusFilter($event)">
+        <select class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-semibold normal-case text-slate-900 shadow-sm outline-none" [ngModel]="statusFilter()" (ngModelChange)="setStatusFilter($event)">
           <option value="">All statuses</option>
           <option value="Open">Open ({{ statusCount('Open') }})</option>
           <option *ngFor="let summary of statusSummaries()" [value]="summary.status">{{ summary.status }} ({{ summary.count }})</option>
@@ -199,13 +199,13 @@
 
       <label class="grid gap-1 text-xs font-bold uppercase tracking-wide text-slate-600">
         Search
-        <input class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold normal-case text-slate-900 shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" type="search" placeholder="Title, detail, source, category" [ngModel]="searchFilter()" (ngModelChange)="setSearchFilter($event)" />
+        <input class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-semibold normal-case text-slate-900 shadow-sm outline-none" type="search" placeholder="Title, detail, source, category" [ngModel]="searchFilter()" (ngModelChange)="setSearchFilter($event)" />
       </label>
     </div>
 
     <div *ngIf="activeFilterChips().length" class="flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3">
       <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Active</p>
-      <button *ngFor="let chip of activeFilterChips()" type="button" class="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-bold text-blue-800 transition hover:bg-blue-100" (click)="clearFilter(chip.kind)">
+      <button *ngFor="let chip of activeFilterChips()" type="button" class="app-primary-soft-action rounded-full border px-3 py-1 text-xs font-bold transition" (click)="clearFilter(chip.kind)">
         {{ chip.label }}: {{ chip.value }} x
       </button>
     </div>
@@ -214,15 +214,13 @@
       <div class="flex flex-wrap items-center gap-2">
         <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Sources</p>
         <button type="button" class="rounded-full border px-3 py-1.5 text-sm font-bold shadow-sm transition"
-          [class.border-blue-600]="sourceFilter() === ''"
-          [class.bg-blue-600]="sourceFilter() === ''"
-          [class.text-white]="sourceFilter() === ''"
+          [class.app-primary-action]="sourceFilter() === ''"
           [class.border-slate-200]="sourceFilter() !== ''"
           [class.bg-white]="sourceFilter() !== ''"
           [class.text-slate-700]="sourceFilter() !== ''"
           (click)="setSourceFilter('')">All {{ items().length | number }}</button>
         <button *ngFor="let summary of sourceSummaries()" type="button" class="rounded-full border px-3 py-1.5 text-sm font-bold shadow-sm transition"
-          [ngClass]="sourceFilter() === summary.source ? 'border-blue-600 bg-blue-600 text-white' : sourceTone(summary.source)"
+          [ngClass]="sourceFilter() === summary.source ? 'app-primary-action' : sourceTone(summary.source)"
           (click)="setSourceFilter(summary.source)">
           {{ summary.source }} {{ summary.count | number }}
         </button>
@@ -231,15 +229,13 @@
       <div *ngIf="categorySummaries().length > 1" class="flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3">
         <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Categories</p>
         <button type="button" class="rounded-full border px-3 py-1 text-xs font-bold shadow-sm transition"
-          [class.border-blue-600]="categoryFilter() === ''"
-          [class.bg-blue-600]="categoryFilter() === ''"
-          [class.text-white]="categoryFilter() === ''"
+          [class.app-primary-action]="categoryFilter() === ''"
           [class.border-slate-200]="categoryFilter() !== ''"
           [class.bg-white]="categoryFilter() !== ''"
           [class.text-slate-700]="categoryFilter() !== ''"
           (click)="setCategoryFilter('')">All {{ sourceFilteredItems().length | number }}</button>
         <button *ngFor="let summary of categorySummaries()" type="button" class="rounded-full border px-3 py-1 text-xs font-bold shadow-sm transition"
-          [ngClass]="categoryFilter() === summary.label ? 'border-blue-600 bg-blue-600 text-white' : summary.tone"
+          [ngClass]="categoryFilter() === summary.label ? 'app-primary-action' : summary.tone"
           (click)="setCategoryFilter(summary.label)">
           {{ summary.label }} {{ summary.count | number }}
         </button>
@@ -248,18 +244,16 @@
       <div class="flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3">
         <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Status</p>
         <button type="button" class="rounded-full border px-3 py-1 text-xs font-bold shadow-sm transition"
-          [class.border-blue-600]="statusFilter() === ''"
-          [class.bg-blue-600]="statusFilter() === ''"
-          [class.text-white]="statusFilter() === ''"
+          [class.app-primary-action]="statusFilter() === ''"
           [class.border-slate-200]="statusFilter() !== ''"
           [class.bg-white]="statusFilter() !== ''"
           [class.text-slate-700]="statusFilter() !== ''"
           (click)="setStatusFilter('')">All {{ categoryFilteredItems().length | number }}</button>
         <button type="button" class="rounded-full border px-3 py-1 text-xs font-bold shadow-sm transition"
-          [ngClass]="statusFilter() === 'Open' ? 'border-blue-600 bg-blue-600 text-white' : 'border-amber-200 bg-amber-50 text-amber-800'"
+          [ngClass]="statusFilter() === 'Open' ? 'app-primary-action' : 'border-amber-200 bg-amber-50 text-amber-800'"
           (click)="setStatusFilter('Open')">Open {{ statusCount('Open') | number }}</button>
         <button *ngFor="let summary of statusSummaries()" type="button" class="rounded-full border px-3 py-1 text-xs font-bold shadow-sm transition"
-          [ngClass]="statusFilter() === summary.status ? 'border-blue-600 bg-blue-600 text-white' : statusTone(summary.status)"
+          [ngClass]="statusFilter() === summary.status ? 'app-primary-action' : statusTone(summary.status)"
           (click)="setStatusFilter(summary.status)">
           {{ summary.status }} {{ summary.count | number }}
         </button>
@@ -300,7 +294,7 @@
           <span class="text-xs font-semibold text-slate-500">{{ reportSourceBreakdown().length }} shown</span>
         </div>
         <div class="mt-3 flex flex-wrap gap-2">
-          <button *ngFor="let summary of reportSourceBreakdown()" type="button" class="rounded-full border px-3 py-1 text-xs font-bold shadow-sm transition" [ngClass]="sourceFilter() === summary.source ? 'border-blue-600 bg-blue-600 text-white' : sourceTone(summary.source)" (click)="setSourceFilter(summary.source)">
+          <button *ngFor="let summary of reportSourceBreakdown()" type="button" class="rounded-full border px-3 py-1 text-xs font-bold shadow-sm transition" [ngClass]="sourceFilter() === summary.source ? 'app-primary-action' : sourceTone(summary.source)" (click)="setSourceFilter(summary.source)">
             {{ summary.source }} {{ summary.count | number }}
           </button>
           <p *ngIf="reportSourceBreakdown().length === 0" class="text-sm font-semibold text-slate-500">No sources in this range.</p>
@@ -313,7 +307,7 @@
           <span class="text-xs font-semibold text-slate-500">Top {{ reportCategoryBreakdown().length }}</span>
         </div>
         <div class="mt-3 flex flex-wrap gap-2">
-          <button *ngFor="let summary of reportCategoryBreakdown()" type="button" class="rounded-full border px-3 py-1 text-xs font-bold shadow-sm transition" [ngClass]="categoryFilter() === summary.label ? 'border-blue-600 bg-blue-600 text-white' : summary.tone" (click)="setCategoryFilter(summary.label)">
+          <button *ngFor="let summary of reportCategoryBreakdown()" type="button" class="rounded-full border px-3 py-1 text-xs font-bold shadow-sm transition" [ngClass]="categoryFilter() === summary.label ? 'app-primary-action' : summary.tone" (click)="setCategoryFilter(summary.label)">
             {{ summary.label }} {{ summary.count | number }}
           </button>
           <p *ngIf="reportCategoryBreakdown().length === 0" class="text-sm font-semibold text-slate-500">No categories in this range.</p>
@@ -344,9 +338,8 @@
   <section *ngIf="view() === 'calendar'" class="grid gap-3">
     <div class="grid gap-2 md:grid-cols-2 xl:grid-cols-7">
       <article *ngFor="let day of calendarDays(); trackBy: trackDay" class="min-h-44 rounded-lg border bg-white shadow-sm"
-        [class.border-blue-300]="day.isToday"
-        [class.ring-2]="day.isToday"
-        [class.ring-blue-100]="day.isToday"
+        [class.app-token-border-accent]="day.isToday"
+        [class.app-token-ring]="day.isToday"
         [class.border-slate-200]="!day.isToday">
         <header class="flex items-center justify-between gap-2 border-b border-slate-200 px-3 py-2">
           <div>
@@ -370,7 +363,7 @@
               [moveDate]="moveDate()"
               [showActionNotes]="true"
               [actionNote]="actionNote()"
-              moveButtonClass="rounded bg-blue-600 px-3 py-1.5 text-xs font-bold text-white disabled:opacity-50"
+              moveButtonClass="app-primary-action rounded px-3 py-1.5 text-xs font-bold disabled:opacity-50"
               (complete)="markComplete(item, $event)"
               (startMove)="startMove(item)"
               (skip)="skipItem(item, $event)"
@@ -417,7 +410,7 @@
               [moveDate]="moveDate()"
               [showActionNotes]="true"
               [actionNote]="actionNote()"
-              moveButtonClass="rounded bg-blue-600 px-3 py-1.5 text-xs font-bold text-white disabled:opacity-50"
+              moveButtonClass="app-primary-action rounded px-3 py-1.5 text-xs font-bold disabled:opacity-50"
               (complete)="markComplete(item, $event)"
               (startMove)="startMove(item)"
               (skip)="skipItem(item, $event)"

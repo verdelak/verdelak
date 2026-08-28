@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { MenuButton } from '../../menu-button/menu-button';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ExternalSitesService } from '../../services/external-sites.service';
+import { MainAppearanceService } from '../../services/main-appearance.service';
 
 
 @Component({
@@ -25,6 +26,7 @@ export class MainMenu implements OnInit {
 
   constructor(
     readonly auth: AuthService,
+    readonly appearance: MainAppearanceService,
     private readonly elementRef: ElementRef<HTMLElement>,
     private readonly externalSitesService: ExternalSitesService
   ) {}

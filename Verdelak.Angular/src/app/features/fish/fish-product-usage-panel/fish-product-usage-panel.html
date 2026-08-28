@@ -1,0 +1,66 @@
+<section class="rounded border border-slate-200 bg-white shadow-sm">
+  <div class="flex flex-col gap-3 border-b border-slate-200 p-4 lg:flex-row lg:items-center lg:justify-between">
+    <div>
+      <h2 class="text-lg font-bold text-slate-950">Product Usage</h2>
+      <p class="text-sm text-slate-600">{{ visibleProductUsage().length }} shown, {{ shoppingCandidateCount() }} shopping candidates</p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <select class="rounded border border-slate-300 px-3 py-2 text-sm" [ngModel]="productUsageFilter()" (ngModelChange)="productUsageFilter.set($event ? +$event : null)">
+        <option [ngValue]="null">All products</option>
+        <option *ngFor="let product of products()" [ngValue]="product.id">{{ product.name }}</option>
+      </select>
+      <label class="flex items-center gap-2 rounded border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700">
+        <input type="checkbox" [ngModel]="shoppingOnlyUsage()" (ngModelChange)="shoppingOnlyUsage.set($event)">
+        Shopping only
+      </label>
+    </div>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-slate-200 text-sm">
+      <thead class="bg-slate-50 text-left text-xs font-bold uppercase text-slate-500">
+        <tr>
+          <th class="px-3 py-2">When</th>
+          <th class="px-3 py-2">Product</th>
+          <th class="px-3 py-2">Type</th>
+          <th class="px-3 py-2">Usage</th>
+          <th class="px-3 py-2">Shopping</th>
+          <th class="px-3 py-2">Notes</th>
+          <th class="px-3 py-2 text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        <tr *ngFor="let usage of visibleProductUsage()" class="align-top">
+          <td class="whitespace-nowrap px-3 py-3 text-slate-700">{{ formatDate(usage.usedAt) }}</td>
+          <td class="px-3 py-3">
+            <div class="font-semibold text-slate-950">{{ usage.productName }}</div>
+            <div class="text-xs text-slate-500">{{ usage.productCategory }}</div>
+          </td>
+          <td class="px-3 py-3 text-slate-700">{{ usage.usageType }}</td>
+          <td class="px-3 py-3 text-slate-700">
+            <div>Used: {{ usage.quantityUsed ?? '-' }}</div>
+            <div>After: {{ usage.quantityAfter ?? '-' }} / {{ usage.percentLeftAfter === null ? '-' : usage.percentLeftAfter + '%' }}</div>
+          </td>
+          <td class="px-3 py-3">
+            <span class="rounded border px-2 py-1 text-xs font-bold" [ngClass]="usage.addToShoppingList ? 'border-amber-200 bg-amber-50 text-amber-800' : 'border-slate-200 bg-slate-50 text-slate-700'">
+              {{ usage.addToShoppingList ? usage.shoppingCategory + ': ' + usage.shoppingItemName : 'No' }}
+            </span>
+          </td>
+          <td class="max-w-md px-3 py-3 text-slate-600">{{ usage.notes || '-' }}</td>
+          <td class="px-3 py-3">
+            <div class="flex flex-wrap justify-end gap-2">
+              <button type="button" class="rounded border border-slate-300 px-3 py-1.5 text-xs font-bold text-slate-700" (click)="editProductUsage(usage)">Edit</button>
+              <button type="button" class="rounded border border-rose-200 px-3 py-1.5 text-xs font-bold text-rose-700" (click)="deleteProductUsage(usage)">Delete</button>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="!productUsageLoading() && visibleProductUsage().length === 0">
+          <td colspan="7" class="px-3 py-8 text-center text-sm text-slate-500">No product usage found.</td>
+        </tr>
+        <tr *ngIf="productUsageLoading()">
+          <td colspan="7" class="px-3 py-8 text-center text-sm text-slate-500">Loading product usage.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>

@@ -179,12 +179,12 @@ export class SoftwareBrowser implements OnInit {
       {
         label: 'Storage',
         value: item.location || 'No location',
-        tone: item.location ? 'bg-blue-50 text-blue-800' : 'bg-slate-100 text-slate-700'
+        tone: item.location ? 'app-token-soft-surface app-token-text-strong' : 'bg-slate-100 text-slate-700'
       },
       {
         label: 'Physical pieces',
         value: this.piecesText(item),
-        tone: item.hasBox || item.hasManual || item.hasDisc ? 'bg-indigo-50 text-indigo-800' : 'bg-slate-100 text-slate-700'
+        tone: item.hasBox || item.hasManual || item.hasDisc ? 'app-token-soft-surface app-token-text-primary' : 'bg-slate-100 text-slate-700'
       },
       {
         label: 'Catalog notes',
@@ -560,7 +560,7 @@ export class SoftwareBrowser implements OnInit {
       case 'Skip':
         return 'bg-amber-100 text-amber-800';
       case 'Update':
-        return 'bg-blue-100 text-blue-800';
+        return 'app-token-soft-surface app-token-text-strong';
       default:
         return 'bg-red-100 text-red-800';
     }
@@ -806,8 +806,8 @@ export class SoftwareBrowser implements OnInit {
 
   statusFilterTone(status: StatusFilter): string {
     return this.status() === status
-      ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-100'
-      : 'border-slate-200 bg-white hover:border-blue-300';
+      ? 'app-token-border-accent app-token-selected-row app-token-ring'
+      : 'border-slate-200 bg-white app-token-selectable-row';
   }
 
   platformName(id: number): string {

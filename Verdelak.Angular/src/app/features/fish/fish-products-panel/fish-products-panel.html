@@ -1,0 +1,141 @@
+<section class="rounded border border-slate-200 bg-white shadow-sm">
+  <div class="flex flex-col gap-3 border-b border-slate-200 p-4 lg:flex-row lg:items-center lg:justify-between">
+    <div>
+      <h2 class="text-lg font-bold text-slate-950">Aquarium Products</h2>
+      <p class="text-sm text-slate-600">{{ visibleProducts().length }} shown</p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <button type="button" class="rounded border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700" (click)="productStatusFilter.set('All')">
+        All
+      </button>
+      <button type="button" class="rounded border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-bold text-rose-800" (click)="productStatusFilter.set('Expired')">
+        Expired {{ expiredProductCount() }}
+      </button>
+      <button type="button" class="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-bold text-amber-800" (click)="productStatusFilter.set('Expiring Soon')">
+        Expiring {{ expiringProductCount() }}
+      </button>
+      <button type="button" class="rounded border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-bold text-rose-800" (click)="productStatusFilter.set('Empty')">
+        Empty {{ emptyProductCount() }}
+      </button>
+      <button type="button" class="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-bold text-amber-800" (click)="productStatusFilter.set('Low')">
+        Low {{ lowProductCount() }}
+      </button>
+      <select class="rounded border border-slate-300 px-3 py-2 text-sm" [ngModel]="productCategoryFilter()" (ngModelChange)="productCategoryFilter.set($event)">
+        <option value="All">All categories</option>
+        <option *ngFor="let category of productCategories" [value]="category">{{ category }}</option>
+      </select>
+      <select class="rounded border border-slate-300 px-3 py-2 text-sm" [ngModel]="productTankFilter()" (ngModelChange)="productTankFilter.set($event ? +$event : null)">
+        <option [ngValue]="null">All tanks</option>
+        <option *ngFor="let tank of tanks()" [ngValue]="tank.id">{{ tank.name }}</option>
+      </select>
+      <label class="flex items-center gap-2 rounded border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700">
+        <input type="checkbox" [ngModel]="showInactiveProducts()" (ngModelChange)="showInactiveProducts.set($event)">
+        Show inactive
+      </label>
+    </div>
+  </div>
+
+  <details class="border-b border-slate-200 bg-slate-50 p-4">
+    <summary class="cursor-pointer text-sm font-bold text-slate-900">Bulk import products {{ productImportPreview().length ? '(' + validProductImportRows().length + ' ready)' : '' }}</summary>
+    <div class="mt-3 grid gap-3 xl:grid-cols-[1fr_1.25fr]">
+      <div class="grid gap-3">
+        <p class="text-sm text-slate-600">Paste one product name per line, or CSV/TSV columns: Tank, Name, Category, Quantity, Unit, PercentLeft, ExpirationDate, Active, Notes.</p>
+        <textarea
+          class="min-h-36 rounded border border-slate-300 bg-white px-3 py-2 text-sm"
+          [ngModel]="productImportText()"
+          (ngModelChange)="productImportText.set($event)"
+          [ngModelOptions]="{standalone: true}"
+          placeholder="General,Prime,Treatment,1,bottle,80,,true&#10;55 gallon tank,Filter cartridges,Filter Media,3,count,,,true"></textarea>
+        <div class="flex flex-wrap items-center gap-2">
+          <label class="rounded border border-dashed border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700">
+            Upload CSV/TXT
+            <input class="sr-only" type="file" accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values,text/plain" (change)="uploadProductImport($event)">
+          </label>
+          <span class="text-sm text-slate-500">{{ productImportFileName() || 'No file selected' }}</span>
+          <button type="button" class="app-primary-action rounded px-3 py-2 text-sm font-bold disabled:opacity-50" [disabled]="productImporting() || validProductImportRows().length === 0" (click)="importProductRows()">
+            {{ productImporting() ? 'Importing.' : 'Import Products' }}
+          </button>
+          <button type="button" class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700" [disabled]="productImporting() || productImportText().length === 0" (click)="clearProductImport()">Clear</button>
+        </div>
+      </div>
+      <div class="max-h-72 overflow-auto rounded border border-slate-200 bg-white">
+        <table class="min-w-full divide-y divide-slate-200 text-sm">
+          <thead class="bg-white text-left text-xs font-bold uppercase text-slate-500">
+            <tr>
+              <th class="px-3 py-2">Product</th>
+              <th class="px-3 py-2">Category</th>
+              <th class="px-3 py-2">Tank</th>
+              <th class="px-3 py-2">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <tr *ngFor="let row of productImportPreview().slice(0, 20)" class="align-top">
+              <td class="px-3 py-2 text-slate-700">
+                <div class="font-semibold text-slate-900">{{ row.name || '-' }}</div>
+                <div class="text-xs text-slate-500">{{ row.quantity ?? '-' }} {{ row.unit || '' }} / {{ row.percentLeft === null ? '-' : row.percentLeft + '%' }}</div>
+              </td>
+              <td class="px-3 py-2 text-slate-700">{{ row.category }}</td>
+              <td class="px-3 py-2 text-slate-700">{{ row.tankName }}</td>
+              <td class="px-3 py-2">
+                <span class="rounded border px-2 py-1 text-xs font-bold" [ngClass]="row.warnings.length ? 'border-amber-200 bg-amber-50 text-amber-800' : 'border-emerald-200 bg-emerald-50 text-emerald-800'">
+                  {{ row.warnings.length ? row.warnings.join(', ') : 'Ready' }}
+                </span>
+              </td>
+            </tr>
+            <tr *ngIf="productImportPreview().length === 0">
+              <td colspan="4" class="px-3 py-6 text-center text-sm text-slate-500">No product rows staged.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p *ngIf="productImportPreview().length > 20" class="border-t border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-600">Showing first 20 rows.</p>
+      </div>
+    </div>
+  </details>
+
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-slate-200 text-sm">
+      <thead class="bg-slate-50 text-left text-xs font-bold uppercase text-slate-500">
+        <tr>
+          <th class="px-3 py-2">Product</th>
+          <th class="px-3 py-2">Category</th>
+          <th class="px-3 py-2">Tank</th>
+          <th class="px-3 py-2">Qty</th>
+          <th class="px-3 py-2">Left</th>
+          <th class="px-3 py-2">Expires</th>
+          <th class="px-3 py-2">Status</th>
+          <th class="px-3 py-2 text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        <tr *ngFor="let product of visibleProducts()" class="align-top">
+          <td class="px-3 py-3">
+            <div class="font-semibold text-slate-950">{{ product.name }}</div>
+            <div *ngIf="product.notes" class="text-xs text-slate-500">{{ product.notes }}</div>
+          </td>
+          <td class="px-3 py-3 text-slate-700">{{ product.category }}</td>
+          <td class="px-3 py-3 text-slate-700">{{ product.tankName || 'General' }}</td>
+          <td class="px-3 py-3 text-slate-700">{{ product.quantity ?? '-' }} {{ product.unit || '' }}</td>
+          <td class="px-3 py-3 text-slate-700">{{ product.percentLeft === null ? '-' : product.percentLeft + '%' }}</td>
+          <td class="px-3 py-3 text-slate-700">{{ product.expirationDate ? (product.expirationDate | date: 'MMM d, y') : '-' }}</td>
+          <td class="px-3 py-3">
+            <span class="rounded border px-2 py-1 text-xs font-bold" [ngClass]="productStatusTone(product)">
+              {{ productStatus(product) }}
+            </span>
+          </td>
+          <td class="px-3 py-3">
+            <div class="flex flex-wrap justify-end gap-2">
+              <button type="button" class="rounded border border-slate-300 px-3 py-1.5 text-xs font-bold text-slate-700" (click)="editProduct(product)">Edit</button>
+              <button type="button" class="rounded border border-rose-200 px-3 py-1.5 text-xs font-bold text-rose-700" (click)="deleteProduct(product)">Delete</button>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="!productsLoading() && visibleProducts().length === 0">
+          <td colspan="8" class="px-3 py-8 text-center text-sm text-slate-500">No aquarium products found.</td>
+        </tr>
+        <tr *ngIf="productsLoading()">
+          <td colspan="8" class="px-3 py-8 text-center text-sm text-slate-500">Loading aquarium products.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>

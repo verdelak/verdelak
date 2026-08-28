@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { FinanceBillReportsPanel } from '../finance-bill-reports-panel/finance-bill-reports-panel';
+import { FinanceDonationsPanel } from '../finance-donations-panel/finance-donations-panel';
 import { FinanceReportsExportPanel } from '../finance-reports-export-panel/finance-reports-export-panel';
 import { FinanceTrackerService } from '../finance-tracker.service';
 import {
@@ -161,7 +163,7 @@ type ReportRow = Record<string, ReportValue>;
 
 @Component({
   selector: 'app-finance-dashboard-page',
-  imports: [CommonModule, FormsModule, FinanceReportsExportPanel],
+  imports: [CommonModule, FormsModule, FinanceBillReportsPanel, FinanceDonationsPanel, FinanceReportsExportPanel],
   templateUrl: './finance-dashboard-page.html',
   styleUrl: './finance-dashboard-page.scss'
 })
@@ -530,7 +532,7 @@ export class FinanceTrackerPage implements OnInit {
         label: 'Year payment rate',
         value: `${this.annualBillPaymentRate()}%`,
         detail: `${this.money(this.annualPaidBillTotal())} paid of ${this.money(this.annualExpectedBillTotal())} expected`,
-        tone: this.annualBillPaymentRate() >= 95 ? 'border-emerald-200 bg-emerald-50 text-emerald-900' : 'border-blue-200 bg-blue-50 text-blue-900'
+        tone: this.annualBillPaymentRate() >= 95 ? 'border-emerald-200 bg-emerald-50 text-emerald-900' : 'app-token-soft-surface app-token-text-strong'
       },
       {
         label: 'Largest risk',
@@ -542,7 +544,7 @@ export class FinanceTrackerPage implements OnInit {
         label: 'Largest variance',
         value: variance ? variance.billName : 'Stable',
         detail: variance ? `Average variance ${this.signedMoney(variance.averageVariance)} across ${variance.paymentCount} payments` : 'No recurring bill variance yet',
-        tone: variance ? 'border-violet-200 bg-violet-50 text-violet-900' : 'border-slate-200 bg-slate-50 text-slate-800'
+        tone: variance ? 'app-token-soft-surface app-token-text-strong' : 'border-slate-200 bg-slate-50 text-slate-800'
       }
     ];
   });

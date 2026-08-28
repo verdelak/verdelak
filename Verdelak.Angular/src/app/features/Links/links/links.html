@@ -1,40 +1,37 @@
-<mat-form-field appearance="fill">
-  <mat-label>Filter by Topic</mat-label>
-  <mat-select [ngModel]="selectedTopic()" (ngModelChange)="selectedTopic.set($event)">
-    <mat-option value="">All</mat-option>
-    <mat-option *ngFor="let group of groupedLinks()" [value]="group.topic">
-      {{ group.topic }}
-    </mat-option>
-  </mat-select>
-</mat-form-field>
+<section class="links-toolbar">
+  <label class="form-field">
+    <span>Filter by Topic</span>
+    <select class="form-select" [ngModel]="selectedTopic()" (ngModelChange)="selectedTopic.set($event)">
+      <option value="">All</option>
+      <option *ngFor="let group of groupedLinks()" [value]="group.topic">
+        {{ group.topic }}
+      </option>
+    </select>
+  </label>
 
-<mat-form-field appearance="outline">
-  <mat-label>Search links</mat-label>
-  <input matInput title="mySearch" [ngModel]="search()" (ngModelChange)="search.set($event)" />
+  <label class="form-field search">
+    <span>Search links</span>
+    <input class="form-control" title="mySearch" [ngModel]="search()" (ngModelChange)="search.set($event)" />
+  </label>
+</section>
 
-</mat-form-field>
+<section class="links-accordion" *ngIf="filtered().length; else loading">
+  <details class="topic-panel" *ngFor="let group of filtered()" open>
+    <summary class="topic-summary">{{ group.topic }}</summary>
 
-<mat-accordion multi *ngIf="filtered().length; else loading">
-  <mat-expansion-panel *ngFor="let group of filtered()">
-    <mat-expansion-panel-header>
-      <mat-panel-title>{{ group.topic }}</mat-panel-title>
-    </mat-expansion-panel-header>
+    <div class="subtopic-list">
+      <details class="subtopic-panel" *ngFor="let sub of group.subTopics" open>
+        <summary class="subtopic-summary">{{ sub.subTopic }}</summary>
 
-    <mat-accordion multi>
-      <mat-expansion-panel *ngFor="let sub of group.subTopics">
-        <mat-expansion-panel-header>
-          <mat-panel-title>{{ sub.subTopic }}</mat-panel-title>
-        </mat-expansion-panel-header>
-
-        <ul>
+        <ul class="link-list">
           <li *ngFor="let link of sub.links">
-            <a [href]="link.url" target="_blank">{{ link.name }}</a>
+            <a [href]="link.url" target="_blank" rel="noopener">{{ link.name }}</a>
           </li>
         </ul>
-      </mat-expansion-panel>
-    </mat-accordion>
-  </mat-expansion-panel>
-</mat-accordion>
+      </details>
+    </div>
+  </details>
+</section>
 
 <ng-template #loading>
   <p>Loading or no links found.</p>

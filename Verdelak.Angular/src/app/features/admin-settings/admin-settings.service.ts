@@ -66,6 +66,16 @@ export interface ExternalSitesSettings {
   sites: ExternalSiteSetting[];
 }
 
+export interface MainAppearanceSettings {
+  brandName: string;
+  tagline: string;
+  primaryColor: string;
+  accentColor: string;
+  logoUrl: string | null;
+  heroImageUrl: string | null;
+  faviconUrl: string | null;
+}
+
 export interface SteamImporterSettings {
   apiKey: string | null;
   steamId: string | null;
@@ -78,6 +88,38 @@ export interface BoardGameGeekImporterSettings {
   includeOwned: boolean;
   includeWishlist: boolean;
   includeExpansions: boolean;
+}
+
+export interface MusicFolderImporterSettings {
+  rootPath: string;
+}
+
+export interface MusicFolderImportRequest {
+  rootPath: string;
+  applyChanges: boolean;
+}
+
+export interface MusicFolderImportRow {
+  artist: string;
+  album: string;
+  relativePath: string;
+  status: string;
+  artistId: number | null;
+  albumId: number | null;
+}
+
+export interface MusicFolderImportResult {
+  rootPath: string;
+  applied: boolean;
+  artistFoldersScanned: number;
+  albumFoldersScanned: number;
+  artistsCreated: number;
+  albumsCreated: number;
+  existingAlbums: number;
+  databaseOnlyAlbums: number;
+  skippedFolders: number;
+  rows: MusicFolderImportRow[];
+  messages: string[];
 }
 
 export interface SoftwarePlatformSetting {
@@ -110,6 +152,7 @@ export class AdminSettingsService {
   private readonly http = inject(HttpClient);
   private readonly spookytownUrl = `${environment.apiUrl}/Spookytown`;
   private readonly settingsUrl = `${environment.apiUrl}/admin/settings`;
+  private readonly musicAlbumsUrl = `${environment.apiUrl}/MusicAlbums`;
 
   getSpookytownTypes() {
     return this.http.get<SpookytownType[]>(`${this.spookytownUrl}/types`);
@@ -187,6 +230,46 @@ export class AdminSettingsService {
     return this.http.put<ExternalSitesSettings>(`${this.settingsUrl}/external-sites`, request);
   }
 
+  getMainAppearance() {
+    return this.http.get<MainAppearanceSettings>(`${this.settingsUrl}/main-appearance`);
+  }
+
+  updateMainAppearance(request: MainAppearanceSettings) {
+    return this.http.put<MainAppearanceSettings>(`${this.settingsUrl}/main-appearance`, request);
+  }
+
+  getCdSiteAppearance() {
+    return this.http.get<MainAppearanceSettings>(`${this.settingsUrl}/cd-site-appearance`);
+  }
+
+  updateCdSiteAppearance(request: MainAppearanceSettings) {
+    return this.http.put<MainAppearanceSettings>(`${this.settingsUrl}/cd-site-appearance`, request);
+  }
+
+  getDinoSiteAppearance() {
+    return this.http.get<MainAppearanceSettings>(`${this.settingsUrl}/dino-site-appearance`);
+  }
+
+  updateDinoSiteAppearance(request: MainAppearanceSettings) {
+    return this.http.put<MainAppearanceSettings>(`${this.settingsUrl}/dino-site-appearance`, request);
+  }
+
+  getBlogAppearance() {
+    return this.http.get<MainAppearanceSettings>(`${this.settingsUrl}/blog-appearance`);
+  }
+
+  updateBlogAppearance(request: MainAppearanceSettings) {
+    return this.http.put<MainAppearanceSettings>(`${this.settingsUrl}/blog-appearance`, request);
+  }
+
+  getFilmReviewAppearance() {
+    return this.http.get<MainAppearanceSettings>(`${this.settingsUrl}/film-review-appearance`);
+  }
+
+  updateFilmReviewAppearance(request: MainAppearanceSettings) {
+    return this.http.put<MainAppearanceSettings>(`${this.settingsUrl}/film-review-appearance`, request);
+  }
+
   getSteamImporterSettings() {
     return this.http.get<SteamImporterSettings>(`${this.settingsUrl}/steam-importer`);
   }
@@ -201,6 +284,18 @@ export class AdminSettingsService {
 
   updateBoardGameGeekImporterSettings(request: BoardGameGeekImporterSettings) {
     return this.http.put<BoardGameGeekImporterSettings>(`${this.settingsUrl}/boardgamegeek-importer`, request);
+  }
+
+  getMusicFolderImporterSettings() {
+    return this.http.get<MusicFolderImporterSettings>(`${this.settingsUrl}/music-folder-importer`);
+  }
+
+  updateMusicFolderImporterSettings(request: MusicFolderImporterSettings) {
+    return this.http.put<MusicFolderImporterSettings>(`${this.settingsUrl}/music-folder-importer`, request);
+  }
+
+  importMusicFolders(request: MusicFolderImportRequest) {
+    return this.http.post<MusicFolderImportResult>(`${this.musicAlbumsUrl}/folder-import`, request);
   }
 
   getSoftwarePlatforms() {

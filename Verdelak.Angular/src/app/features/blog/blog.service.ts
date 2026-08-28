@@ -20,11 +20,22 @@ export interface BlogQuery {
   status?: string;
 }
 
+export interface BlogAppearanceSettings {
+  brandName: string;
+  tagline: string;
+  primaryColor: string;
+  accentColor: string;
+  logoUrl: string | null;
+  heroImageUrl: string | null;
+  faviconUrl: string | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class BlogService {
   private readonly http = inject(HttpClient);
   private readonly blogUrl = `${environment.apiUrl}/blog`;
   private readonly adminUrl = `${environment.apiUrl}/admin/blog`;
+  private readonly settingsUrl = `${environment.apiUrl}/admin/settings`;
 
   getPosts(query: BlogQuery = {}) {
     return this.http.get<PagedResult<BlogPostSummary>>(`${this.blogUrl}/posts`, { params: this.params(query) });
@@ -40,6 +51,10 @@ export class BlogService {
 
   getArchive() {
     return this.http.get<BlogArchiveMonth[]>(`${this.blogUrl}/archive`);
+  }
+
+  getAppearance() {
+    return this.http.get<BlogAppearanceSettings>(`${this.settingsUrl}/blog-appearance`);
   }
 
   getAdminPosts(query: BlogQuery = {}) {

@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
+import { CsvDownloadService } from '../../../shared/services/csv-download.service';
 import { TaskOccurrence, TaskOccurrenceUpdateRequest } from '../../tasks/models/scheduled-task.model';
 import { FishService } from '../fish-service';
 import { FishLivestockPanel } from '../fish-livestock-panel/fish-livestock-panel';
@@ -528,7 +529,10 @@ export class FishTankList {
       .slice(-20);
   });
 
-  constructor(private readonly service: FishService) {
+  constructor(
+    private readonly service: FishService,
+    private readonly csvDownload: CsvDownloadService
+  ) {
     this.load();
   }
 
@@ -2972,21 +2976,7 @@ export class FishTankList {
   }
 
   private downloadCsv(fileName: string, rows: Array<Array<string | number | boolean | null>>): void {
-    const csv = rows
-      .map(row => row.map(cell => this.csvCell(cell)).join(','))
-      .join('\r\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = fileName;
-    link.click();
-    URL.revokeObjectURL(url);
-  }
-
-  private csvCell(value: string | number | boolean | null): string {
-    const text = value === null ? '' : String(value);
-    return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+    this.csvDownload.download(fileName, rows);
   }
 
   private isEmptyProduct(product: FishAquariumProduct): boolean {

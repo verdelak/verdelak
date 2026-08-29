@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, computed, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
+import { CsvDownloadService } from '../../../shared/services/csv-download.service';
 import { MusicService } from '../music.service';
 import {
   MusicAlbumDetail,
@@ -48,6 +49,8 @@ interface MusicReportRow {
   styleUrl: './music-browser.scss'
 })
 export class MusicBrowser implements OnInit {
+  private readonly csvDownload = inject(CsvDownloadService);
+
   readonly format = signal<'All' | MusicFormat>('All');
   readonly artists = signal<MusicArtistWithAlbums[]>([]);
   readonly artistOptions = signal<MusicArtistSummary[]>([]);
@@ -417,21 +420,7 @@ export class MusicBrowser implements OnInit {
   }
 
   private downloadCsv(filename: string, rows: Array<Array<string | number>>): void {
-    const csv = rows
-      .map(row => row.map(cell => this.csvCell(cell)).join(','))
-      .join('\r\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    link.click();
-    URL.revokeObjectURL(url);
-  }
-
-  private csvCell(value: string | number): string {
-    const text = String(value ?? '');
-    return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+    this.csvDownload.download(filename, rows);
   }
 
   private today(): string {

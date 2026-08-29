@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, computed, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/auth/auth.service';
+import { CsvDownloadService } from '../../../shared/services/csv-download.service';
 import { MagazineIssue, MagazineLookup, MagazineReport, UpsertMagazineIssue } from '../models/magazine.models';
 import { MagazineService } from '../magazine.service';
 
@@ -38,6 +39,8 @@ interface ActiveFilterChip {
   styleUrl: './magazine-browser.scss'
 })
 export class MagazineBrowser implements OnInit {
+  private readonly csvDownload = inject(CsvDownloadService);
+
   readonly items = signal<MagazineIssue[]>([]);
   readonly series = signal<MagazineLookup[]>([]);
   readonly report = signal<MagazineReport | null>(null);
@@ -487,18 +490,7 @@ export class MagazineBrowser implements OnInit {
   }
 
   private downloadCsv(filename: string, rows: string[][]): void {
-    const csv = rows.map(row => row.map(value => this.csvCell(value)).join(',')).join('\r\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    link.click();
-    URL.revokeObjectURL(url);
-  }
-
-  private csvCell(value: string): string {
-    return /[",\r\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
+    this.csvDownload.download(filename, rows);
   }
 
   private emptyForm(): MagazineForm {

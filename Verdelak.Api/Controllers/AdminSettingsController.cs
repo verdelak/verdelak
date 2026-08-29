@@ -44,19 +44,7 @@ public class AdminSettingsController(VerdelakDbContext context) : ControllerBase
         FishReportThresholdsDto dto,
         CancellationToken cancellationToken)
     {
-        var normalized = Normalize(dto);
-        var valueJson = JsonSerializer.Serialize(normalized);
-        var setting = await context.AppSettings.SingleOrDefaultAsync(item => item.Key == FishReportThresholdsKey, cancellationToken);
-        if (setting is null)
-        {
-            setting = new AppSetting { Key = FishReportThresholdsKey };
-            context.AppSettings.Add(setting);
-        }
-
-        setting.ValueJson = valueJson;
-        setting.UpdatedAt = DateTime.UtcNow;
-        await context.SaveChangesAsync(cancellationToken);
-        return normalized;
+        return await SaveJsonSetting(FishReportThresholdsKey, dto, Normalize, cancellationToken);
     }
 
     [HttpGet("shopping-categories")]
@@ -71,18 +59,7 @@ public class AdminSettingsController(VerdelakDbContext context) : ControllerBase
         ShoppingCategoriesDto dto,
         CancellationToken cancellationToken)
     {
-        var normalized = Normalize(dto);
-        var setting = await context.AppSettings.SingleOrDefaultAsync(item => item.Key == ShoppingCategoriesKey, cancellationToken);
-        if (setting is null)
-        {
-            setting = new AppSetting { Key = ShoppingCategoriesKey };
-            context.AppSettings.Add(setting);
-        }
-
-        setting.ValueJson = JsonSerializer.Serialize(normalized);
-        setting.UpdatedAt = DateTime.UtcNow;
-        await context.SaveChangesAsync(cancellationToken);
-        return normalized;
+        return await SaveJsonSetting(ShoppingCategoriesKey, dto, Normalize, cancellationToken);
     }
 
     [HttpGet("recipe-lookups")]
@@ -137,18 +114,7 @@ public class AdminSettingsController(VerdelakDbContext context) : ControllerBase
         AlcoholLookupSettingsDto dto,
         CancellationToken cancellationToken)
     {
-        var normalized = Normalize(dto);
-        var setting = await context.AppSettings.SingleOrDefaultAsync(item => item.Key == AlcoholLookupSettingsKey, cancellationToken);
-        if (setting is null)
-        {
-            setting = new AppSetting { Key = AlcoholLookupSettingsKey };
-            context.AppSettings.Add(setting);
-        }
-
-        setting.ValueJson = JsonSerializer.Serialize(normalized);
-        setting.UpdatedAt = DateTime.UtcNow;
-        await context.SaveChangesAsync(cancellationToken);
-        return normalized;
+        return await SaveJsonSetting(AlcoholLookupSettingsKey, dto, Normalize, cancellationToken);
     }
 
     [HttpGet("barcode-lookups")]
@@ -163,18 +129,7 @@ public class AdminSettingsController(VerdelakDbContext context) : ControllerBase
         BarcodeLookupSettingsDto dto,
         CancellationToken cancellationToken)
     {
-        var normalized = Normalize(dto);
-        var setting = await context.AppSettings.SingleOrDefaultAsync(item => item.Key == BarcodeLookupSettingsKey, cancellationToken);
-        if (setting is null)
-        {
-            setting = new AppSetting { Key = BarcodeLookupSettingsKey };
-            context.AppSettings.Add(setting);
-        }
-
-        setting.ValueJson = JsonSerializer.Serialize(normalized);
-        setting.UpdatedAt = DateTime.UtcNow;
-        await context.SaveChangesAsync(cancellationToken);
-        return normalized;
+        return await SaveJsonSetting(BarcodeLookupSettingsKey, dto, Normalize, cancellationToken);
     }
 
     [HttpGet("finance-tracker")]
@@ -189,18 +144,7 @@ public class AdminSettingsController(VerdelakDbContext context) : ControllerBase
         FinanceTrackerSettingsDto dto,
         CancellationToken cancellationToken)
     {
-        var normalized = Normalize(dto);
-        var setting = await context.AppSettings.SingleOrDefaultAsync(item => item.Key == FinanceTrackerSettingsKey, cancellationToken);
-        if (setting is null)
-        {
-            setting = new AppSetting { Key = FinanceTrackerSettingsKey };
-            context.AppSettings.Add(setting);
-        }
-
-        setting.ValueJson = JsonSerializer.Serialize(normalized);
-        setting.UpdatedAt = DateTime.UtcNow;
-        await context.SaveChangesAsync(cancellationToken);
-        return normalized;
+        return await SaveJsonSetting(FinanceTrackerSettingsKey, dto, Normalize, cancellationToken);
     }
 
     [HttpGet("external-sites")]
@@ -215,18 +159,7 @@ public class AdminSettingsController(VerdelakDbContext context) : ControllerBase
         ExternalSitesSettingsDto dto,
         CancellationToken cancellationToken)
     {
-        var normalized = Normalize(dto);
-        var setting = await context.AppSettings.SingleOrDefaultAsync(item => item.Key == ExternalSitesSettingsKey, cancellationToken);
-        if (setting is null)
-        {
-            setting = new AppSetting { Key = ExternalSitesSettingsKey };
-            context.AppSettings.Add(setting);
-        }
-
-        setting.ValueJson = JsonSerializer.Serialize(normalized);
-        setting.UpdatedAt = DateTime.UtcNow;
-        await context.SaveChangesAsync(cancellationToken);
-        return normalized;
+        return await SaveJsonSetting(ExternalSitesSettingsKey, dto, Normalize, cancellationToken);
     }
 
     [HttpGet("main-appearance")]
@@ -241,18 +174,7 @@ public class AdminSettingsController(VerdelakDbContext context) : ControllerBase
         MainAppearanceSettingsDto dto,
         CancellationToken cancellationToken)
     {
-        var normalized = Normalize(dto);
-        var setting = await context.AppSettings.SingleOrDefaultAsync(item => item.Key == MainAppearanceSettingsKey, cancellationToken);
-        if (setting is null)
-        {
-            setting = new AppSetting { Key = MainAppearanceSettingsKey };
-            context.AppSettings.Add(setting);
-        }
-
-        setting.ValueJson = JsonSerializer.Serialize(normalized);
-        setting.UpdatedAt = DateTime.UtcNow;
-        await context.SaveChangesAsync(cancellationToken);
-        return normalized;
+        return await SaveJsonSetting(MainAppearanceSettingsKey, dto, Normalize, cancellationToken);
     }
 
     [HttpGet("cd-site-appearance")]
@@ -267,18 +189,7 @@ public class AdminSettingsController(VerdelakDbContext context) : ControllerBase
         MainAppearanceSettingsDto dto,
         CancellationToken cancellationToken)
     {
-        var normalized = Normalize(dto, CdSiteAppearanceDefaults());
-        var setting = await context.AppSettings.SingleOrDefaultAsync(item => item.Key == CdSiteAppearanceSettingsKey, cancellationToken);
-        if (setting is null)
-        {
-            setting = new AppSetting { Key = CdSiteAppearanceSettingsKey };
-            context.AppSettings.Add(setting);
-        }
-
-        setting.ValueJson = JsonSerializer.Serialize(normalized);
-        setting.UpdatedAt = DateTime.UtcNow;
-        await context.SaveChangesAsync(cancellationToken);
-        return normalized;
+        return await SaveJsonSetting(CdSiteAppearanceSettingsKey, dto, value => Normalize(value, CdSiteAppearanceDefaults()), cancellationToken);
     }
 
     [HttpGet("dino-site-appearance")]
@@ -293,18 +204,7 @@ public class AdminSettingsController(VerdelakDbContext context) : ControllerBase
         MainAppearanceSettingsDto dto,
         CancellationToken cancellationToken)
     {
-        var normalized = Normalize(dto, DinoSiteAppearanceDefaults());
-        var setting = await context.AppSettings.SingleOrDefaultAsync(item => item.Key == DinoSiteAppearanceSettingsKey, cancellationToken);
-        if (setting is null)
-        {
-            setting = new AppSetting { Key = DinoSiteAppearanceSettingsKey };
-            context.AppSettings.Add(setting);
-        }
-
-        setting.ValueJson = JsonSerializer.Serialize(normalized);
-        setting.UpdatedAt = DateTime.UtcNow;
-        await context.SaveChangesAsync(cancellationToken);
-        return normalized;
+        return await SaveJsonSetting(DinoSiteAppearanceSettingsKey, dto, value => Normalize(value, DinoSiteAppearanceDefaults()), cancellationToken);
     }
 
     [HttpGet("blog-appearance")]
@@ -319,18 +219,7 @@ public class AdminSettingsController(VerdelakDbContext context) : ControllerBase
         MainAppearanceSettingsDto dto,
         CancellationToken cancellationToken)
     {
-        var normalized = Normalize(dto, BlogAppearanceDefaults());
-        var setting = await context.AppSettings.SingleOrDefaultAsync(item => item.Key == BlogAppearanceSettingsKey, cancellationToken);
-        if (setting is null)
-        {
-            setting = new AppSetting { Key = BlogAppearanceSettingsKey };
-            context.AppSettings.Add(setting);
-        }
-
-        setting.ValueJson = JsonSerializer.Serialize(normalized);
-        setting.UpdatedAt = DateTime.UtcNow;
-        await context.SaveChangesAsync(cancellationToken);
-        return normalized;
+        return await SaveJsonSetting(BlogAppearanceSettingsKey, dto, value => Normalize(value, BlogAppearanceDefaults()), cancellationToken);
     }
 
     [HttpGet("film-review-appearance")]
@@ -345,18 +234,7 @@ public class AdminSettingsController(VerdelakDbContext context) : ControllerBase
         MainAppearanceSettingsDto dto,
         CancellationToken cancellationToken)
     {
-        var normalized = Normalize(dto, FilmReviewAppearanceDefaults());
-        var setting = await context.AppSettings.SingleOrDefaultAsync(item => item.Key == FilmReviewAppearanceSettingsKey, cancellationToken);
-        if (setting is null)
-        {
-            setting = new AppSetting { Key = FilmReviewAppearanceSettingsKey };
-            context.AppSettings.Add(setting);
-        }
-
-        setting.ValueJson = JsonSerializer.Serialize(normalized);
-        setting.UpdatedAt = DateTime.UtcNow;
-        await context.SaveChangesAsync(cancellationToken);
-        return normalized;
+        return await SaveJsonSetting(FilmReviewAppearanceSettingsKey, dto, value => Normalize(value, FilmReviewAppearanceDefaults()), cancellationToken);
     }
 
     [Authorize(Roles = "Admin")]
@@ -372,18 +250,7 @@ public class AdminSettingsController(VerdelakDbContext context) : ControllerBase
         SteamImporterSettingsDto dto,
         CancellationToken cancellationToken)
     {
-        var normalized = Normalize(dto);
-        var setting = await context.AppSettings.SingleOrDefaultAsync(item => item.Key == SteamImporterSettingsKey, cancellationToken);
-        if (setting is null)
-        {
-            setting = new AppSetting { Key = SteamImporterSettingsKey };
-            context.AppSettings.Add(setting);
-        }
-
-        setting.ValueJson = JsonSerializer.Serialize(normalized);
-        setting.UpdatedAt = DateTime.UtcNow;
-        await context.SaveChangesAsync(cancellationToken);
-        return normalized;
+        return await SaveJsonSetting(SteamImporterSettingsKey, dto, Normalize, cancellationToken);
     }
 
     [Authorize(Roles = "Admin")]
@@ -399,18 +266,7 @@ public class AdminSettingsController(VerdelakDbContext context) : ControllerBase
         BoardGameGeekImporterSettingsDto dto,
         CancellationToken cancellationToken)
     {
-        var normalized = Normalize(dto);
-        var setting = await context.AppSettings.SingleOrDefaultAsync(item => item.Key == BoardGameGeekImporterSettingsKey, cancellationToken);
-        if (setting is null)
-        {
-            setting = new AppSetting { Key = BoardGameGeekImporterSettingsKey };
-            context.AppSettings.Add(setting);
-        }
-
-        setting.ValueJson = JsonSerializer.Serialize(normalized);
-        setting.UpdatedAt = DateTime.UtcNow;
-        await context.SaveChangesAsync(cancellationToken);
-        return normalized;
+        return await SaveJsonSetting(BoardGameGeekImporterSettingsKey, dto, Normalize, cancellationToken);
     }
 
     [Authorize(Roles = "Admin")]
@@ -426,18 +282,7 @@ public class AdminSettingsController(VerdelakDbContext context) : ControllerBase
         MusicFolderImporterSettingsDto dto,
         CancellationToken cancellationToken)
     {
-        var normalized = Normalize(dto);
-        var setting = await context.AppSettings.SingleOrDefaultAsync(item => item.Key == MusicFolderImporterSettingsKey, cancellationToken);
-        if (setting is null)
-        {
-            setting = new AppSetting { Key = MusicFolderImporterSettingsKey };
-            context.AppSettings.Add(setting);
-        }
-
-        setting.ValueJson = JsonSerializer.Serialize(normalized);
-        setting.UpdatedAt = DateTime.UtcNow;
-        await context.SaveChangesAsync(cancellationToken);
-        return normalized;
+        return await SaveJsonSetting(MusicFolderImporterSettingsKey, dto, Normalize, cancellationToken);
     }
 
     [HttpGet("software-platforms")]
@@ -644,46 +489,60 @@ public class AdminSettingsController(VerdelakDbContext context) : ControllerBase
         return NoContent();
     }
 
-    private async Task<FishReportThresholdsDto> ReadFishReportThresholds(CancellationToken cancellationToken)
+    private async Task<TSettings> ReadJsonSetting<TSettings>(
+        string key,
+        TSettings fallback,
+        Func<TSettings, TSettings> normalize,
+        CancellationToken cancellationToken)
     {
         var setting = await context.AppSettings
             .AsNoTracking()
-            .SingleOrDefaultAsync(item => item.Key == FishReportThresholdsKey, cancellationToken);
+            .SingleOrDefaultAsync(item => item.Key == key, cancellationToken);
         if (setting is null || string.IsNullOrWhiteSpace(setting.ValueJson))
         {
-            return Defaults();
+            return fallback;
         }
 
         try
         {
-            return Normalize(JsonSerializer.Deserialize<FishReportThresholdsDto>(setting.ValueJson) ?? Defaults());
+            return normalize(JsonSerializer.Deserialize<TSettings>(setting.ValueJson) ?? fallback);
         }
         catch (JsonException)
         {
-            return Defaults();
+            return fallback;
         }
+    }
+
+    private async Task<TSettings> SaveJsonSetting<TSettings>(
+        string key,
+        TSettings dto,
+        Func<TSettings, TSettings> normalize,
+        CancellationToken cancellationToken)
+    {
+        var normalized = normalize(dto);
+        var setting = await context.AppSettings.SingleOrDefaultAsync(item => item.Key == key, cancellationToken);
+        if (setting is null)
+        {
+            setting = new AppSetting { Key = key };
+            context.AppSettings.Add(setting);
+        }
+
+        setting.ValueJson = JsonSerializer.Serialize(normalized);
+        setting.UpdatedAt = DateTime.UtcNow;
+        await context.SaveChangesAsync(cancellationToken);
+        return normalized;
+    }
+
+    private async Task<FishReportThresholdsDto> ReadFishReportThresholds(CancellationToken cancellationToken)
+    {
+        return await ReadJsonSetting(FishReportThresholdsKey, Defaults(), Normalize, cancellationToken);
     }
 
     private static FishReportThresholdsDto Defaults() => new(7, 7, 14, 25, 30);
 
     private async Task<ShoppingCategoriesDto> ReadShoppingCategories(CancellationToken cancellationToken)
     {
-        var setting = await context.AppSettings
-            .AsNoTracking()
-            .SingleOrDefaultAsync(item => item.Key == ShoppingCategoriesKey, cancellationToken);
-        if (setting is null || string.IsNullOrWhiteSpace(setting.ValueJson))
-        {
-            return ShoppingCategoryDefaults();
-        }
-
-        try
-        {
-            return Normalize(JsonSerializer.Deserialize<ShoppingCategoriesDto>(setting.ValueJson) ?? ShoppingCategoryDefaults());
-        }
-        catch (JsonException)
-        {
-            return ShoppingCategoryDefaults();
-        }
+        return await ReadJsonSetting(ShoppingCategoriesKey, ShoppingCategoryDefaults(), Normalize, cancellationToken);
     }
 
     private static ShoppingCategoriesDto ShoppingCategoryDefaults() => new([
@@ -785,22 +644,7 @@ public class AdminSettingsController(VerdelakDbContext context) : ControllerBase
 
     private async Task<BarcodeLookupSettingsDto> ReadBarcodeLookups(CancellationToken cancellationToken)
     {
-        var setting = await context.AppSettings
-            .AsNoTracking()
-            .SingleOrDefaultAsync(item => item.Key == BarcodeLookupSettingsKey, cancellationToken);
-        if (setting is null || string.IsNullOrWhiteSpace(setting.ValueJson))
-        {
-            return BarcodeLookupDefaults();
-        }
-
-        try
-        {
-            return Normalize(JsonSerializer.Deserialize<BarcodeLookupSettingsDto>(setting.ValueJson) ?? BarcodeLookupDefaults());
-        }
-        catch (JsonException)
-        {
-            return BarcodeLookupDefaults();
-        }
+        return await ReadJsonSetting(BarcodeLookupSettingsKey, BarcodeLookupDefaults(), Normalize, cancellationToken);
     }
 
     public static BarcodeLookupSettingsDto BarcodeLookupDefaults() => new([
@@ -873,22 +717,7 @@ public class AdminSettingsController(VerdelakDbContext context) : ControllerBase
 
     private async Task<ExternalSitesSettingsDto> ReadExternalSites(CancellationToken cancellationToken)
     {
-        var setting = await context.AppSettings
-            .AsNoTracking()
-            .SingleOrDefaultAsync(item => item.Key == ExternalSitesSettingsKey, cancellationToken);
-        if (setting is null || string.IsNullOrWhiteSpace(setting.ValueJson))
-        {
-            return ExternalSitesDefaults();
-        }
-
-        try
-        {
-            return Normalize(JsonSerializer.Deserialize<ExternalSitesSettingsDto>(setting.ValueJson) ?? ExternalSitesDefaults());
-        }
-        catch (JsonException)
-        {
-            return ExternalSitesDefaults();
-        }
+        return await ReadJsonSetting(ExternalSitesSettingsKey, ExternalSitesDefaults(), Normalize, cancellationToken);
     }
 
     private static ExternalSitesSettingsDto ExternalSitesDefaults() => new("local", [
@@ -909,22 +738,7 @@ public class AdminSettingsController(VerdelakDbContext context) : ControllerBase
         MainAppearanceSettingsDto defaults,
         CancellationToken cancellationToken)
     {
-        var setting = await context.AppSettings
-            .AsNoTracking()
-            .SingleOrDefaultAsync(item => item.Key == key, cancellationToken);
-        if (setting is null || string.IsNullOrWhiteSpace(setting.ValueJson))
-        {
-            return defaults;
-        }
-
-        try
-        {
-            return Normalize(JsonSerializer.Deserialize<MainAppearanceSettingsDto>(setting.ValueJson) ?? defaults, defaults);
-        }
-        catch (JsonException)
-        {
-            return defaults;
-        }
+        return await ReadJsonSetting(key, defaults, value => Normalize(value, defaults), cancellationToken);
     }
 
     private static MainAppearanceSettingsDto MainAppearanceDefaults() => new(
@@ -974,66 +788,21 @@ public class AdminSettingsController(VerdelakDbContext context) : ControllerBase
 
     public async Task<SteamImporterSettingsDto> ReadSteamImporterSettings(CancellationToken cancellationToken)
     {
-        var setting = await context.AppSettings
-            .AsNoTracking()
-            .SingleOrDefaultAsync(item => item.Key == SteamImporterSettingsKey, cancellationToken);
-        if (setting is null || string.IsNullOrWhiteSpace(setting.ValueJson))
-        {
-            return SteamImporterDefaults();
-        }
-
-        try
-        {
-            return Normalize(JsonSerializer.Deserialize<SteamImporterSettingsDto>(setting.ValueJson) ?? SteamImporterDefaults());
-        }
-        catch (JsonException)
-        {
-            return SteamImporterDefaults();
-        }
+        return await ReadJsonSetting(SteamImporterSettingsKey, SteamImporterDefaults(), Normalize, cancellationToken);
     }
 
     private static SteamImporterSettingsDto SteamImporterDefaults() => new(null, null, true, true);
 
     public async Task<BoardGameGeekImporterSettingsDto> ReadBoardGameGeekImporterSettings(CancellationToken cancellationToken)
     {
-        var setting = await context.AppSettings
-            .AsNoTracking()
-            .SingleOrDefaultAsync(item => item.Key == BoardGameGeekImporterSettingsKey, cancellationToken);
-        if (setting is null || string.IsNullOrWhiteSpace(setting.ValueJson))
-        {
-            return BoardGameGeekImporterDefaults();
-        }
-
-        try
-        {
-            return Normalize(JsonSerializer.Deserialize<BoardGameGeekImporterSettingsDto>(setting.ValueJson) ?? BoardGameGeekImporterDefaults());
-        }
-        catch (JsonException)
-        {
-            return BoardGameGeekImporterDefaults();
-        }
+        return await ReadJsonSetting(BoardGameGeekImporterSettingsKey, BoardGameGeekImporterDefaults(), Normalize, cancellationToken);
     }
 
     private static BoardGameGeekImporterSettingsDto BoardGameGeekImporterDefaults() => new(null, true, false, false);
 
     public async Task<MusicFolderImporterSettingsDto> ReadMusicFolderImporterSettings(CancellationToken cancellationToken)
     {
-        var setting = await context.AppSettings
-            .AsNoTracking()
-            .SingleOrDefaultAsync(item => item.Key == MusicFolderImporterSettingsKey, cancellationToken);
-        if (setting is null || string.IsNullOrWhiteSpace(setting.ValueJson))
-        {
-            return MusicFolderImporterDefaults();
-        }
-
-        try
-        {
-            return Normalize(JsonSerializer.Deserialize<MusicFolderImporterSettingsDto>(setting.ValueJson) ?? MusicFolderImporterDefaults());
-        }
-        catch (JsonException)
-        {
-            return MusicFolderImporterDefaults();
-        }
+        return await ReadJsonSetting(MusicFolderImporterSettingsKey, MusicFolderImporterDefaults(), Normalize, cancellationToken);
     }
 
     private static MusicFolderImporterSettingsDto MusicFolderImporterDefaults() => new(@"Z:\Rips");

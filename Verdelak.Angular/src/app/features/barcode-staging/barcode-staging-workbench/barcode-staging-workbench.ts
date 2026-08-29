@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { BarcodeBatchHistoryPanel } from '../barcode-batch-history-panel/barcode-batch-history-panel';
 import { BarcodeDuplicateScanPanel } from '../barcode-duplicate-scan-panel/barcode-duplicate-scan-panel';
 import { BarcodeImportValidationPanel } from '../barcode-import-validation-panel/barcode-import-validation-panel';
+import { CsvDownloadService } from '../../../shared/services/csv-download.service';
 import { BarcodeStagingService } from '../barcode-staging.service';
 import {
   BarcodeBatchReport,
@@ -574,7 +575,10 @@ export class BarcodeStagingWorkbench implements OnInit {
     return item?.codeType === 'UPC' || item?.codeType === 'EAN8' || item?.codeType === 'EAN13';
   });
 
-  constructor(private readonly service: BarcodeStagingService) {}
+  constructor(
+    private readonly service: BarcodeStagingService,
+    private readonly csvDownload: CsvDownloadService
+  ) {}
 
   ngOnInit(): void {
     this.loadItems();
@@ -2822,19 +2826,7 @@ export class BarcodeStagingWorkbench implements OnInit {
     return value ? new Date(`${value}T23:59:59.999`).toISOString() : null;
   }
   private downloadCsv(fileName: string, rows: Array<Array<string | number | null | undefined>>): void {
-    const csv = rows.map(row => row.map(value => this.csvCell(value)).join(',')).join('\r\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = fileName;
-    link.click();
-    URL.revokeObjectURL(url);
-  }
-
-  private csvCell(value: string | number | null | undefined): string {
-    const text = String(value ?? '');
-    return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+    this.csvDownload.download(fileName, rows);
   }
 
   private cleanupRequest(): BarcodeStagingCleanupRequest {

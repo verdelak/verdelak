@@ -6,6 +6,7 @@ import { forkJoin, switchMap } from 'rxjs';
 import { ChoreService } from '../chore-service';
 import { MasterScheduleItem, ScheduledTask, ScheduledTaskRequest, TaskOccurrenceActivity } from '../../tasks/models/scheduled-task.model';
 import { ScheduleActionsComponent } from '../../../shared/schedule-actions/schedule-actions';
+import { CsvDownloadService } from '../../../shared/services/csv-download.service';
 
 type ChoreScheduleType = 'OneTime' | 'Daily' | 'Weekly' | 'Monthly';
 
@@ -205,7 +206,10 @@ export class ChoreManager {
     ];
   });
 
-  constructor(private readonly service: ChoreService) {
+  constructor(
+    private readonly service: ChoreService,
+    private readonly csvDownload: CsvDownloadService
+  ) {
     this.loadChores();
     this.loadActivity();
     this.loadSchedule();
@@ -824,23 +828,7 @@ export class ChoreManager {
   }
 
   private downloadCsv(fileName: string, rows: CsvCell[][]): void {
-    const csv = rows.map(row => row.map(cell => this.csvCell(cell)).join(',')).join('\r\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = fileName;
-    link.click();
-    URL.revokeObjectURL(url);
-  }
-
-  private csvCell(value: CsvCell): string {
-    if (value === null || value === undefined) {
-      return '';
-    }
-
-    const text = String(value);
-    return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+    this.csvDownload.download(fileName, rows);
   }
 
   private parseBulkRows(text: string, defaults: ChoreForm): BulkChoreRow[] {

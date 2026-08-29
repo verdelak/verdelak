@@ -3,6 +3,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
+import { CsvDownloadService } from '../../../shared/services/csv-download.service';
 import { PantryItem } from '../../shopping-list/models/shopping-list.models';
 import { ShoppingListService } from '../../shopping-list/shopping-list.service';
 import { RecipeBook, RecipeDetail, RecipeIngredientRequest, RecipeInstructionRequest, RecipeRequest, RecipeShoppingListItemResult, RecipeShoppingListResult, RecipeSummary, RecipeTag } from '../models/recipe.models';
@@ -83,6 +84,7 @@ interface RecipeSourceCoverageRow {
 })
 export class RecipeBrowser {
   private readonly auth = inject(AuthService);
+  private readonly csvDownload = inject(CsvDownloadService);
 
   readonly recipes = signal<RecipeSummary[]>([]);
   readonly selected = signal<RecipeDetail | null>(null);
@@ -857,23 +859,7 @@ export class RecipeBrowser {
   }
 
   private downloadCsv(fileName: string, rows: (string | number | boolean | null | undefined)[][]): void {
-    const csv = rows.map(row => row.map(cell => this.csvCell(cell)).join(',')).join('\r\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.download = fileName;
-    anchor.click();
-    URL.revokeObjectURL(url);
-  }
-
-  private csvCell(value: string | number | boolean | null | undefined): string {
-    if (value === null || value === undefined) {
-      return '';
-    }
-
-    const text = String(value);
-    return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+    this.csvDownload.download(fileName, rows);
   }
 
   private fileSlug(value: string): string {

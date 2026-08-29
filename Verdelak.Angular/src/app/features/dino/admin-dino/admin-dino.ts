@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
+import { CsvDownloadService } from '../../../shared/services/csv-download.service';
 import { DinoAdminService } from '../dino-admin.service';
 import {
   DinoContentSectionUpsert,
@@ -143,7 +144,10 @@ export class AdminDino implements OnInit {
     }
   ]);
 
-  constructor(private readonly service: DinoAdminService) {}
+  constructor(
+    private readonly service: DinoAdminService,
+    private readonly csvDownload: CsvDownloadService
+  ) {}
 
   ngOnInit(): void {
     this.loadTaxonomy();
@@ -582,8 +586,7 @@ export class AdminDino implements OnInit {
   }
 
   private downloadCsv(fileName: string, rows: (string | number | boolean | null | undefined)[][]): void {
-    const csv = rows.map(row => row.map(cell => this.csvCell(cell)).join(',')).join('\r\n');
-    this.downloadText(fileName, csv, 'text/csv;charset=utf-8;');
+    this.csvDownload.download(fileName, rows);
   }
 
   private downloadText(fileName: string, content: string, type: string): void {
@@ -594,15 +597,6 @@ export class AdminDino implements OnInit {
     anchor.download = fileName;
     anchor.click();
     URL.revokeObjectURL(url);
-  }
-
-  private csvCell(value: string | number | boolean | null | undefined): string {
-    if (value === null || value === undefined) {
-      return '';
-    }
-
-    const text = String(value);
-    return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
   }
 
   private fileSlug(value: string): string {

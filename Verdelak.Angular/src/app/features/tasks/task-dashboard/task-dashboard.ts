@@ -5,6 +5,7 @@ import { ActivatedRoute } from '@angular/router';
 import { TaskService } from '../task';
 import { MasterScheduleItem, ScheduleGenerationResult, ScheduleGenerationTaskSummary } from '../models/scheduled-task.model';
 import { ScheduleActionsComponent } from '../../../shared/schedule-actions/schedule-actions';
+import { CsvDownloadService } from '../../../shared/services/csv-download.service';
 
 type ScheduleScope = 'overdue' | 'today' | 'week' | 'month';
 type ScheduleView = 'agenda' | 'calendar';
@@ -119,7 +120,11 @@ export class TaskDashboard  {
       || left.title.localeCompare(right.title))
     .slice(0, 8));
 
-  constructor(private readonly service: TaskService, private readonly route: ActivatedRoute) {
+  constructor(
+    private readonly service: TaskService,
+    private readonly route: ActivatedRoute,
+    private readonly csvDownload: CsvDownloadService
+  ) {
     const source = this.route.snapshot.queryParamMap.get('source');
     if (source) {
       this.sourceFilter.set(source);
@@ -792,21 +797,7 @@ export class TaskDashboard  {
   }
 
   private downloadCsv(filename: string, rows: string[][]): void {
-    const csv = rows
-      .map(row => row.map(value => this.escapeCsv(value)).join(','))
-      .join('\r\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    link.click();
-    URL.revokeObjectURL(url);
-  }
-
-  private escapeCsv(value: string): string {
-    const escaped = value.replace(/"/g, '""');
-    return /[",\r\n]/.test(escaped) ? `"${escaped}"` : escaped;
+    this.csvDownload.download(filename, rows);
   }
 
   private scopeRange(anchor: string, scope: ScheduleScope): { from: string; to: string } {

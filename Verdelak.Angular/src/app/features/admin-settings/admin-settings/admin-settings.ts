@@ -1,7 +1,8 @@
 ﻿import { CommonModule } from '@angular/common';
-import { Component, OnInit, WritableSignal, computed, signal } from '@angular/core';
+import { Component, OnInit, WritableSignal, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Observable, forkJoin } from 'rxjs';
+import { CsvDownloadService } from '../../../shared/services/csv-download.service';
 import { SpookytownType } from '../../spookytown/models/spookytown.models';
 import { AdminSettingsService, BarcodeLookupProviderSetting, BoardGameGeekImporterSettings, ExternalSiteSetting, ExternalSitesSettings, FinanceTrackerSettings, FishReportThresholds, MainAppearanceSettings, MusicFolderImportResult, SoftwareLocationSetting, SoftwarePlatformSetting, SteamImporterSettings } from '../admin-settings.service';
 import { AppearanceSettingsPanel } from './appearance-settings-panel';
@@ -48,6 +49,8 @@ type FinanceNumericSetting = 'yearCloseMonth' | 'yearCloseDay' | 'defaultReportY
   styleUrl: './admin-settings.scss'
 })
 export class AdminSettings implements OnInit {
+  private readonly csvDownload = inject(CsvDownloadService);
+
   readonly spookytownTypes = signal<SpookytownType[]>([]);
   readonly selectedTypeId = signal<string | null>(null);
   readonly form = signal<SpookytownTypeForm>({ id: '', type: '', originalId: null });
@@ -1557,23 +1560,7 @@ export class AdminSettings implements OnInit {
   }
 
   private downloadCsv(fileName: string, rows: (string | number | boolean | null | undefined)[][]): void {
-    const csv = rows.map(row => row.map(cell => this.csvCell(cell)).join(',')).join('\r\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.download = fileName;
-    anchor.click();
-    URL.revokeObjectURL(url);
-  }
-
-  private csvCell(value: string | number | boolean | null | undefined): string {
-    if (value === null || value === undefined) {
-      return '';
-    }
-
-    const text = String(value);
-    return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+    this.csvDownload.download(fileName, rows);
   }
 
   private today(): string {

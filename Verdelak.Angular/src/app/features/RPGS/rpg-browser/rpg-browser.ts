@@ -5,6 +5,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { RpgService } from '../rpg-service';
 import { IdName, ProductListItem, RpgStatusFilter } from '../models/rpg.models';
 import { AuthService } from '../../../core/auth/auth.service';
+import { CsvDownloadService } from '../../../shared/services/csv-download.service';
 
 interface RpgSummaryCard {
   label: string;
@@ -34,6 +35,7 @@ export class RpgBrowser  implements OnInit {
   svc = inject(RpgService);
   private route = inject(ActivatedRoute);
   auth = inject(AuthService);
+  private readonly csvDownload = inject(CsvDownloadService);
 
   systems: IdName[] = [];
   series: IdName[] = [];
@@ -205,21 +207,7 @@ export class RpgBrowser  implements OnInit {
   }
 
   private downloadCsv(filename: string, rows: Array<Array<string | number>>) {
-    const csv = rows
-      .map(row => row.map(cell => this.csvCell(cell)).join(','))
-      .join('\r\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    link.click();
-    URL.revokeObjectURL(url);
-  }
-
-  private csvCell(value: string | number) {
-    const text = String(value ?? '');
-    return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+    this.csvDownload.download(filename, rows);
   }
 
   private today() {

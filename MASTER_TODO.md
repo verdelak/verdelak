@@ -468,6 +468,9 @@ Also:
 - Standardize naming, form handling, filtering/report helpers, CSS utility patterns, and API mapping patterns where sections have drifted.
 - Keep refactors behavior-preserving unless a specific section is already being actively redesigned.
 - Alcohol browser CSV export helpers consolidated with a shared inventory row formatter and focused-report export map, reducing repeated report export methods without changing UI behavior.
+- Admin Settings AppSettings JSON read/write helpers added so straightforward settings endpoints share one defensive deserialize/normalize and upsert/serialize path instead of repeating persistence code.
+- Shared Angular CSV download service added and adopted across feature CSV exports, including Admin Settings, Admin Users, Music, Books, Magazines, Chessex, Toys, Spookytown, Phone List, RPG, Miniatures, Software, Chores, Recipes, Alcohol, Dice Games, Shows, Shopping List, Dino Admin, MTG, Barcode Staging, Fish, Gardening, and Goals & Plans.
+- Shared CSV object-row export support added and adopted by Finance, Comics, Comic Want List, and Task Dashboard so report-object and matrix exports share the same escaping and download path.
 
 ### 21. Identity / Authorization
 

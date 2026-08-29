@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
+import { CsvDownloadService } from '../../../shared/services/csv-download.service';
 import {
   AnnualPlanArchiveComparison,
   AnnualPlanArchiveComparisonMetric,
@@ -674,7 +675,10 @@ export class GoalsPlansBrowser implements OnInit {
   });
   private nextStagedKey = 1;
 
-  constructor(private readonly service: GoalsPlansService) {}
+  constructor(
+    private readonly service: GoalsPlansService,
+    private readonly csvDownload: CsvDownloadService
+  ) {}
 
   ngOnInit(): void {
     this.loadPlans();
@@ -2726,10 +2730,7 @@ export class GoalsPlansBrowser implements OnInit {
   }
 
   private downloadCsv(fileName: string, rows: CsvCell[][]): void {
-    const csv = rows
-      .map(row => row.map(cell => this.csvCell(cell)).join(','))
-      .join('\r\n');
-    this.downloadBlob(fileName, new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    this.csvDownload.download(fileName, rows);
   }
 
   private downloadBlob(fileName: string, blob: Blob): void {
@@ -2739,17 +2740,6 @@ export class GoalsPlansBrowser implements OnInit {
     link.download = fileName;
     link.click();
     URL.revokeObjectURL(url);
-  }
-
-  private csvCell(value: CsvCell): string {
-    if (value === null || value === undefined) {
-      return '';
-    }
-
-    const text = String(value);
-    return /[",\r\n]/.test(text)
-      ? `"${text.replace(/"/g, '""')}"`
-      : text;
   }
 
   private toEdit(item: PlanItem): PlanItemEdit {

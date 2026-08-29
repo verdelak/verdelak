@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { FinanceBillReportsPanel } from '../finance-bill-reports-panel/finance-bill-reports-panel';
 import { FinanceDonationsPanel } from '../finance-donations-panel/finance-donations-panel';
 import { FinanceReportsExportPanel } from '../finance-reports-export-panel/finance-reports-export-panel';
+import { CsvDownloadService } from '../../../shared/services/csv-download.service';
 import { FinanceTrackerService } from '../finance-tracker.service';
 import {
   FinanceAccountBalance,
@@ -1213,7 +1214,10 @@ export class FinanceTrackerPage implements OnInit {
     });
   }
 
-  constructor(private readonly service: FinanceTrackerService) {}
+  constructor(
+    private readonly service: FinanceTrackerService,
+    private readonly csvDownload: CsvDownloadService
+  ) {}
 
   ngOnInit(): void {
     this.loadSettings();
@@ -2027,19 +2031,7 @@ export class FinanceTrackerPage implements OnInit {
   }
 
   private downloadCsv(filename: string, rows: ReportRow[]): void {
-    const headers = rows.length ? Object.keys(rows[0]) : ['Message'];
-    const csvRows = rows.length ? rows : [{ Message: 'No rows to export' }];
-    const csv = [
-      headers.join(','),
-      ...csvRows.map(row => headers.map(header => this.csvValue(row[header])).join(','))
-    ].join('\r\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    link.click();
-    URL.revokeObjectURL(url);
+    this.csvDownload.downloadObjects(filename, rows);
   }
 
   private downloadText(filename: string, text: string, type: string): void {
@@ -2059,11 +2051,6 @@ export class FinanceTrackerPage implements OnInit {
   private filenameFromDisposition(header: string | null): string | null {
     const match = /filename\*?=(?:UTF-8'')?["']?([^"';]+)["']?/i.exec(header ?? '');
     return match ? decodeURIComponent(match[1]) : null;
-  }
-
-  private csvValue(value: string | number | boolean | null | undefined): string {
-    const text = value === null || value === undefined ? '' : String(value);
-    return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
   }
 
   private printHtml(title: string, body: string): void {

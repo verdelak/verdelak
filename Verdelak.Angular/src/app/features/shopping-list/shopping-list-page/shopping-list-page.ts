@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { forkJoin, switchMap } from 'rxjs';
+import { CsvDownloadService } from '../../../shared/services/csv-download.service';
 import { PantryItem, PantryItemRequest, ShoppingItemDefault, ShoppingItemDefaultRequest, ShoppingListDuplicateGroup, ShoppingListGroup, ShoppingListHistorySummary, ShoppingListItem, ShoppingListItemRequest } from '../models/shopping-list.models';
 import { ShoppingListService } from '../shopping-list.service';
 
@@ -262,7 +263,10 @@ export class ShoppingListPage {
     ];
   });
 
-  constructor(private readonly service: ShoppingListService) {
+  constructor(
+    private readonly service: ShoppingListService,
+    private readonly csvDownload: CsvDownloadService
+  ) {
     this.load();
   }
 
@@ -1006,17 +1010,7 @@ export class ShoppingListPage {
   }
 
   private downloadCsv(fileName: string, rows: (string | number | boolean | null | undefined)[][]): void {
-    const csv = rows.map(row => row.map(cell => this.csvCell(cell)).join(',')).join('\r\n');
-    this.downloadBlob(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), fileName);
-  }
-
-  private csvCell(value: string | number | boolean | null | undefined): string {
-    if (value === null || value === undefined) {
-      return '';
-    }
-
-    const text = String(value);
-    return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+    this.csvDownload.download(fileName, rows);
   }
 
   private requestFromItem(item: ShoppingListItem): ShoppingListItemRequest {

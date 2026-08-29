@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { concatMap, finalize, forkJoin, from, map, of, toArray } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
+import { CsvDownloadService } from '../../../shared/services/csv-download.service';
 import { MtgService } from '../mtg.service';
 import { MtgCleanupBucket, MtgCollectionItem, MtgCollectionReport, MtgDuplicateCluster, MtgLookup, MtgReportBucket, UpsertMtgCollectionItem } from '../models/mtg.models';
 
@@ -365,7 +366,8 @@ export class MtgBrowser implements OnInit {
   constructor(
     private readonly service: MtgService,
     private readonly auth: AuthService,
-    private readonly route: ActivatedRoute
+    private readonly route: ActivatedRoute,
+    private readonly csvDownload: CsvDownloadService
   ) {}
 
   ngOnInit(): void {
@@ -1671,21 +1673,7 @@ export class MtgBrowser implements OnInit {
   }
 
   private downloadCsv(filename: string, rows: Array<Array<string | number>>): void {
-    const csv = rows
-      .map(row => row.map(cell => this.csvCell(cell)).join(','))
-      .join('\r\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    link.click();
-    URL.revokeObjectURL(url);
-  }
-
-  private csvCell(value: string | number): string {
-    const text = String(value ?? '');
-    return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+    this.csvDownload.download(filename, rows);
   }
 
   private optional(value: string): string | null {

@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
+import { CsvDownloadService } from '../../../shared/services/csv-download.service';
 import { MasterScheduleItem, ScheduledTask, ScheduledTaskRequest, TaskOccurrenceActivity } from '../../tasks/models/scheduled-task.model';
 import { GardenHarvest, GardenHarvestReport, GardenHarvestUpsert, GardenYearComparison, GardenNote, GardenNoteReport, GardenNoteUpsert, GardenPlot, GardenPlotDimensionUpsert, GardenPlotPlant, GardenPlotPlantUpsert, GardenPlotUpsert, GardenSeed, GardenSeedImportResult, GardenSeedTray, GardenSeedTrayPlant, GardenSeedTrayPlantUpsert, GardenSeedUpsert, GardenYearCopyPreview, GardenYearCopyResult } from '../models/gardening.models';
 import { GardeningService } from '../gardening.service';
@@ -632,7 +633,10 @@ export class GardeningDashboard implements OnInit {
     return parts.length ? parts.join(' / ') : 'All diary entries';
   });
 
-  constructor(private readonly service: GardeningService) {}
+  constructor(
+    private readonly service: GardeningService,
+    private readonly csvDownload: CsvDownloadService
+  ) {}
 
   ngOnInit(): void {
     this.load();
@@ -3633,8 +3637,7 @@ export class GardeningDashboard implements OnInit {
   }
 
   private downloadCsv(fileName: string, rows: Array<Array<string | number | null>>): void {
-    const csv = rows.map(row => row.map(value => this.csvCell(value)).join(',')).join('\r\n');
-    this.downloadBlob(fileName, new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    this.csvDownload.download(fileName, rows);
   }
 
   private downloadBlob(fileName: string, blob: Blob): void {
@@ -3678,10 +3681,6 @@ export class GardeningDashboard implements OnInit {
     return values;
   }
 
-  private csvCell(value: string | number | null): string {
-    const text = value === null ? '' : String(value);
-    return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
-  }
   private emptySeedForm(): SeedForm {
     return {
       id: null,

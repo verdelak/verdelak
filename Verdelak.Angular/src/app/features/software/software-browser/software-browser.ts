@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, computed, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
+import { CsvDownloadService } from '../../../shared/services/csv-download.service';
 import {
   SoftwareBulkImportPreview,
   SoftwareBulkImportRequest,
@@ -66,6 +67,8 @@ interface SoftwareForm {
   styleUrl: './software-browser.scss'
 })
 export class SoftwareBrowser implements OnInit {
+  private readonly csvDownload = inject(CsvDownloadService);
+
   readonly items = signal<SoftwareItem[]>([]);
   readonly platforms = signal<SoftwareLookup[]>([]);
   readonly locations = signal<SoftwareLookup[]>([]);
@@ -912,21 +915,7 @@ export class SoftwareBrowser implements OnInit {
   }
 
   private downloadCsv(fileName: string, rows: Array<Array<string | number | boolean | null>>): void {
-    const csv = rows
-      .map(row => row.map(cell => this.csvCell(cell)).join(','))
-      .join('\r\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = fileName;
-    link.click();
-    URL.revokeObjectURL(url);
-  }
-
-  private csvCell(value: string | number | boolean | null): string {
-    const text = value === null ? '' : String(value);
-    return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+    this.csvDownload.download(fileName, rows);
   }
 
   private emptyForm(): SoftwareForm {

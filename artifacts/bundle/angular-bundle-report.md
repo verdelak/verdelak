@@ -1,6 +1,6 @@
 # Angular Bundle Report
 
-Generated: 2026-08-27 20:21:15 -04:00
+Generated: 2026-08-28 17:30:39 -04:00
 
 Dist root: `C:\Projects\VerdelakCD\Verdelak.Angular\dist\Verdelak\browser`
 
@@ -15,8 +15,8 @@ Lazy review threshold: 125 kB
 | Scope | Size | Status |
 | --- | ---: | --- |
 | Initial JS/CSS | 426.97 kB | OK |
-| Lazy JS/CSS | 2404.04 kB | OK |
-| Total JS/CSS | 2831.02 kB | Informational |
+| Lazy JS/CSS | 2398.77 kB | OK |
+| Total JS/CSS | 2825.74 kB | Informational |
 | Largest initial asset | 175.93 kB | Informational |
 
 ## Largest Assets
@@ -24,30 +24,30 @@ Lazy review threshold: 125 kB
 | Asset | Source | Type | Initial | Size |
 | --- | --- | --- | --- | ---: |
 | `chunk-WJ3ZVGOP.js` | - | js | True | 175.93 kB |
-| `chunk-U5WR4JTK.js` | src/app/features/fish/fish-tank-list/fish-tank-list.ts | js | False | 123.94 kB |
-| `chunk-QVDSQYMF.js` | src/app/features/gardening/gardening-dashboard/gardening-dashboard.ts | js | False | 123.8 kB |
-| `chunk-3IULN52D.js` | src/app/features/finance-tracker/finance-dashboard-page/finance-dashboard-page.ts | js | False | 123.07 kB |
-| `chunk-ND5UNHLQ.js` | src/app/features/barcode-staging/barcode-staging-workbench/barcode-staging-workbench.ts | js | False | 115.84 kB |
+| `chunk-6NDJXLMC.js` | src/app/features/fish/fish-tank-list/fish-tank-list.ts | js | False | 123.72 kB |
+| `chunk-PMCEX6WK.js` | src/app/features/gardening/gardening-dashboard/gardening-dashboard.ts | js | False | 123.67 kB |
+| `chunk-WHCVPIFK.js` | src/app/features/finance-tracker/finance-dashboard-page/finance-dashboard-page.ts | js | False | 122.75 kB |
+| `chunk-MBIGAEN7.js` | src/app/features/barcode-staging/barcode-staging-workbench/barcode-staging-workbench.ts | js | False | 115.64 kB |
 | `styles-EVTDEDUI.css` | angular:styles/global:styles | css | True | 110.44 kB |
-| `chunk-6URFFG4Q.js` | src/app/features/goals-plans/goals-plans-browser/goals-plans-browser.ts | js | False | 103.29 kB |
-| `chunk-V4UK2PTA.js` | src/app/features/admin-settings/admin-settings/admin-settings.ts | js | False | 92.78 kB |
-| `chunk-JZLAQDK7.js` | src/app/features/mtg/mtg-browser/mtg-browser.ts | js | False | 87.94 kB |
+| `chunk-QG4KPJIO.js` | src/app/features/goals-plans/goals-plans-browser/goals-plans-browser.ts | js | False | 103.16 kB |
+| `chunk-73F2ZYM7.js` | src/app/features/admin-settings/admin-settings/admin-settings.ts | js | False | 92.56 kB |
+| `chunk-HBIYSPTT.js` | src/app/features/mtg/mtg-browser/mtg-browser.ts | js | False | 87.74 kB |
 | `chunk-KUK6MPPU.js` | - | js | True | 87.48 kB |
-| `chunk-LGHTP56S.js` | src/app/features/recipes/recipe-browser/recipe-browser.ts | js | False | 78.38 kB |
-| `chunk-J4N772SX.js` | src/app/features/shopping-list/shopping-list-page/shopping-list-page.ts | js | False | 77.29 kB |
-| `chunk-WNX4OUV2.js` | src/app/features/alcohol/alcohol-browser/alcohol-browser.ts | js | False | 66.8 kB |
-| `chunk-24E5KYIE.js` | src/app/features/software/software-browser/software-browser.ts | js | False | 65.44 kB |
-| `chunk-2CLGT7F7.js` | src/app/features/chores/chore-manager/chore-manager.ts | js | False | 59.6 kB |
-| `chunk-LQOJUAIX.js` | src/app/features/shows/shows-browser/shows-browser.ts | js | False | 53.54 kB |
-| `chunk-XHR2EQIE.js` | src/app/features/tasks/task-dashboard/task-dashboard.ts | js | False | 50.88 kB |
+| `chunk-FYD5KZZI.js` | src/app/features/recipes/recipe-browser/recipe-browser.ts | js | False | 78.15 kB |
+| `chunk-3CNF6IGD.js` | src/app/features/shopping-list/shopping-list-page/shopping-list-page.ts | js | False | 77.16 kB |
+| `chunk-ASWPJOL2.js` | src/app/features/alcohol/alcohol-browser/alcohol-browser.ts | js | False | 66.61 kB |
+| `chunk-P36PKMDX.js` | src/app/features/software/software-browser/software-browser.ts | js | False | 65.21 kB |
+| `chunk-KFUNLQRN.js` | src/app/features/chores/chore-manager/chore-manager.ts | js | False | 59.38 kB |
+| `chunk-CNU3KJYU.js` | src/app/features/shows/shows-browser/shows-browser.ts | js | False | 53.35 kB |
+| `chunk-NZ3V2JTL.js` | src/app/features/tasks/task-dashboard/task-dashboard.ts | js | False | 50.68 kB |
 | `chunk-47NEG4MP.js` | - | js | False | 46.25 kB |
-| `chunk-KJENJV4B.js` | src/app/features/minis/miniatures-browser/miniatures-browser.ts | js | False | 45.74 kB |
-| `chunk-PMXKWFIX.js` | src/app/features/dino/admin-dino/admin-dino.ts | js | False | 43.69 kB |
+| `chunk-B52T77VE.js` | src/app/features/minis/miniatures-browser/miniatures-browser.ts | js | False | 45.54 kB |
+| `chunk-JHQVGVZA.js` | src/app/features/dino/admin-dino/admin-dino.ts | js | False | 43.58 kB |
 | `chunk-COX5M4LZ.js` | src/app/features/guitar/guitar-explorer/guitar-explorer.ts | js | False | 37.82 kB |
-| `chunk-S2BUKLVL.js` | src/app/features/dice-games/dice-games-browser/dice-games-browser.ts | js | False | 36.28 kB |
-| `chunk-7ORF4NYO.js` | src/app/features/magazines/magazine-browser/magazine-browser.ts | js | False | 33.24 kB |
+| `chunk-6MD2QNV7.js` | src/app/features/dice-games/dice-games-browser/dice-games-browser.ts | js | False | 36.07 kB |
+| `chunk-ZZY2FWLQ.js` | src/app/features/magazines/magazine-browser/magazine-browser.ts | js | False | 33.04 kB |
 | `chunk-KAJ3UGIJ.js` | src/app/features/external-imports/external-import-workbench/external-import-workbench.ts | js | False | 32.67 kB |
-| `chunk-OCG4CDEY.js` | src/app/features/comics/comic-browser/comic-browser.ts | js | False | 32.16 kB |
+| `chunk-I6T2JI3D.js` | src/app/features/comics/comic-browser/comic-browser.ts | js | False | 31.88 kB |
 
 ## Lazy Split Candidates
 

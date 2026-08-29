@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, computed, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { CsvDownloadService } from '../../../shared/services/csv-download.service';
 import { AdminUsersService } from '../admin-users.service';
 import { AdminUser } from '../models/admin-user.models';
 
@@ -29,6 +30,8 @@ interface RolePermission {
   styleUrl: './admin-users.scss'
 })
 export class AdminUsers implements OnInit {
+  private readonly csvDownload = inject(CsvDownloadService);
+
   readonly roleDescriptions: Record<string, string> = {
     Admin: 'Full access, including settings and user administration.',
     Contributor: 'Can add and edit collection data, but cannot access admin-only settings.',
@@ -254,19 +257,7 @@ export class AdminUsers implements OnInit {
   }
 
   private downloadCsv(filename: string, rows: Array<Array<string | number>>): void {
-    const csv = rows.map(row => row.map(value => this.csvCell(value)).join(',')).join('\r\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    link.click();
-    URL.revokeObjectURL(link.href);
-  }
-
-  private csvCell(value: string | number): string {
-    const text = String(value);
-    return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+    this.csvDownload.download(filename, rows);
   }
 
   private csvDateStamp(): string {

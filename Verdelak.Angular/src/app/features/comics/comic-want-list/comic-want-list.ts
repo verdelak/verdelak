@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { CsvDownloadService } from '../../../shared/services/csv-download.service';
 import { ComicService } from '../comic.service';
 import { ComicWantListItem } from '../models/comic.models';
 
@@ -42,7 +43,10 @@ export class ComicWantList implements OnInit {
   readonly titleOnlyCount = computed(() => this.items().filter(item => item.issueId === null).length);
   readonly issueCount = computed(() => this.items().filter(item => item.issueId !== null).length);
 
-  constructor(private readonly service: ComicService) {}
+  constructor(
+    private readonly service: ComicService,
+    private readonly csvDownload: CsvDownloadService
+  ) {}
 
   ngOnInit(): void {
     this.load();
@@ -140,22 +144,7 @@ export class ComicWantList implements OnInit {
   }
 
   private downloadCsv(filename: string, rows: Record<string, CsvValue>[]): void {
-    const csvRows = rows.length ? rows : [{ Message: 'No rows to export' }];
-    const headers = Object.keys(csvRows[0]);
-    const body = csvRows.map(row => headers.map(header => this.csvValue(row[header])).join(','));
-    const csv = [headers.join(','), ...body].join('\r\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    link.click();
-    URL.revokeObjectURL(url);
-  }
-
-  private csvValue(value: CsvValue): string {
-    const text = value === null || value === undefined ? '' : String(value);
-    return `"${text.replace(/"/g, '""')}"`;
+    this.csvDownload.downloadObjects(filename, rows);
   }
 
   private today(): string {

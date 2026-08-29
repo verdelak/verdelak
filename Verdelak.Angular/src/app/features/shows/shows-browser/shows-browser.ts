@@ -3,6 +3,7 @@ import { Component, OnInit, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
+import { CsvDownloadService } from '../../../shared/services/csv-download.service';
 import { BulkAddShowSeasons, CreateShowGoalItems, ShowBoxSet, ShowSeason, ShowSeriesDetail, ShowSeriesSummary, UpsertShowBoxSet, UpsertShowSeason, UpsertShowSeries } from '../models/show.models';
 import { ShowsService } from '../shows.service';
 
@@ -156,7 +157,8 @@ export class ShowsBrowser implements OnInit {
 
   constructor(
     private readonly shows: ShowsService,
-    private readonly auth: AuthService
+    private readonly auth: AuthService,
+    private readonly csvDownload: CsvDownloadService
   ) {}
 
   ngOnInit(): void {
@@ -681,18 +683,7 @@ export class ShowsBrowser implements OnInit {
 
 
   private downloadCsv(filename: string, rows: string[][]): void {
-    const csv = rows.map(row => row.map(value => this.csvCell(value)).join(',')).join('\r\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    link.click();
-    URL.revokeObjectURL(url);
-  }
-
-  private csvCell(value: string): string {
-    return /[",\r\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
+    this.csvDownload.download(filename, rows);
   }
 
   private fileSlug(value: string): string {

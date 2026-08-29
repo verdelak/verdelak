@@ -3,6 +3,7 @@ import { Component, OnInit, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
+import { CsvDownloadService } from '../../../shared/services/csv-download.service';
 import { ComicIssue, ComicSeries, ComicSeriesReport, UpsertComicIssue } from '../models/comic.models';
 import { ComicService } from '../comic.service';
 
@@ -144,7 +145,8 @@ export class ComicBrowser implements OnInit {
 
   constructor(
     private readonly service: ComicService,
-    private readonly auth: AuthService
+    private readonly auth: AuthService,
+    private readonly csvDownload: CsvDownloadService
   ) {}
 
   ngOnInit(): void {
@@ -525,24 +527,7 @@ export class ComicBrowser implements OnInit {
   }
 
   private downloadCsv(filename: string, rows: Record<string, string | number>[]): void {
-    const csvRows = rows.length ? rows : [{ Message: 'No rows to export' }];
-    const headers = Object.keys(csvRows[0]);
-    const csv = [
-      headers.join(','),
-      ...csvRows.map(row => headers.map(header => this.csvValue(row[header])).join(','))
-    ].join('\r\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    link.click();
-    URL.revokeObjectURL(url);
-  }
-
-  private csvValue(value: string | number): string {
-    const text = String(value ?? '');
-    return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+    this.csvDownload.downloadObjects(filename, rows);
   }
 
   private today(): string {

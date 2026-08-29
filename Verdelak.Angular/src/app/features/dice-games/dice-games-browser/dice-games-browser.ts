@@ -3,6 +3,7 @@ import { Component, OnInit, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
+import { CsvDownloadService } from '../../../shared/services/csv-download.service';
 import { DiceGamesService } from '../dice-games.service';
 import { DiceGameItem, DiceGameLookups, DiceInventoryReport, DragonDiceItem, DragonDiceLookups, UpsertDiceGameItem, UpsertDragonDiceItem } from '../models/dice-games.models';
 
@@ -74,7 +75,8 @@ export class DiceGamesBrowser implements OnInit {
 
   constructor(
     private readonly service: DiceGamesService,
-    private readonly auth: AuthService
+    private readonly auth: AuthService,
+    private readonly csvDownload: CsvDownloadService
   ) {}
 
   ngOnInit(): void {
@@ -494,19 +496,7 @@ export class DiceGamesBrowser implements OnInit {
   }
 
   private downloadCsv(fileName: string, rows: Array<Array<string | number>>): void {
-    const csv = rows.map(row => row.map(cell => this.csvCell(cell)).join(',')).join('\r\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = fileName;
-    link.click();
-    URL.revokeObjectURL(url);
-  }
-
-  private csvCell(value: string | number): string {
-    const text = String(value ?? '');
-    return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+    this.csvDownload.download(fileName, rows);
   }
 
   private normalizeKey(value: string): string {

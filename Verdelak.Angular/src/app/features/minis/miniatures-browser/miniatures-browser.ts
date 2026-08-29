@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, computed, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/auth/auth.service';
+import { CsvDownloadService } from '../../../shared/services/csv-download.service';
 import { MiniLookup, MiniatureItem, UpsertMiniatureItem } from '../models/miniature.models';
 import { MiniaturesService } from '../miniatures.service';
 
@@ -95,6 +96,8 @@ interface MiniatureForm {
   styleUrl: './miniatures-browser.scss'
 })
 export class MiniaturesBrowser implements OnInit {
+  private readonly csvDownload = inject(CsvDownloadService);
+
   readonly items = signal<MiniatureItem[]>([]);
   readonly companies = signal<MiniLookup[]>([]);
   readonly systems = signal<MiniLookup[]>([]);
@@ -828,21 +831,7 @@ export class MiniaturesBrowser implements OnInit {
   }
 
   private downloadCsv(fileName: string, rows: Array<Array<string | number>>): void {
-    const csv = rows
-      .map(row => row.map(cell => this.csvCell(cell)).join(','))
-      .join('\r\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = fileName;
-    link.click();
-    URL.revokeObjectURL(url);
-  }
-
-  private csvCell(value: string | number): string {
-    const text = String(value ?? '');
-    return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+    this.csvDownload.download(fileName, rows);
   }
 
   private today(): string {

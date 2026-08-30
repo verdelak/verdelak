@@ -1,6 +1,6 @@
 # Angular Bundle Report
 
-Generated: 2026-08-29 20:41:22 -04:00
+Generated: 2026-08-29 20:55:05 -04:00
 
 Dist root: `C:\Projects\VerdelakCD\Verdelak.Angular\dist\Verdelak\browser`
 
@@ -14,9 +14,9 @@ Lazy review threshold: 125 kB
 
 | Scope | Size | Status |
 | --- | ---: | --- |
-| Initial JS/CSS | 426.97 kB | OK |
-| Lazy JS/CSS | 2397.56 kB | OK |
-| Total JS/CSS | 2824.53 kB | Informational |
+| Initial JS/CSS | 426.83 kB | OK |
+| Lazy JS/CSS | 2396.03 kB | OK |
+| Total JS/CSS | 2822.86 kB | Informational |
 | Largest initial asset | 175.93 kB | Informational |
 
 ## Largest Assets
@@ -28,17 +28,17 @@ Lazy review threshold: 125 kB
 | `chunk-PMCEX6WK.js` | src/app/features/gardening/gardening-dashboard/gardening-dashboard.ts | js | False | 123.67 kB |
 | `chunk-WHCVPIFK.js` | src/app/features/finance-tracker/finance-dashboard-page/finance-dashboard-page.ts | js | False | 122.75 kB |
 | `chunk-MBIGAEN7.js` | src/app/features/barcode-staging/barcode-staging-workbench/barcode-staging-workbench.ts | js | False | 115.64 kB |
-| `styles-EVTDEDUI.css` | angular:styles/global:styles | css | True | 110.44 kB |
+| `styles-OATW6PEO.css` | angular:styles/global:styles | css | True | 110.29 kB |
 | `chunk-QG4KPJIO.js` | src/app/features/goals-plans/goals-plans-browser/goals-plans-browser.ts | js | False | 103.16 kB |
 | `chunk-73F2ZYM7.js` | src/app/features/admin-settings/admin-settings/admin-settings.ts | js | False | 92.56 kB |
 | `chunk-HBIYSPTT.js` | src/app/features/mtg/mtg-browser/mtg-browser.ts | js | False | 87.74 kB |
 | `chunk-KUK6MPPU.js` | - | js | True | 87.48 kB |
-| `chunk-FYD5KZZI.js` | src/app/features/recipes/recipe-browser/recipe-browser.ts | js | False | 78.15 kB |
-| `chunk-3CNF6IGD.js` | src/app/features/shopping-list/shopping-list-page/shopping-list-page.ts | js | False | 77.16 kB |
+| `chunk-P65B4IVZ.js` | src/app/features/recipes/recipe-browser/recipe-browser.ts | js | False | 77.84 kB |
+| `chunk-IWHQSVWY.js` | src/app/features/shopping-list/shopping-list-page/shopping-list-page.ts | js | False | 76.7 kB |
 | `chunk-ASWPJOL2.js` | src/app/features/alcohol/alcohol-browser/alcohol-browser.ts | js | False | 66.61 kB |
 | `chunk-4RTEA5U7.js` | src/app/features/software/software-browser/software-browser.ts | js | False | 64.41 kB |
 | `chunk-KFUNLQRN.js` | src/app/features/chores/chore-manager/chore-manager.ts | js | False | 59.38 kB |
-| `chunk-CNU3KJYU.js` | src/app/features/shows/shows-browser/shows-browser.ts | js | False | 53.35 kB |
+| `chunk-OVYO74DZ.js` | src/app/features/shows/shows-browser/shows-browser.ts | js | False | 52.84 kB |
 | `chunk-NZ3V2JTL.js` | src/app/features/tasks/task-dashboard/task-dashboard.ts | js | False | 50.68 kB |
 | `chunk-47NEG4MP.js` | - | js | False | 46.25 kB |
 | `chunk-B52T77VE.js` | src/app/features/minis/miniatures-browser/miniatures-browser.ts | js | False | 45.54 kB |

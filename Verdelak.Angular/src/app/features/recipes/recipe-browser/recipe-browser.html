@@ -7,9 +7,9 @@
     </div>
     <div class="flex flex-wrap items-center gap-2">
       <span class="rounded border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700">{{ shownCount() }} shown</span>
-      <button *ngIf="isAdmin()" type="button" class="rounded border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700" (click)="toggleSourceManager()">{{ managingSources() ? 'Hide Sources' : 'Sources' }}</button>
-      <button *ngIf="isAdmin()" type="button" class="rounded bg-emerald-900 px-4 py-2 text-sm font-bold text-white" (click)="newRecipe()">New Recipe</button>
-      <button type="button" class="rounded border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 disabled:opacity-50" [disabled]="loading()" (click)="load()">
+      <button *ngIf="isAdmin()" type="button" class="app-primary-soft-action rounded border px-4 py-2 text-sm font-bold" (click)="toggleSourceManager()">{{ managingSources() ? 'Hide Sources' : 'Sources' }}</button>
+      <button *ngIf="isAdmin()" type="button" class="app-primary-action rounded px-4 py-2 text-sm font-bold" (click)="newRecipe()">New Recipe</button>
+      <button type="button" class="app-primary-soft-action rounded border px-4 py-2 text-sm font-bold disabled:opacity-50" [disabled]="loading()" (click)="load()">
         {{ loading() ? 'Refreshing.' : 'Refresh' }}
       </button>
     </div>
@@ -114,8 +114,8 @@
           <option [ngValue]="365">1 year</option>
         </select>
       </label>
-      <button type="button" class="rounded bg-slate-900 px-4 py-2 text-sm font-bold text-white" (click)="applyFilters()">Apply</button>
-      <button type="button" class="rounded border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700" (click)="clearFilters()">Clear</button>
+      <button type="button" class="app-primary-action rounded px-4 py-2 text-sm font-bold" (click)="applyFilters()">Apply</button>
+      <button type="button" class="app-primary-soft-action rounded border px-4 py-2 text-sm font-bold" (click)="clearFilters()">Clear</button>
     </div>
   </section>
 
@@ -208,8 +208,8 @@
           <textarea rows="4" class="mt-1 w-full rounded border border-slate-300 px-3 py-2 text-sm text-slate-800" [ngModel]="bookForm().description" (ngModelChange)="setBookForm('description', $event)" name="recipeBookDescription"></textarea>
         </label>
         <div class="mt-3 flex flex-wrap gap-2">
-          <button type="submit" class="rounded bg-emerald-900 px-3 py-2 text-sm font-bold text-white disabled:opacity-50" [disabled]="saving()">{{ saving() ? 'Saving.' : 'Save Source' }}</button>
-          <button type="button" class="rounded border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700" (click)="cancelBookEdit()">Clear</button>
+          <button type="submit" class="app-primary-action rounded px-3 py-2 text-sm font-bold disabled:opacity-50" [disabled]="saving()">{{ saving() ? 'Saving.' : 'Save Source' }}</button>
+          <button type="button" class="app-primary-soft-action rounded border px-3 py-2 text-sm font-bold" (click)="cancelBookEdit()">Clear form</button>
         </div>
       </form>
     </div>
@@ -224,10 +224,10 @@
       <textarea rows="6" class="w-full rounded border border-slate-300 px-3 py-2 text-sm text-slate-800" [ngModel]="importText()" (ngModelChange)="importText.set($event)" placeholder="One title per line, or CSV/TSV with columns: title, category, cuisine, tags, description, notes, book, page, prep minutes, cook minutes, servings, canning&#10;Lasagna, Dinner, Italian, Pasta; Freezer, Family lasagna&#10;Dill Pickles, Canning, American, Pickles; Summer"></textarea>
 
       <div class="flex flex-wrap items-center gap-2">
-        <button type="button" class="rounded bg-emerald-900 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" [disabled]="importing() || validImportRows().length === 0" (click)="importRows()">
+        <button type="button" class="app-primary-action rounded px-4 py-2 text-sm font-bold disabled:opacity-50" [disabled]="importing() || validImportRows().length === 0" (click)="importRows()">
           {{ importing() ? 'Importing.' : 'Import Valid Rows' }}
         </button>
-        <button type="button" class="rounded border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700" [disabled]="importing() || importText().length === 0" (click)="clearImport()">Clear</button>
+        <button type="button" class="app-primary-soft-action rounded border px-4 py-2 text-sm font-bold disabled:opacity-50" [disabled]="importing() || importText().length === 0" (click)="clearImport()">Clear</button>
         <span class="text-sm font-semibold text-slate-600">{{ validImportRows().length }} valid / {{ importPreview().length }} parsed</span>
       </div>
 
@@ -497,8 +497,8 @@
       <div class="mb-4 flex flex-col gap-2 border-b border-slate-200 pb-4 sm:flex-row sm:items-center sm:justify-between">
         <h2 class="text-xl font-bold text-slate-950">{{ form().id ? 'Edit Recipe' : 'New Recipe' }}</h2>
         <div class="flex flex-wrap gap-2">
-          <button type="submit" class="rounded bg-emerald-900 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" [disabled]="saving()">{{ saving() ? 'Saving.' : 'Save Recipe' }}</button>
-          <button type="button" class="rounded border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700" [disabled]="saving()" (click)="cancelEdit()">Cancel</button>
+          <button type="submit" class="app-primary-action rounded px-4 py-2 text-sm font-bold disabled:opacity-50" [disabled]="saving()">{{ saving() ? 'Saving.' : 'Save Recipe' }}</button>
+          <button type="button" class="app-primary-soft-action rounded border px-4 py-2 text-sm font-bold disabled:opacity-50" [disabled]="saving()" (click)="cancelEdit()">Cancel</button>
         </div>
       </div>
 

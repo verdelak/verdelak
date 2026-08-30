@@ -11,7 +11,7 @@
       <button type="button" class="app-primary-soft-action rounded border px-4 py-2 text-sm font-bold" (click)="toggleShoppingMode()">
         {{ shoppingMode() ? 'Manage Mode' : 'Shopping Mode' }}
       </button>
-      <button type="button" class="rounded border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700" (click)="printShoppingList()">Print</button>
+      <button type="button" class="app-primary-soft-action rounded border px-4 py-2 text-sm font-bold" (click)="printShoppingList()">Print</button>
       <button type="button" class="app-primary-action rounded px-4 py-2 text-sm font-bold disabled:opacity-50" [disabled]="loading()" (click)="load()">
         {{ loading() ? 'Refreshing.' : 'Refresh' }}
       </button>
@@ -66,7 +66,7 @@
         <button type="submit" class="app-primary-action w-full rounded px-4 py-2 text-sm font-bold disabled:opacity-50" [disabled]="saving()">
           {{ saving() ? 'Saving.' : (form().id ? 'Save Item' : 'Add Item') }}
         </button>
-        <button type="button" class="rounded border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700" [disabled]="saving()" (click)="resetForm()">Clear</button>
+        <button type="button" class="app-primary-soft-action rounded border px-4 py-2 text-sm font-bold disabled:opacity-50" [disabled]="saving()" (click)="resetForm()">Clear form</button>
       </div>
 
       <label class="text-sm font-bold text-slate-700 lg:col-span-12">
@@ -192,7 +192,7 @@
           <textarea rows="2" class="rounded border border-slate-300 px-3 py-2 text-sm text-slate-800" placeholder="Notes" [ngModel]="defaultForm().notes" (ngModelChange)="setDefaultForm('notes', $event)" name="defaultNotes"></textarea>
           <div class="flex gap-2">
             <button type="submit" class="app-primary-action rounded px-3 py-2 text-sm font-bold disabled:opacity-50" [disabled]="saving()">Save Default</button>
-            <button type="button" class="rounded border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700" (click)="resetDefaultForm()">Clear</button>
+            <button type="button" class="app-primary-soft-action rounded border px-3 py-2 text-sm font-bold" (click)="resetDefaultForm()">Clear form</button>
           </div>
         </form>
 
@@ -241,7 +241,7 @@
           <textarea rows="2" class="rounded border border-slate-300 px-3 py-2 text-sm text-slate-800" placeholder="Notes" [ngModel]="pantryForm().notes" (ngModelChange)="setPantryForm('notes', $event)" name="pantryNotes"></textarea>
           <div class="flex gap-2">
             <button type="submit" class="app-primary-action rounded px-3 py-2 text-sm font-bold disabled:opacity-50" [disabled]="saving()">Save Pantry</button>
-            <button type="button" class="rounded border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700" (click)="resetPantryForm()">Clear</button>
+            <button type="button" class="app-primary-soft-action rounded border px-3 py-2 text-sm font-bold" (click)="resetPantryForm()">Clear form</button>
           </div>
         </form>
 
@@ -278,7 +278,7 @@
           <button type="button" class="app-primary-action rounded px-4 py-2 text-sm font-bold disabled:opacity-50" [disabled]="importing() || validImportRows().length === 0" (click)="importRows()">
             {{ importing() ? 'Importing.' : 'Import Valid Rows' }}
           </button>
-          <button type="button" class="rounded border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700" [disabled]="importing() || importText().length === 0" (click)="clearImport()">Clear</button>
+          <button type="button" class="app-primary-soft-action rounded border px-4 py-2 text-sm font-bold disabled:opacity-50" [disabled]="importing() || importText().length === 0" (click)="clearImport()">Clear</button>
           <span class="text-sm font-semibold text-slate-600">{{ validImportRows().length }} valid / {{ importPreview().length }} parsed</span>
         </div>
 
@@ -372,11 +372,11 @@
         </div>
         <div class="flex flex-wrap items-center gap-2">
           <span class="text-xs font-bold uppercase text-slate-500">Presets</span>
-          <button type="button" class="rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 disabled:opacity-50" [disabled]="loadingHistory()" (click)="applyHistoryPreset(30)">Last 30</button>
-          <button type="button" class="rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 disabled:opacity-50" [disabled]="loadingHistory()" (click)="applyHistoryPreset(90)">Last 90</button>
-          <button type="button" class="rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 disabled:opacity-50" [disabled]="loadingHistory()" (click)="applyHistoryPreset('ytd')">YTD</button>
-          <button type="button" class="rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 disabled:opacity-50" [disabled]="loadingHistory()" (click)="applyHistoryPreset('all')">All time</button>
-          <button type="button" class="rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700" (click)="clearHistoryRange()">Clear</button>
+          <button type="button" class="app-primary-soft-action rounded border px-3 py-1.5 text-xs font-bold disabled:opacity-50" [disabled]="loadingHistory()" (click)="applyHistoryPreset(30)">Last 30</button>
+          <button type="button" class="app-primary-soft-action rounded border px-3 py-1.5 text-xs font-bold disabled:opacity-50" [disabled]="loadingHistory()" (click)="applyHistoryPreset(90)">Last 90</button>
+          <button type="button" class="app-primary-soft-action rounded border px-3 py-1.5 text-xs font-bold disabled:opacity-50" [disabled]="loadingHistory()" (click)="applyHistoryPreset('ytd')">YTD</button>
+          <button type="button" class="app-primary-soft-action rounded border px-3 py-1.5 text-xs font-bold disabled:opacity-50" [disabled]="loadingHistory()" (click)="applyHistoryPreset('all')">All time</button>
+          <button type="button" class="app-primary-soft-action rounded border px-3 py-1.5 text-xs font-bold" (click)="clearHistoryRange()">Clear</button>
         </div>
         <div class="grid gap-3 md:grid-cols-[repeat(2,minmax(0,12rem))_auto]">
           <label class="text-sm font-bold text-slate-700">
@@ -391,7 +391,7 @@
             <button type="button" class="app-primary-soft-action rounded border px-4 py-2 text-sm font-bold disabled:opacity-50" [disabled]="loadingHistory()" (click)="loadHistorySummary()">
               {{ loadingHistory() ? 'Loading.' : 'Load Summary' }}
             </button>
-            <button type="button" class="rounded border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 disabled:opacity-50" [disabled]="exportingHistory()" (click)="exportHistory('csv')">Export CSV</button>
+            <button type="button" class="app-primary-soft-action rounded border px-4 py-2 text-sm font-bold disabled:opacity-50" [disabled]="exportingHistory()" (click)="exportHistory('csv')">Export CSV</button>
             <button type="button" class="app-primary-action rounded px-4 py-2 text-sm font-bold disabled:opacity-50" [disabled]="exportingHistory()" (click)="exportHistory('xlsx')">Export XLSX</button>
           </div>
         </div>

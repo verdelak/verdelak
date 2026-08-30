@@ -6,8 +6,8 @@
       <p class="text-sm text-slate-600">Review wanted seasons, missing ownership, watch candidates, and schedule batches into Goals.</p>
     </div>
     <div class="flex flex-wrap gap-2">
-      <button type="button" class="rounded-md border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50" (click)="downloadReportCsv()">Export Report</button>
-      <a routerLink="/shows" class="rounded-md border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">Back to Shows</a>
+      <button type="button" class="app-primary-soft-action rounded-md border px-4 py-2 text-sm font-bold" (click)="downloadReportCsv()">Export Report</button>
+      <a routerLink="/shows" class="app-primary-soft-action rounded-md border px-4 py-2 text-sm font-bold">Back to Shows</a>
     </div>
   </header>
 
@@ -64,8 +64,8 @@
       </select>
     </label>
     <div class="flex items-end gap-2">
-      <button type="button" class="rounded-md bg-slate-900 px-4 py-2 text-sm font-bold text-white hover:bg-slate-700" (click)="load()">Apply</button>
-      <button type="button" class="rounded-md border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50" (click)="clear()">Clear</button>
+      <button type="button" class="app-primary-action rounded-md px-4 py-2 text-sm font-bold" (click)="load()">Apply</button>
+      <button type="button" class="app-primary-soft-action rounded-md border px-4 py-2 text-sm font-bold" (click)="clear()">Clear</button>
     </div>
   </section>
 
@@ -109,12 +109,12 @@
       <button type="button" class="app-primary-soft-action rounded px-2.5 py-1.5" (click)="setGoalYear(goalPlanForm().year - 1)">Prior year</button>
       <button type="button" class="app-primary-soft-action rounded px-2.5 py-1.5" (click)="setGoalYear(goalPlanForm().year + 1)">Next year</button>
       <button type="button" class="app-primary-soft-action rounded px-2.5 py-1.5" (click)="setGoalYear(goalPlanForm().year + 2)">Following year</button>
-      <button type="button" class="rounded border border-slate-300 bg-white px-2.5 py-1.5 text-slate-700 hover:bg-slate-50" (click)="selectVisible()">Select visible</button>
+      <button type="button" class="app-primary-soft-action rounded border px-2.5 py-1.5" (click)="selectVisible()">Select visible</button>
       <button type="button" class="app-primary-soft-action rounded border px-2.5 py-1.5" (click)="selectNotYetInGoals()">Not in Goals</button>
       <button type="button" class="rounded border border-amber-200 bg-white px-2.5 py-1.5 text-amber-800 hover:bg-amber-50" (click)="selectWanted()">Wanted</button>
       <button type="button" class="app-primary-soft-action rounded px-2.5 py-1.5" (click)="selectWatchOrRewatch()">Watch/Rewatch</button>
-      <button type="button" class="rounded border border-slate-300 bg-white px-2.5 py-1.5 text-slate-700 hover:bg-slate-50" (click)="clearSelection()">Clear selection</button>
-      <button type="button" class="rounded border border-slate-300 bg-white px-2.5 py-1.5 text-slate-700 hover:bg-slate-50 disabled:opacity-50" [disabled]="selectedCount() === 0" (click)="downloadSelectedCsv()">Export selected</button>
+      <button type="button" class="app-primary-soft-action rounded border px-2.5 py-1.5" (click)="clearSelection()">Clear selection</button>
+      <button type="button" class="app-primary-soft-action rounded border px-2.5 py-1.5 disabled:opacity-50" [disabled]="selectedCount() === 0" (click)="downloadSelectedCsv()">Export selected</button>
     </div>
 
     <button type="button" class="app-primary-action mt-3 rounded px-4 py-2 text-sm font-bold disabled:opacity-50" [disabled]="creatingGoalItems() || selectedCount() === 0" (click)="createGoalItems()">

@@ -1,6 +1,6 @@
 # Angular Bundle Report
 
-Generated: 2026-08-28 17:30:39 -04:00
+Generated: 2026-08-29 20:41:22 -04:00
 
 Dist root: `C:\Projects\VerdelakCD\Verdelak.Angular\dist\Verdelak\browser`
 
@@ -15,8 +15,8 @@ Lazy review threshold: 125 kB
 | Scope | Size | Status |
 | --- | ---: | --- |
 | Initial JS/CSS | 426.97 kB | OK |
-| Lazy JS/CSS | 2398.77 kB | OK |
-| Total JS/CSS | 2825.74 kB | Informational |
+| Lazy JS/CSS | 2397.56 kB | OK |
+| Total JS/CSS | 2824.53 kB | Informational |
 | Largest initial asset | 175.93 kB | Informational |
 
 ## Largest Assets
@@ -36,7 +36,7 @@ Lazy review threshold: 125 kB
 | `chunk-FYD5KZZI.js` | src/app/features/recipes/recipe-browser/recipe-browser.ts | js | False | 78.15 kB |
 | `chunk-3CNF6IGD.js` | src/app/features/shopping-list/shopping-list-page/shopping-list-page.ts | js | False | 77.16 kB |
 | `chunk-ASWPJOL2.js` | src/app/features/alcohol/alcohol-browser/alcohol-browser.ts | js | False | 66.61 kB |
-| `chunk-P36PKMDX.js` | src/app/features/software/software-browser/software-browser.ts | js | False | 65.21 kB |
+| `chunk-4RTEA5U7.js` | src/app/features/software/software-browser/software-browser.ts | js | False | 64.41 kB |
 | `chunk-KFUNLQRN.js` | src/app/features/chores/chore-manager/chore-manager.ts | js | False | 59.38 kB |
 | `chunk-CNU3KJYU.js` | src/app/features/shows/shows-browser/shows-browser.ts | js | False | 53.35 kB |
 | `chunk-NZ3V2JTL.js` | src/app/features/tasks/task-dashboard/task-dashboard.ts | js | False | 50.68 kB |
@@ -44,8 +44,8 @@ Lazy review threshold: 125 kB
 | `chunk-B52T77VE.js` | src/app/features/minis/miniatures-browser/miniatures-browser.ts | js | False | 45.54 kB |
 | `chunk-JHQVGVZA.js` | src/app/features/dino/admin-dino/admin-dino.ts | js | False | 43.58 kB |
 | `chunk-COX5M4LZ.js` | src/app/features/guitar/guitar-explorer/guitar-explorer.ts | js | False | 37.82 kB |
-| `chunk-6MD2QNV7.js` | src/app/features/dice-games/dice-games-browser/dice-games-browser.ts | js | False | 36.07 kB |
-| `chunk-ZZY2FWLQ.js` | src/app/features/magazines/magazine-browser/magazine-browser.ts | js | False | 33.04 kB |
+| `chunk-F4M6AFO4.js` | src/app/features/dice-games/dice-games-browser/dice-games-browser.ts | js | False | 36.6 kB |
+| `chunk-5P6NJFPY.js` | src/app/features/magazines/magazine-browser/magazine-browser.ts | js | False | 32.93 kB |
 | `chunk-KAJ3UGIJ.js` | src/app/features/external-imports/external-import-workbench/external-import-workbench.ts | js | False | 32.67 kB |
 | `chunk-I6T2JI3D.js` | src/app/features/comics/comic-browser/comic-browser.ts | js | False | 31.88 kB |
 

@@ -471,6 +471,7 @@ Also:
 - Admin Settings AppSettings JSON read/write helpers added so straightforward settings endpoints share one defensive deserialize/normalize and upsert/serialize path instead of repeating persistence code.
 - Shared Angular CSV download service added and adopted across feature CSV exports, including Admin Settings, Admin Users, Music, Books, Magazines, Chessex, Toys, Spookytown, Phone List, RPG, Miniatures, Software, Chores, Recipes, Alcohol, Dice Games, Shows, Shopping List, Dino Admin, MTG, Barcode Staging, Fish, Gardening, and Goals & Plans.
 - Shared CSV object-row export support added and adopted by Finance, Comics, Comic Want List, and Task Dashboard so report-object and matrix exports share the same escaping and download path.
+- Dice Games, Admin Users, Blog, Software, and collection browser duplicated edit-form action strips/filter controls now use shared token controls/actions, with clearer in-panel reset labels for D&D Dice Masters, Dragon Dice, Admin Users, Blog, Books, Chessex, Toys, Magazines, and Spookytown forms.
 
 ### 21. Identity / Authorization
 

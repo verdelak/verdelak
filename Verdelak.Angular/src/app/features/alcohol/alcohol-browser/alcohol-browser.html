@@ -6,52 +6,52 @@
       <p class="mt-1 text-sm text-slate-600">Browse alcohol inventory while keeping spreadsheet source details available for cleanup.</p>
     </div>
     <div class="flex flex-wrap gap-2">
-      <button *ngIf="canManage()" type="button" class="rounded-md bg-slate-900 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-slate-800" (click)="newItem()">New item</button>
-      <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="downloadCurrentPageCsv()">Export Page</button>
-      <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="loadReport(); loadLookupCleanup(); loadProductDuplicates(); loadInventoryDuplicateKeys(); load()">Refresh</button>
+      <button *ngIf="canManage()" type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition" (click)="newItem()">New item</button>
+      <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition" (click)="downloadCurrentPageCsv()">Export Page</button>
+      <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition" (click)="loadReport(); loadLookupCleanup(); loadProductDuplicates(); loadInventoryDuplicateKeys(); load()">Refresh</button>
     </div>
   </header>
 
   <section class="grid gap-3 rounded-md border border-slate-200 bg-white p-4 shadow-sm xl:grid-cols-[minmax(14rem,1.5fr)_repeat(8,minmax(8rem,1fr))_auto]">
-    <input type="search" class="rounded border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800" placeholder="Search name, maker, style, region, notes" [ngModel]="query()" (ngModelChange)="query.set($event)">
-    <select class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="category()" (ngModelChange)="category.set($event)">
+    <input type="search" class="app-token-control rounded-md border px-3 py-2 text-sm font-semibold shadow-sm outline-none transition" placeholder="Search name, maker, style, region, notes" [ngModel]="query()" (ngModelChange)="query.set($event)">
+    <select class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-semibold shadow-sm outline-none transition" [ngModel]="category()" (ngModelChange)="category.set($event)">
       <option value="">All categories</option>
       <option *ngFor="let value of categories()" [value]="value">{{ value }}</option>
     </select>
-    <select class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="type()" (ngModelChange)="type.set($event)">
+    <select class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-semibold shadow-sm outline-none transition" [ngModel]="type()" (ngModelChange)="type.set($event)">
       <option value="">All types</option>
       <option *ngFor="let value of types()" [value]="value">{{ value }}</option>
     </select>
-    <select class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="style()" (ngModelChange)="style.set($event)">
+    <select class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-semibold shadow-sm outline-none transition" [ngModel]="style()" (ngModelChange)="style.set($event)">
       <option value="">All styles</option>
       <option *ngFor="let value of styles()" [value]="value">{{ value }}</option>
     </select>
-    <select class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="country()" (ngModelChange)="country.set($event)">
+    <select class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-semibold shadow-sm outline-none transition" [ngModel]="country()" (ngModelChange)="country.set($event)">
       <option value="">All countries</option>
       <option *ngFor="let value of countries()" [value]="value">{{ value }}</option>
     </select>
-    <select class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="region()" (ngModelChange)="region.set($event)">
+    <select class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-semibold shadow-sm outline-none transition" [ngModel]="region()" (ngModelChange)="region.set($event)">
       <option value="">All regions</option>
       <option *ngFor="let value of regions()" [value]="value">{{ value }}</option>
     </select>
-    <select class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="location()" (ngModelChange)="location.set($event)">
+    <select class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-semibold shadow-sm outline-none transition" [ngModel]="location()" (ngModelChange)="location.set($event)">
       <option value="">All locations</option>
       <option *ngFor="let value of locations()" [value]="value">{{ value }}</option>
     </select>
-    <select class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="status()" (ngModelChange)="status.set($event)">
+    <select class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-semibold shadow-sm outline-none transition" [ngModel]="status()" (ngModelChange)="status.set($event)">
       <option value="all">All statuses</option>
       <option value="H">Owned</option>
       <option value="W">Wanted</option>
       <option value="unknown">Unknown</option>
     </select>
-    <select class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800" [ngModel]="pageSize()" (ngModelChange)="pageSize.set($event); applyFilters()">
+    <select class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-semibold shadow-sm outline-none transition" [ngModel]="pageSize()" (ngModelChange)="pageSize.set($event); applyFilters()">
       <option [ngValue]="25">25/page</option>
       <option [ngValue]="50">50/page</option>
       <option [ngValue]="100">100/page</option>
     </select>
     <div class="flex gap-2">
-      <button type="button" class="rounded bg-emerald-900 px-3 py-2 text-sm font-bold text-white" (click)="applyFilters()">Apply</button>
-      <button type="button" class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700" (click)="clearFilters()">Clear</button>
+      <button type="button" class="app-primary-action rounded-md px-3 py-2 text-sm font-bold shadow-sm transition" (click)="applyFilters()">Apply</button>
+      <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition" (click)="clearFilters()">Clear</button>
     </div>
   </section>
 
@@ -63,13 +63,13 @@
         <p class="text-sm text-slate-600">Inventory totals, wanted rows, and cleanup candidates from the full Alcohol table.</p>
       </div>
       <div class="flex flex-wrap gap-2">
-        <button type="button" class="rounded border border-emerald-300 bg-white px-3 py-2 text-sm font-bold text-emerald-900" (click)="downloadReportCsv()">Export Summary</button>
-        <button type="button" class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700" (click)="downloadWantedCsv()">Export Wants</button>
+        <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition" (click)="downloadReportCsv()">Export Summary</button>
+        <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition" (click)="downloadWantedCsv()">Export Wants</button>
         <button type="button" class="rounded border border-amber-300 bg-white px-3 py-2 text-sm font-bold text-amber-900" (click)="downloadCleanupCsv()">Export Cleanup</button>
-        <button type="button" class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700" (click)="downloadLookupCleanupCsv()">Export Lookups</button>
-        <button type="button" class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700" (click)="downloadProductDuplicatesCsv()">Export Duplicates</button>
-        <button type="button" class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700" (click)="downloadPriceReviewCsv()">Export Prices</button>
-        <button type="button" class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700" (click)="downloadRatingReviewCsv()">Export Ratings</button>
+        <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition" (click)="downloadLookupCleanupCsv()">Export Lookups</button>
+        <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition" (click)="downloadProductDuplicatesCsv()">Export Duplicates</button>
+        <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition" (click)="downloadPriceReviewCsv()">Export Prices</button>
+        <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition" (click)="downloadRatingReviewCsv()">Export Ratings</button>
       </div>
     </div>
 
@@ -178,7 +178,7 @@
             </div>
             <div class="font-semibold">{{ row.currentValue }} <span *ngIf="row.suggestedValue">-> {{ row.suggestedValue }}</span><span *ngIf="row.suggestedValue === null">-> clear</span></div>
             <div class="text-slate-500">{{ row.reason }}</div>
-            <button *ngIf="canApplyLookupCleanup()" type="button" class="mt-2 rounded border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-700 disabled:opacity-50" [disabled]="applyingLookupCleanup() === lookupCleanupKey(row)" (click)="applyLookupCleanup(row)">
+            <button *ngIf="canApplyLookupCleanup()" type="button" class="app-primary-soft-action mt-2 rounded border px-2 py-1 text-xs font-bold disabled:opacity-50" [disabled]="applyingLookupCleanup() === lookupCleanupKey(row)" (click)="applyLookupCleanup(row)">
               {{ applyingLookupCleanup() === lookupCleanupKey(row) ? 'Applying.' : 'Apply' }}
             </button>
           </div>
@@ -201,7 +201,7 @@
             <div class="mt-1 flex flex-wrap gap-1">
               <span *ngFor="let member of cluster.members.slice(0, 4)" class="rounded bg-slate-50 px-2 py-1 font-bold text-slate-600">#{{ member.productId }} {{ member.locations || 'No location' }}</span>
             </div>
-            <button *ngIf="canApplyLookupCleanup()" type="button" class="mt-2 rounded border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-700 disabled:opacity-50" [disabled]="mergingProductDuplicates() === productDuplicateKey(cluster)" (click)="mergeProductDuplicateCluster(cluster)">
+            <button *ngIf="canApplyLookupCleanup()" type="button" class="app-primary-soft-action mt-2 rounded border px-2 py-1 text-xs font-bold disabled:opacity-50" [disabled]="mergingProductDuplicates() === productDuplicateKey(cluster)" (click)="mergeProductDuplicateCluster(cluster)">
               {{ mergingProductDuplicates() === productDuplicateKey(cluster) ? 'Merging.' : 'Merge Rows' }}
             </button>
           </div>
@@ -288,12 +288,12 @@
         <h2 class="text-lg font-bold text-slate-950">Alcohol Lookup Management</h2>
         <p class="mt-1 text-sm text-slate-600">Merge duplicate lookup values, rename imported labels, or clear values from inventory rows.</p>
       </div>
-      <button type="button" class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="loadLookups(); loadLookupCleanup()">Refresh Lookups</button>
+      <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition" (click)="loadLookups(); loadLookupCleanup()">Refresh Lookups</button>
     </div>
     <div class="grid gap-3 p-4 lg:grid-cols-[11rem_minmax(0,1fr)_minmax(0,1fr)_auto_auto] lg:items-end">
       <label class="grid gap-1 text-sm font-bold text-slate-700">
         Lookup
-        <select class="rounded border border-slate-300 bg-white px-3 py-2" [ngModel]="mergeForm().field" (ngModelChange)="patchMergeForm({ field: $event, sourceValue: '', targetValue: '', clearTarget: false })">
+        <select class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-normal shadow-sm outline-none transition" [ngModel]="mergeForm().field" (ngModelChange)="patchMergeForm({ field: $event, sourceValue: '', targetValue: '', clearTarget: false })">
           <option value="Category">Category</option>
           <option value="Type">Type</option>
           <option value="Style">Style</option>
@@ -304,17 +304,17 @@
       </label>
       <label class="grid gap-1 text-sm font-bold text-slate-700">
         Source
-        <input class="rounded border border-slate-300 px-3 py-2" list="alcohol-merge-source-options" [ngModel]="mergeForm().sourceValue" (ngModelChange)="patchMergeForm({ sourceValue: $event })">
+        <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" list="alcohol-merge-source-options" [ngModel]="mergeForm().sourceValue" (ngModelChange)="patchMergeForm({ sourceValue: $event })">
       </label>
       <label class="grid gap-1 text-sm font-bold text-slate-700">
         Target
-        <input class="rounded border border-slate-300 px-3 py-2 disabled:bg-slate-100" list="alcohol-merge-target-options" [disabled]="mergeForm().clearTarget" [ngModel]="mergeForm().targetValue" (ngModelChange)="patchMergeForm({ targetValue: $event })">
+        <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition disabled:bg-slate-100" list="alcohol-merge-target-options" [disabled]="mergeForm().clearTarget" [ngModel]="mergeForm().targetValue" (ngModelChange)="patchMergeForm({ targetValue: $event })">
       </label>
       <label class="flex items-center gap-2 rounded border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-bold text-slate-700">
-        <input type="checkbox" class="h-4 w-4" [ngModel]="mergeForm().clearTarget" (ngModelChange)="patchMergeForm({ clearTarget: $event, targetValue: $event ? '' : mergeForm().targetValue })">
+        <input type="checkbox" class="app-token-checkbox h-4 w-4" [ngModel]="mergeForm().clearTarget" (ngModelChange)="patchMergeForm({ clearTarget: $event, targetValue: $event ? '' : mergeForm().targetValue })">
         Clear
       </label>
-      <button type="button" class="rounded bg-slate-900 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" [disabled]="mergingLookup() || !mergeForm().sourceValue.trim() || (!mergeForm().clearTarget && !mergeForm().targetValue.trim())" (click)="mergeLookup()">
+      <button type="button" class="app-primary-action rounded-md px-4 py-2 text-sm font-bold shadow-sm transition disabled:opacity-50" [disabled]="mergingLookup() || !mergeForm().sourceValue.trim() || (!mergeForm().clearTarget && !mergeForm().targetValue.trim())" (click)="mergeLookup()">
         {{ mergingLookup() ? 'Merging.' : 'Merge' }}
       </button>
       <datalist id="alcohol-merge-source-options">
@@ -332,22 +332,22 @@
         <h2 class="text-lg font-bold text-slate-950">Alcohol Import Staging</h2>
         <p class="mt-1 text-sm text-slate-600">Paste CSV/TSV rows or upload a CSV/TXT export, review cleanup warnings, then import only clean rows.</p>
       </div>
-      <a routerLink="/admin/settings" class="rounded border border-amber-300 bg-white px-3 py-2 text-sm font-bold text-amber-900 shadow-sm transition hover:bg-amber-50">Manage Categories/Locations</a>
+      <a routerLink="/admin/settings" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition">Manage Categories/Locations</a>
     </div>
 
     <div class="grid gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_20rem]">
       <div class="grid gap-3">
-        <textarea rows="6" class="w-full rounded border border-slate-300 px-3 py-2 text-sm text-slate-800" [ngModel]="importText()" (ngModelChange)="importText.set($event)" placeholder="category,name,producer,style,type,variety,color,country,region,year,size,price,rating,qty,location,status,notes,source sheet,source row&#10;Wine,Example Cabernet,Example Winery,,,Cabernet Sauvignon,Red,USA,California,2020,750ml,18.99,8,1,Wine Rack,H,Needs cleanup review,Alcohol.xlsx,Row 12"></textarea>
+        <textarea rows="6" class="app-token-control w-full rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" [ngModel]="importText()" (ngModelChange)="importText.set($event)" placeholder="category,name,producer,style,type,variety,color,country,region,year,size,price,rating,qty,location,status,notes,source sheet,source row&#10;Wine,Example Cabernet,Example Winery,,,Cabernet Sauvignon,Red,USA,California,2020,750ml,18.99,8,1,Wine Rack,H,Needs cleanup review,Alcohol.xlsx,Row 12"></textarea>
         <div class="flex flex-wrap items-center gap-2">
-          <button type="button" class="rounded border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="downloadImportTemplate()">Template</button>
-          <label class="rounded border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50">
+          <button type="button" class="app-primary-soft-action rounded-md border px-4 py-2 text-sm font-bold shadow-sm transition" (click)="downloadImportTemplate()">Template</button>
+          <label class="app-primary-soft-action rounded-md border px-4 py-2 text-sm font-bold shadow-sm transition">
             Upload CSV/TXT
             <input type="file" class="hidden" accept=".csv,.txt,.tsv,text/csv,text/plain" (change)="handleImportFile($event)">
           </label>
-          <button type="button" class="rounded bg-emerald-900 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" [disabled]="importing() || validImportRows().length === 0" (click)="importRows()">
+          <button type="button" class="app-primary-action rounded-md px-4 py-2 text-sm font-bold shadow-sm transition disabled:opacity-50" [disabled]="importing() || validImportRows().length === 0" (click)="importRows()">
             {{ importing() ? 'Importing.' : 'Import Clean Rows' }}
           </button>
-          <button type="button" class="rounded border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 disabled:opacity-50" [disabled]="importing() || !importText()" (click)="clearImport()">Clear</button>
+          <button type="button" class="app-primary-soft-action rounded-md border px-4 py-2 text-sm font-bold shadow-sm transition disabled:opacity-50" [disabled]="importing() || !importText()" (click)="clearImport()">Clear</button>
         </div>
       </div>
 
@@ -411,9 +411,9 @@
           <p class="text-sm text-slate-600">{{ quantityOnPage() | number:'1.0-2' }} quantity on this page</p>
         </div>
         <div class="flex items-center gap-2 text-sm font-semibold text-slate-600">
-          <button type="button" class="rounded border border-slate-300 bg-white px-3 py-1.5 disabled:opacity-50" [disabled]="page() <= 1" (click)="load(page() - 1)">Previous</button>
+          <button type="button" class="app-primary-soft-action rounded-md border px-3 py-1.5 text-sm font-bold shadow-sm transition disabled:opacity-50" [disabled]="page() <= 1" (click)="load(page() - 1)">Previous</button>
           <span>Page {{ page() }} / {{ totalPages() }}</span>
-          <button type="button" class="rounded border border-slate-300 bg-white px-3 py-1.5 disabled:opacity-50" [disabled]="page() >= totalPages()" (click)="load(page() + 1)">Next</button>
+          <button type="button" class="app-primary-soft-action rounded-md border px-3 py-1.5 text-sm font-bold shadow-sm transition disabled:opacity-50" [disabled]="page() >= totalPages()" (click)="load(page() + 1)">Next</button>
         </div>
       </div>
 
@@ -502,41 +502,41 @@
             <option *ngFor="let value of regions()" [value]="value"></option>
           </datalist>
           <div class="grid grid-cols-2 gap-2">
-            <label class="grid gap-1 text-sm font-bold text-slate-700">Category<input class="rounded border border-slate-300 px-3 py-2" list="alcohol-category-options" [ngModel]="form().category" (ngModelChange)="patchForm({ category: $event })"></label>
-            <label class="grid gap-1 text-sm font-bold text-slate-700">Status<select class="rounded border border-slate-300 bg-white px-3 py-2" [ngModel]="form().statusID" (ngModelChange)="patchForm({ statusID: $event })"><option value="H">Owned</option><option value="W">Wanted</option></select></label>
+            <label class="grid gap-1 text-sm font-bold text-slate-700">Category<input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" list="alcohol-category-options" [ngModel]="form().category" (ngModelChange)="patchForm({ category: $event })"></label>
+            <label class="grid gap-1 text-sm font-bold text-slate-700">Status<select class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-normal shadow-sm outline-none transition" [ngModel]="form().statusID" (ngModelChange)="patchForm({ statusID: $event })"><option value="H">Owned</option><option value="W">Wanted</option></select></label>
           </div>
-          <label class="grid gap-1 text-sm font-bold text-slate-700">Name<input class="rounded border border-slate-300 px-3 py-2" [ngModel]="form().name" (ngModelChange)="patchForm({ name: $event })"></label>
-          <label class="grid gap-1 text-sm font-bold text-slate-700">Producer / Brewery / Winery<input class="rounded border border-slate-300 px-3 py-2" [ngModel]="form().producer" (ngModelChange)="patchForm({ producer: $event })"></label>
+          <label class="grid gap-1 text-sm font-bold text-slate-700">Name<input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" [ngModel]="form().name" (ngModelChange)="patchForm({ name: $event })"></label>
+          <label class="grid gap-1 text-sm font-bold text-slate-700">Producer / Brewery / Winery<input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" [ngModel]="form().producer" (ngModelChange)="patchForm({ producer: $event })"></label>
           <div class="grid grid-cols-2 gap-2">
-            <label class="grid gap-1 text-sm font-bold text-slate-700">Style<input class="rounded border border-slate-300 px-3 py-2" list="alcohol-style-options" [ngModel]="form().style" (ngModelChange)="patchForm({ style: $event })"></label>
-            <label class="grid gap-1 text-sm font-bold text-slate-700">Type<input class="rounded border border-slate-300 px-3 py-2" list="alcohol-type-options" [ngModel]="form().type" (ngModelChange)="patchForm({ type: $event })"></label>
-          </div>
-          <div class="grid grid-cols-2 gap-2">
-            <label class="grid gap-1 text-sm font-bold text-slate-700">Variety<input class="rounded border border-slate-300 px-3 py-2" [ngModel]="form().variety" (ngModelChange)="patchForm({ variety: $event })"></label>
-            <label class="grid gap-1 text-sm font-bold text-slate-700">Color<input class="rounded border border-slate-300 px-3 py-2" [ngModel]="form().color" (ngModelChange)="patchForm({ color: $event })"></label>
+            <label class="grid gap-1 text-sm font-bold text-slate-700">Style<input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" list="alcohol-style-options" [ngModel]="form().style" (ngModelChange)="patchForm({ style: $event })"></label>
+            <label class="grid gap-1 text-sm font-bold text-slate-700">Type<input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" list="alcohol-type-options" [ngModel]="form().type" (ngModelChange)="patchForm({ type: $event })"></label>
           </div>
           <div class="grid grid-cols-2 gap-2">
-            <label class="grid gap-1 text-sm font-bold text-slate-700">Country<input class="rounded border border-slate-300 px-3 py-2" list="alcohol-country-options" [ngModel]="form().country" (ngModelChange)="patchForm({ country: $event })"></label>
-            <label class="grid gap-1 text-sm font-bold text-slate-700">Region<input class="rounded border border-slate-300 px-3 py-2" list="alcohol-region-options" [ngModel]="form().region" (ngModelChange)="patchForm({ region: $event })"></label>
+            <label class="grid gap-1 text-sm font-bold text-slate-700">Variety<input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" [ngModel]="form().variety" (ngModelChange)="patchForm({ variety: $event })"></label>
+            <label class="grid gap-1 text-sm font-bold text-slate-700">Color<input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" [ngModel]="form().color" (ngModelChange)="patchForm({ color: $event })"></label>
           </div>
           <div class="grid grid-cols-2 gap-2">
-            <label class="grid gap-1 text-sm font-bold text-slate-700">Year/Vintage<input class="rounded border border-slate-300 px-3 py-2" [ngModel]="form().vintageOrYear" (ngModelChange)="patchForm({ vintageOrYear: $event })"></label>
-            <label class="grid gap-1 text-sm font-bold text-slate-700">Size<input class="rounded border border-slate-300 px-3 py-2" [ngModel]="form().size" (ngModelChange)="patchForm({ size: $event })"></label>
+            <label class="grid gap-1 text-sm font-bold text-slate-700">Country<input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" list="alcohol-country-options" [ngModel]="form().country" (ngModelChange)="patchForm({ country: $event })"></label>
+            <label class="grid gap-1 text-sm font-bold text-slate-700">Region<input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" list="alcohol-region-options" [ngModel]="form().region" (ngModelChange)="patchForm({ region: $event })"></label>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <label class="grid gap-1 text-sm font-bold text-slate-700">Year/Vintage<input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" [ngModel]="form().vintageOrYear" (ngModelChange)="patchForm({ vintageOrYear: $event })"></label>
+            <label class="grid gap-1 text-sm font-bold text-slate-700">Size<input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" [ngModel]="form().size" (ngModelChange)="patchForm({ size: $event })"></label>
           </div>
           <div class="grid grid-cols-3 gap-2">
-            <label class="grid gap-1 text-sm font-bold text-slate-700">Price<input type="number" step="0.01" class="rounded border border-slate-300 px-3 py-2" [ngModel]="form().price" (ngModelChange)="patchForm({ price: $event })"></label>
-            <label class="grid gap-1 text-sm font-bold text-slate-700">Rating<input type="number" step="0.1" class="rounded border border-slate-300 px-3 py-2" [ngModel]="form().rating" (ngModelChange)="patchForm({ rating: $event })"></label>
-            <label class="grid gap-1 text-sm font-bold text-slate-700">Qty<input type="number" step="0.01" class="rounded border border-slate-300 px-3 py-2" [ngModel]="form().quantityOnHand" (ngModelChange)="patchForm({ quantityOnHand: $event })"></label>
+            <label class="grid gap-1 text-sm font-bold text-slate-700">Price<input type="number" step="0.01" class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" [ngModel]="form().price" (ngModelChange)="patchForm({ price: $event })"></label>
+            <label class="grid gap-1 text-sm font-bold text-slate-700">Rating<input type="number" step="0.1" class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" [ngModel]="form().rating" (ngModelChange)="patchForm({ rating: $event })"></label>
+            <label class="grid gap-1 text-sm font-bold text-slate-700">Qty<input type="number" step="0.01" class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" [ngModel]="form().quantityOnHand" (ngModelChange)="patchForm({ quantityOnHand: $event })"></label>
           </div>
-          <label class="grid gap-1 text-sm font-bold text-slate-700">Location<input class="rounded border border-slate-300 px-3 py-2" list="alcohol-location-options" [ngModel]="form().location" (ngModelChange)="patchForm({ location: $event })"></label>
-          <label class="grid gap-1 text-sm font-bold text-slate-700">Notes<textarea rows="3" class="rounded border border-slate-300 px-3 py-2" [ngModel]="form().notes" (ngModelChange)="patchForm({ notes: $event })"></textarea></label>
+          <label class="grid gap-1 text-sm font-bold text-slate-700">Location<input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" list="alcohol-location-options" [ngModel]="form().location" (ngModelChange)="patchForm({ location: $event })"></label>
+          <label class="grid gap-1 text-sm font-bold text-slate-700">Notes<textarea rows="3" class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" [ngModel]="form().notes" (ngModelChange)="patchForm({ notes: $event })"></textarea></label>
           <div class="grid grid-cols-2 gap-2">
-            <label class="grid gap-1 text-sm font-bold text-slate-700">Source sheet<input class="rounded border border-slate-300 px-3 py-2" [ngModel]="form().sourceSheet" (ngModelChange)="patchForm({ sourceSheet: $event })"></label>
-            <label class="grid gap-1 text-sm font-bold text-slate-700">Source row<input class="rounded border border-slate-300 px-3 py-2" [ngModel]="form().sourceRowLabel" (ngModelChange)="patchForm({ sourceRowLabel: $event })"></label>
+            <label class="grid gap-1 text-sm font-bold text-slate-700">Source sheet<input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" [ngModel]="form().sourceSheet" (ngModelChange)="patchForm({ sourceSheet: $event })"></label>
+            <label class="grid gap-1 text-sm font-bold text-slate-700">Source row<input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" [ngModel]="form().sourceRowLabel" (ngModelChange)="patchForm({ sourceRowLabel: $event })"></label>
           </div>
           <div class="flex flex-wrap gap-2">
-            <button type="button" class="rounded bg-emerald-900 px-4 py-2 text-sm font-bold text-white" (click)="save()">Save</button>
-            <button type="button" class="rounded border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700" (click)="cancelEdit()">Cancel</button>
+            <button type="button" class="app-primary-action rounded-md px-4 py-2 text-sm font-bold shadow-sm transition" (click)="save()">Save</button>
+            <button type="button" class="app-primary-soft-action rounded-md border px-4 py-2 text-sm font-bold shadow-sm transition" (click)="cancelEdit()">Cancel</button>
           </div>
         </div>
       </section>

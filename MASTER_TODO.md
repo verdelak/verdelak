@@ -479,6 +479,7 @@ Also:
 - Comics and MTG browser/report action buttons now use shared token controls/actions across exports, filters, imports, edit form cancellation/reset, and MTG detail filter helpers.
 - Barcode staging action buttons now use shared token controls/actions across batch refresh/staging, lookup providers, import validation preview downloads, batch/history downloads, and candidate selection.
 - External Imports action buttons now use shared token controls/actions across navigation, provider settings saves, preview/ignore actions, and staged-item filter clearing.
+- Alcohol browser action buttons and primary form controls now use shared token controls/actions across header exports, filtering, reports, lookup merge, import staging, and item editing.
 
 ### 21. Identity / Authorization
 

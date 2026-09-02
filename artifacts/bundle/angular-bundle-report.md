@@ -1,6 +1,6 @@
 # Angular Bundle Report
 
-Generated: 2026-09-01 23:39:42 -04:00
+Generated: 2026-09-01 23:47:08 -04:00
 
 Dist root: `C:\Projects\VerdelakCD\Verdelak.Angular\dist\Verdelak\browser`
 
@@ -15,8 +15,8 @@ Lazy review threshold: 125 kB
 | Scope | Size | Status |
 | --- | ---: | --- |
 | Initial JS/CSS | 426.83 kB | OK |
-| Lazy JS/CSS | 2393.37 kB | OK |
-| Total JS/CSS | 2820.2 kB | Informational |
+| Lazy JS/CSS | 2393.39 kB | OK |
+| Total JS/CSS | 2820.22 kB | Informational |
 | Largest initial asset | 175.93 kB | Informational |
 
 ## Largest Assets
@@ -35,7 +35,7 @@ Lazy review threshold: 125 kB
 | `chunk-IWDYZ6BY.js` | src/app/features/mtg/mtg-browser/mtg-browser.ts | js | False | 87.02 kB |
 | `chunk-P65B4IVZ.js` | src/app/features/recipes/recipe-browser/recipe-browser.ts | js | False | 77.84 kB |
 | `chunk-IWHQSVWY.js` | src/app/features/shopping-list/shopping-list-page/shopping-list-page.ts | js | False | 76.7 kB |
-| `chunk-ASWPJOL2.js` | src/app/features/alcohol/alcohol-browser/alcohol-browser.ts | js | False | 66.61 kB |
+| `chunk-5IBJAPZE.js` | src/app/features/alcohol/alcohol-browser/alcohol-browser.ts | js | False | 66.63 kB |
 | `chunk-4RTEA5U7.js` | src/app/features/software/software-browser/software-browser.ts | js | False | 64.41 kB |
 | `chunk-KFUNLQRN.js` | src/app/features/chores/chore-manager/chore-manager.ts | js | False | 59.38 kB |
 | `chunk-OVYO74DZ.js` | src/app/features/shows/shows-browser/shows-browser.ts | js | False | 52.84 kB |

@@ -1,6 +1,6 @@
 # Angular Bundle Report
 
-Generated: 2026-09-01 23:06:13 -04:00
+Generated: 2026-09-01 23:39:42 -04:00
 
 Dist root: `C:\Projects\VerdelakCD\Verdelak.Angular\dist\Verdelak\browser`
 
@@ -15,8 +15,8 @@ Lazy review threshold: 125 kB
 | Scope | Size | Status |
 | --- | ---: | --- |
 | Initial JS/CSS | 426.83 kB | OK |
-| Lazy JS/CSS | 2393.55 kB | OK |
-| Total JS/CSS | 2820.38 kB | Informational |
+| Lazy JS/CSS | 2393.37 kB | OK |
+| Total JS/CSS | 2820.2 kB | Informational |
 | Largest initial asset | 175.93 kB | Informational |
 
 ## Largest Assets
@@ -46,7 +46,7 @@ Lazy review threshold: 125 kB
 | `chunk-COX5M4LZ.js` | src/app/features/guitar/guitar-explorer/guitar-explorer.ts | js | False | 37.82 kB |
 | `chunk-F4M6AFO4.js` | src/app/features/dice-games/dice-games-browser/dice-games-browser.ts | js | False | 36.6 kB |
 | `chunk-5P6NJFPY.js` | src/app/features/magazines/magazine-browser/magazine-browser.ts | js | False | 32.93 kB |
-| `chunk-KAJ3UGIJ.js` | src/app/features/external-imports/external-import-workbench/external-import-workbench.ts | js | False | 32.67 kB |
+| `chunk-NPKARQD4.js` | src/app/features/external-imports/external-import-workbench/external-import-workbench.ts | js | False | 32.49 kB |
 | `chunk-RDTI6U47.js` | src/app/features/comics/comic-browser/comic-browser.ts | js | False | 31.58 kB |
 
 ## Lazy Split Candidates

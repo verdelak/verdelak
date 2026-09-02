@@ -6,8 +6,8 @@
         <p class="mt-1 text-sm text-slate-600">Stage provider libraries, compare against existing inventory, then commit reviewed rows.</p>
       </div>
       <div class="flex flex-wrap gap-2">
-        <a routerLink="/software" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50">Software</a>
-        <a routerLink="/admin/settings" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50">Admin Settings</a>
+        <a routerLink="/software" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition">Software</a>
+        <a routerLink="/admin/settings" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition">Admin Settings</a>
       </div>
     </div>
   </header>
@@ -32,7 +32,7 @@
         <p class="mt-1 text-sm text-slate-600">Uses Steam Web API owned games, stages AppID/title/playtime/artwork, then runs Software matching.</p>
       </div>
       <div class="flex flex-wrap gap-2">
-        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm hover:bg-slate-50 disabled:cursor-wait disabled:opacity-60" (click)="saveSteamSettings()" [disabled]="savingSteamSettings()">Save Steam Settings</button>
+        <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm disabled:cursor-wait disabled:opacity-60" (click)="saveSteamSettings()" [disabled]="savingSteamSettings()">Save Steam Settings</button>
         <button type="button" class="app-primary-action rounded-md px-3 py-2 text-sm font-bold shadow-sm disabled:cursor-wait disabled:opacity-60" (click)="importSteamLibrary()" [disabled]="loading()">Import from Steam</button>
       </div>
     </div>
@@ -64,7 +64,7 @@
         <p class="mt-1 text-xs font-semibold text-slate-500">BoardGameGeek collection or wishlist privacy must be public for the XML API to read it.</p>
       </div>
       <div class="flex flex-wrap gap-2">
-        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm hover:bg-slate-50 disabled:cursor-wait disabled:opacity-60" (click)="saveBoardGameGeekSettings()" [disabled]="savingBoardGameGeekSettings()">Save BGG Settings</button>
+        <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm disabled:cursor-wait disabled:opacity-60" (click)="saveBoardGameGeekSettings()" [disabled]="savingBoardGameGeekSettings()">Save BGG Settings</button>
         <button type="button" class="app-primary-action rounded-md px-3 py-2 text-sm font-bold shadow-sm disabled:cursor-wait disabled:opacity-60" (click)="importBoardGameGeekCollection()" [disabled]="loading()">Import from BoardGameGeek</button>
       </div>
     </div>
@@ -145,9 +145,9 @@
             <p class="mt-1 text-sm text-slate-600">{{ batch.source }} / {{ batch.targetArea }} / {{ batch.status }}</p>
           </div>
           <div class="flex flex-wrap gap-2">
-            <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm hover:bg-slate-50" (click)="preview()" [disabled]="loading()">Preview Matches</button>
-            <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm hover:bg-slate-50" (click)="setAllActions('Ignore')" [disabled]="loading() || items().length === 0">Ignore all</button>
-            <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm hover:bg-slate-50" (click)="setFilteredActions('Ignore')" [disabled]="loading() || filteredItems().length === 0">Ignore filtered</button>
+            <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm disabled:opacity-50" (click)="preview()" [disabled]="loading()">Preview Matches</button>
+            <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm disabled:opacity-50" (click)="setAllActions('Ignore')" [disabled]="loading() || items().length === 0">Ignore all</button>
+            <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm disabled:opacity-50" (click)="setFilteredActions('Ignore')" [disabled]="loading() || filteredItems().length === 0">Ignore filtered</button>
             <button type="button" class="rounded-md bg-emerald-700 px-3 py-2 text-sm font-bold text-white shadow-sm hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50" (click)="commit()" [disabled]="loading() || importableCount() === 0">Commit imports ({{ importableCount() }})</button>
           </div>
         </div>
@@ -189,7 +189,7 @@
             </select>
           </label>
           <div class="flex flex-wrap items-end gap-2">
-            <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm hover:bg-slate-100" (click)="clearItemFilters()">Clear</button>
+            <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm" (click)="clearItemFilters()">Clear</button>
             <span class="rounded-md bg-white px-3 py-2 text-sm font-black text-slate-700 ring-1 ring-slate-200">{{ filteredItems().length }} shown / {{ items().length }} total</span>
             <span class="rounded-md bg-white px-3 py-2 text-sm font-black text-emerald-700 ring-1 ring-emerald-100">{{ filteredImportableCount() }} importable shown</span>
           </div>

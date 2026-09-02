@@ -478,6 +478,7 @@ Also:
 - Music browser and Metal Archives gap-finder action buttons now use shared token controls/actions across headers, artist creation, edit resets, search/compare actions, and missing-release selection helpers.
 - Comics and MTG browser/report action buttons now use shared token controls/actions across exports, filters, imports, edit form cancellation/reset, and MTG detail filter helpers.
 - Barcode staging action buttons now use shared token controls/actions across batch refresh/staging, lookup providers, import validation preview downloads, batch/history downloads, and candidate selection.
+- External Imports action buttons now use shared token controls/actions across navigation, provider settings saves, preview/ignore actions, and staged-item filter clearing.
 
 ### 21. Identity / Authorization
 

@@ -7,8 +7,8 @@
         <p class="mt-1 text-sm text-slate-600">{{ issueCount() }} wanted issues, {{ titleOnlyCount() }} wanted titles</p>
       </div>
       <div class="flex flex-wrap gap-2">
-        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-center text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="exportWantListCsv()">Export CSV</button>
-        <a class="rounded-md border border-slate-300 bg-white px-3 py-2 text-center text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" routerLink="/comics">All comics</a>
+        <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-center text-sm font-bold shadow-sm transition" (click)="exportWantListCsv()">Export CSV</button>
+        <a class="app-primary-soft-action rounded-md border px-3 py-2 text-center text-sm font-bold shadow-sm transition" routerLink="/comics">All comics</a>
       </div>
     </div>
   </header>
@@ -18,7 +18,7 @@
   <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
     <div class="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
       <input class="app-token-control rounded-md border px-3 py-2 text-sm shadow-sm outline-none" type="search" [ngModel]="query()" (ngModelChange)="query.set($event)" placeholder="Search title, issue, or notes" />
-      <button type="button" class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="query.set('')">Clear</button>
+      <button type="button" class="app-primary-soft-action rounded-md border px-4 py-2 text-sm font-bold shadow-sm transition" (click)="query.set('')">Clear</button>
     </div>
   </section>
 

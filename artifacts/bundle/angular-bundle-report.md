@@ -1,6 +1,6 @@
 # Angular Bundle Report
 
-Generated: 2026-09-01 22:55:34 -04:00
+Generated: 2026-09-01 23:00:49 -04:00
 
 Dist root: `C:\Projects\VerdelakCD\Verdelak.Angular\dist\Verdelak\browser`
 
@@ -15,8 +15,8 @@ Lazy review threshold: 125 kB
 | Scope | Size | Status |
 | --- | ---: | --- |
 | Initial JS/CSS | 426.83 kB | OK |
-| Lazy JS/CSS | 2395.16 kB | OK |
-| Total JS/CSS | 2821.99 kB | Informational |
+| Lazy JS/CSS | 2394.02 kB | OK |
+| Total JS/CSS | 2820.85 kB | Informational |
 | Largest initial asset | 175.93 kB | Informational |
 
 ## Largest Assets
@@ -31,8 +31,8 @@ Lazy review threshold: 125 kB
 | `styles-OATW6PEO.css` | angular:styles/global:styles | css | True | 110.29 kB |
 | `chunk-QG4KPJIO.js` | src/app/features/goals-plans/goals-plans-browser/goals-plans-browser.ts | js | False | 103.16 kB |
 | `chunk-73F2ZYM7.js` | src/app/features/admin-settings/admin-settings/admin-settings.ts | js | False | 92.56 kB |
-| `chunk-HBIYSPTT.js` | src/app/features/mtg/mtg-browser/mtg-browser.ts | js | False | 87.74 kB |
 | `chunk-KUK6MPPU.js` | - | js | True | 87.48 kB |
+| `chunk-IWDYZ6BY.js` | src/app/features/mtg/mtg-browser/mtg-browser.ts | js | False | 87.02 kB |
 | `chunk-P65B4IVZ.js` | src/app/features/recipes/recipe-browser/recipe-browser.ts | js | False | 77.84 kB |
 | `chunk-IWHQSVWY.js` | src/app/features/shopping-list/shopping-list-page/shopping-list-page.ts | js | False | 76.7 kB |
 | `chunk-ASWPJOL2.js` | src/app/features/alcohol/alcohol-browser/alcohol-browser.ts | js | False | 66.61 kB |
@@ -47,7 +47,7 @@ Lazy review threshold: 125 kB
 | `chunk-F4M6AFO4.js` | src/app/features/dice-games/dice-games-browser/dice-games-browser.ts | js | False | 36.6 kB |
 | `chunk-5P6NJFPY.js` | src/app/features/magazines/magazine-browser/magazine-browser.ts | js | False | 32.93 kB |
 | `chunk-KAJ3UGIJ.js` | src/app/features/external-imports/external-import-workbench/external-import-workbench.ts | js | False | 32.67 kB |
-| `chunk-I6T2JI3D.js` | src/app/features/comics/comic-browser/comic-browser.ts | js | False | 31.88 kB |
+| `chunk-RDTI6U47.js` | src/app/features/comics/comic-browser/comic-browser.ts | js | False | 31.58 kB |
 
 ## Lazy Split Candidates
 

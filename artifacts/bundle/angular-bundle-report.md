@@ -1,6 +1,6 @@
 # Angular Bundle Report
 
-Generated: 2026-08-29 20:55:05 -04:00
+Generated: 2026-09-01 22:55:34 -04:00
 
 Dist root: `C:\Projects\VerdelakCD\Verdelak.Angular\dist\Verdelak\browser`
 
@@ -15,8 +15,8 @@ Lazy review threshold: 125 kB
 | Scope | Size | Status |
 | --- | ---: | --- |
 | Initial JS/CSS | 426.83 kB | OK |
-| Lazy JS/CSS | 2396.03 kB | OK |
-| Total JS/CSS | 2822.86 kB | Informational |
+| Lazy JS/CSS | 2395.16 kB | OK |
+| Total JS/CSS | 2821.99 kB | Informational |
 | Largest initial asset | 175.93 kB | Informational |
 
 ## Largest Assets
@@ -41,7 +41,7 @@ Lazy review threshold: 125 kB
 | `chunk-OVYO74DZ.js` | src/app/features/shows/shows-browser/shows-browser.ts | js | False | 52.84 kB |
 | `chunk-NZ3V2JTL.js` | src/app/features/tasks/task-dashboard/task-dashboard.ts | js | False | 50.68 kB |
 | `chunk-47NEG4MP.js` | - | js | False | 46.25 kB |
-| `chunk-B52T77VE.js` | src/app/features/minis/miniatures-browser/miniatures-browser.ts | js | False | 45.54 kB |
+| `chunk-UZJSKMPM.js` | src/app/features/minis/miniatures-browser/miniatures-browser.ts | js | False | 45.29 kB |
 | `chunk-JHQVGVZA.js` | src/app/features/dino/admin-dino/admin-dino.ts | js | False | 43.58 kB |
 | `chunk-COX5M4LZ.js` | src/app/features/guitar/guitar-explorer/guitar-explorer.ts | js | False | 37.82 kB |
 | `chunk-F4M6AFO4.js` | src/app/features/dice-games/dice-games-browser/dice-games-browser.ts | js | False | 36.6 kB |

@@ -10,7 +10,7 @@
           Band name
           <input class="app-token-control w-full min-w-72 rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" type="search" [ngModel]="bandQuery()" (ngModelChange)="bandQuery.set($event)" name="bandQuery" placeholder="Amorphis">
         </label>
-        <button class="rounded-md bg-slate-900 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-slate-700 disabled:cursor-wait disabled:opacity-60" type="submit" [disabled]="loading()">
+        <button class="app-primary-action rounded-md px-4 py-2 text-sm font-bold shadow-sm transition disabled:cursor-wait disabled:opacity-60" type="submit" [disabled]="loading()">
           {{ loading() ? 'Searching.' : 'Search' }}
         </button>
       </form>
@@ -49,7 +49,7 @@
       </div>
       <textarea class="app-token-control min-h-36 rounded-md border px-3 py-2 text-sm shadow-sm outline-none" [ngModel]="manualReleaseRows()" (ngModelChange)="manualReleaseRows.set($event)" name="manualReleaseRows" placeholder="Burst Into Flame&#9;Full-length&#9;2018&#10;If Icarus Could Fly&#9;Full-length&#9;2019"></textarea>
       <div class="flex justify-end">
-        <button class="rounded-md bg-slate-900 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-slate-700 disabled:cursor-wait disabled:opacity-60" type="button" (click)="comparePastedReleases()" [disabled]="loading()">Compare Pasted Releases</button>
+        <button class="app-primary-action rounded-md px-4 py-2 text-sm font-bold shadow-sm transition disabled:cursor-wait disabled:opacity-60" type="button" (click)="comparePastedReleases()" [disabled]="loading()">Compare Pasted Releases</button>
       </div>
     </div>
   </section>
@@ -87,8 +87,8 @@
     </div>
 
     <div class="flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
-      <button class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50" type="button" (click)="setAllMissing(true)" [disabled]="missingReleases().length === 0">Select all missing</button>
-      <button class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50" type="button" (click)="setAllMissing(false)" [disabled]="selectedMissingReleases().length === 0">Clear selected</button>
+      <button class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold disabled:opacity-50" type="button" (click)="setAllMissing(true)" [disabled]="missingReleases().length === 0">Select all missing</button>
+      <button class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold disabled:opacity-50" type="button" (click)="setAllMissing(false)" [disabled]="selectedMissingReleases().length === 0">Clear selected</button>
       <button class="rounded-md bg-amber-600 px-3 py-2 text-sm font-bold text-white shadow-sm hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-50" type="button" (click)="addSelectedToWantList()" [disabled]="loading() || selectedMissingReleases().length === 0">Add selected to want list ({{ selectedMissingReleases().length }})</button>
     </div>
 

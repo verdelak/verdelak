@@ -6,10 +6,10 @@
       <p class="mt-1 text-sm text-slate-600">Browse Dreamblade, World of Warcraft, Bones, and other miniature collections with normalized owned and want-list counts.</p>
     </div>
     <div class="flex flex-wrap gap-2">
-      <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="exportCurrentPageCsv()">Export page CSV</button>
-      <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="exportSummaryCsv()">Export summary CSV</button>
-      <button *ngIf="canManage()" type="button" class="rounded-md bg-slate-900 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-slate-800" (click)="startNew()">New miniature</button>
-      <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="load()">Refresh</button>
+      <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition" (click)="exportCurrentPageCsv()">Export page CSV</button>
+      <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition" (click)="exportSummaryCsv()">Export summary CSV</button>
+      <button *ngIf="canManage()" type="button" class="app-primary-action rounded-md px-3 py-2 text-sm font-bold shadow-sm transition" (click)="startNew()">New miniature</button>
+      <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition" (click)="load()">Refresh</button>
     </div>
   </header>
 
@@ -39,7 +39,7 @@
 
     <div class="flex gap-2">
       <button type="button" class="app-primary-action rounded px-3 py-2 text-sm font-bold" (click)="applyFilters()">Apply</button>
-      <button type="button" class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700" (click)="clearFilters()">Clear</button>
+      <button type="button" class="app-primary-soft-action rounded border px-3 py-2 text-sm font-bold" (click)="clearFilters()">Clear</button>
     </div>
   </section>
 
@@ -72,16 +72,16 @@
         <p class="text-sm text-slate-600">CSV or tab rows: company, system, series, number, name, subset, rarity, size, type, ownedQuantity, wantedQuantity.</p>
       </div>
       <div class="flex flex-wrap gap-2">
-        <label class="cursor-pointer rounded border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50">
+        <label class="app-primary-soft-action cursor-pointer rounded border px-3 py-2 text-sm font-bold shadow-sm transition">
           Upload CSV/TXT
           <input type="file" accept=".csv,.txt,.tsv,text/csv,text/plain" class="hidden" (change)="onImportFile($event)">
         </label>
-        <button type="button" class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="parseImport()">Preview</button>
-        <button type="button" class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50" [disabled]="importRows().length === 0" (click)="exportImportPreviewCsv()">Export Preview</button>
+        <button type="button" class="app-primary-soft-action rounded border px-3 py-2 text-sm font-bold shadow-sm transition" (click)="parseImport()">Preview</button>
+        <button type="button" class="app-primary-soft-action rounded border px-3 py-2 text-sm font-bold shadow-sm transition disabled:opacity-50" [disabled]="importRows().length === 0" (click)="exportImportPreviewCsv()">Export Preview</button>
         <button type="button" class="app-primary-action rounded px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-wait disabled:opacity-60" [disabled]="importCommitting() || importRows().length === 0 || validImportRows().length !== importRows().length" (click)="commitImport()">
           {{ importCommitting() ? 'Importing.' : 'Commit Import' }}
         </button>
-        <button type="button" class="rounded border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="clearImport()">Clear</button>
+        <button type="button" class="app-primary-soft-action rounded border px-3 py-2 text-sm font-bold shadow-sm transition" (click)="clearImport()">Clear</button>
       </div>
     </div>
 
@@ -214,7 +214,7 @@
         </div>
         <div class="flex flex-wrap gap-2">
           <button type="submit" class="app-primary-action rounded px-4 py-2 text-sm font-bold disabled:cursor-wait disabled:opacity-60" [disabled]="saving()">{{ saving() ? 'Saving.' : 'Save' }}</button>
-          <button type="button" class="rounded border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700" (click)="cancelEdit()">Cancel</button>
+          <button type="button" class="app-primary-soft-action rounded border px-4 py-2 text-sm font-bold" (click)="cancelEdit()">Cancel</button>
         </div>
       </div>
 

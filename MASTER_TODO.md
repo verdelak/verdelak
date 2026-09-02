@@ -474,6 +474,8 @@ Also:
 - Dice Games, Admin Users, Blog, Software, and collection browser duplicated edit-form action strips/filter controls now use shared token controls/actions, with clearer in-panel reset labels for D&D Dice Masters, Dragon Dice, Admin Users, Blog, Books, Chessex, Toys, Magazines, and Spookytown forms.
 - Recipes and Shopping List secondary action buttons now use shared token controls/actions, with clearer form-reset labels for recipe source, shopping item, saved default, and pantry forms.
 - Shows browser/report secondary action buttons now use shared token controls/actions across filters, show/season/boxset forms, report exports, and Goals selection helpers.
+- Phone List and Miniatures browser/report secondary action buttons now use shared token controls/actions across headers, filters, imports, and edit forms.
+- Music browser and Metal Archives gap-finder action buttons now use shared token controls/actions across headers, artist creation, edit resets, search/compare actions, and missing-release selection helpers.
 
 ### 21. Identity / Authorization
 

@@ -7,7 +7,7 @@
             <button type="button" class="app-primary-soft-action px-3 py-2 text-sm" [disabled]="loadingImportPreview() || selectedCount() === 0" (click)="previewSelectedImport()">
               {{ loadingImportPreview() ? 'Checking.' : 'Preview selected' }}
             </button>
-            <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="loadingImportPreview() || !batchFilter()" (click)="previewCurrentBatchImport()">
+            <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50" [disabled]="loadingImportPreview() || !batchFilter()" (click)="previewCurrentBatchImport()">
               Preview current batch
             </button>
             <button type="button" class="rounded-md border border-emerald-200 bg-white px-3 py-2 text-sm font-bold text-emerald-700 shadow-sm transition hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="loadingImportCommit() || selectedCount() === 0" (click)="commitSelectedImport()">
@@ -19,10 +19,10 @@
             <button type="button" class="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-bold text-emerald-800 shadow-sm transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="loadingImportCommit() || readyImportRows().length === 0" (click)="commitPreviewReadyRows()">
               Import preview-ready only
             </button>
-            <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="!importPreview()" (click)="downloadImportPreviewCsv()">
+            <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50" [disabled]="!importPreview()" (click)="downloadImportPreviewCsv()">
               Download preview CSV
             </button>
-            <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="!importCommitResult()" (click)="downloadImportResultCsv()">
+            <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50" [disabled]="!importCommitResult()" (click)="downloadImportResultCsv()">
               Download result CSV
             </button>
             <span class="text-sm text-slate-500">Checks approval, supported type, title, code type, duplicate staging codes, and low confidence. Commit currently creates Books, CDs, and DVDs.</span>

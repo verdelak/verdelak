@@ -477,6 +477,7 @@ Also:
 - Phone List and Miniatures browser/report secondary action buttons now use shared token controls/actions across headers, filters, imports, and edit forms.
 - Music browser and Metal Archives gap-finder action buttons now use shared token controls/actions across headers, artist creation, edit resets, search/compare actions, and missing-release selection helpers.
 - Comics and MTG browser/report action buttons now use shared token controls/actions across exports, filters, imports, edit form cancellation/reset, and MTG detail filter helpers.
+- Barcode staging action buttons now use shared token controls/actions across batch refresh/staging, lookup providers, import validation preview downloads, batch/history downloads, and candidate selection.
 
 ### 21. Identity / Authorization
 

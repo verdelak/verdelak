@@ -8,7 +8,7 @@
           Scan, paste, or upload UPC/ISBN values into a review queue before they become collection records.
         </p>
       </div>
-      <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="loadItems()">
+      <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-semibold shadow-sm transition" (click)="loadItems()">
         Refresh
       </button>
     </div>
@@ -122,7 +122,7 @@
           ></textarea>
         </label>
         <div class="flex flex-wrap items-center gap-2">
-          <button type="button" class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-wait disabled:opacity-60" (click)="stageBulk()" [disabled]="loading() || validParsedBulkCodes().length === 0">Stage valid pasted codes</button>
+          <button type="button" class="app-primary-soft-action rounded-md border px-4 py-2 text-sm font-bold shadow-sm transition disabled:cursor-wait disabled:opacity-60" (click)="stageBulk()" [disabled]="loading() || validParsedBulkCodes().length === 0">Stage valid pasted codes</button>
           <span class="text-sm font-semibold text-slate-600">{{ validParsedBulkCodes().length }} valid / {{ parsedBulkCodes().length }} parsed</span>
         </div>
 
@@ -229,7 +229,7 @@
           Batch note
           <input class="app-token-control rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none" type="text" [ngModel]="batchNotes()" (ngModelChange)="batchNotes.set($event)" placeholder="Optional note appended to selected rows">
         </label>
-        <button type="button" class="self-end rounded-md bg-slate-900 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="loading() || selectedCount() === 0" (click)="applyBatchUpdate()">Apply type/status/note</button>
+        <button type="button" class="app-primary-action self-end rounded-md px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50" [disabled]="loading() || selectedCount() === 0" (click)="applyBatchUpdate()">Apply type/status/note</button>
       </div>
 
       @defer (on viewport) {
@@ -299,14 +299,14 @@
       </div>
       <div class="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
         <button type="button" class="app-primary-soft-action px-3 py-2 text-sm" (click)="lookupSelectedAuto()" [disabled]="loading()">Auto lookup</button>
-        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50" (click)="lookupSelectedIsbn()" [disabled]="loading() || !canLookupOpenLibrary()">Open Library</button>
-        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50" (click)="lookupSelectedGoogleBooks()" [disabled]="loading() || !canLookupOpenLibrary()">Google Books</button>
-        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50" (click)="lookupSelectedCrossref()" [disabled]="loading() || !canLookupOpenLibrary()">Crossref</button>
-        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50" (click)="lookupSelectedMusicBrainz()" [disabled]="loading() || !canLookupMusicBrainz()">MusicBrainz</button>
-        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50" (click)="lookupSelectedUpcItemDb()" [disabled]="loading() || !canLookupMusicBrainz()">UPCitemdb</button>
-        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50" (click)="lookupSelectedOpenFoodFacts()" [disabled]="loading() || !canLookupMusicBrainz()">Open Food Facts</button>
-        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50" (click)="lookupSelectedDiscogs()" [disabled]="loading() || !canLookupMusicBrainz()">Discogs</button>
-        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50" (click)="lookupSelectedWikidata()" [disabled]="loading() || (!canLookupOpenLibrary() && !canLookupMusicBrainz())">Wikidata</button>
+        <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50" (click)="lookupSelectedIsbn()" [disabled]="loading() || !canLookupOpenLibrary()">Open Library</button>
+        <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50" (click)="lookupSelectedGoogleBooks()" [disabled]="loading() || !canLookupOpenLibrary()">Google Books</button>
+        <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50" (click)="lookupSelectedCrossref()" [disabled]="loading() || !canLookupOpenLibrary()">Crossref</button>
+        <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50" (click)="lookupSelectedMusicBrainz()" [disabled]="loading() || !canLookupMusicBrainz()">MusicBrainz</button>
+        <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50" (click)="lookupSelectedUpcItemDb()" [disabled]="loading() || !canLookupMusicBrainz()">UPCitemdb</button>
+        <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50" (click)="lookupSelectedOpenFoodFacts()" [disabled]="loading() || !canLookupMusicBrainz()">Open Food Facts</button>
+        <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50" (click)="lookupSelectedDiscogs()" [disabled]="loading() || !canLookupMusicBrainz()">Discogs</button>
+        <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50" (click)="lookupSelectedWikidata()" [disabled]="loading() || (!canLookupOpenLibrary() && !canLookupMusicBrainz())">Wikidata</button>
         <button type="button" class="app-primary-action px-3 py-2 text-sm" (click)="saveSelected()" [disabled]="loading()">Save review</button>
       </div>
     </div>
@@ -733,7 +733,7 @@
                 <dd class="mt-0.5 text-slate-700">{{ candidate.confidence ?? '-' }}</dd>
               </div>
             </dl>
-            <button type="button" class="w-fit rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50" (click)="selectCandidate(candidate)" [disabled]="loading() || candidate.selected">
+            <button type="button" class="app-primary-soft-action w-fit rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50" (click)="selectCandidate(candidate)" [disabled]="loading() || candidate.selected">
               {{ candidate.selected ? 'Selected' : 'Use candidate' }}
             </button>
           </div>

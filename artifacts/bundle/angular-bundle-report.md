@@ -1,6 +1,6 @@
 # Angular Bundle Report
 
-Generated: 2026-09-01 23:00:49 -04:00
+Generated: 2026-09-01 23:06:13 -04:00
 
 Dist root: `C:\Projects\VerdelakCD\Verdelak.Angular\dist\Verdelak\browser`
 
@@ -15,8 +15,8 @@ Lazy review threshold: 125 kB
 | Scope | Size | Status |
 | --- | ---: | --- |
 | Initial JS/CSS | 426.83 kB | OK |
-| Lazy JS/CSS | 2394.02 kB | OK |
-| Total JS/CSS | 2820.85 kB | Informational |
+| Lazy JS/CSS | 2393.55 kB | OK |
+| Total JS/CSS | 2820.38 kB | Informational |
 | Largest initial asset | 175.93 kB | Informational |
 
 ## Largest Assets
@@ -27,7 +27,7 @@ Lazy review threshold: 125 kB
 | `chunk-6NDJXLMC.js` | src/app/features/fish/fish-tank-list/fish-tank-list.ts | js | False | 123.72 kB |
 | `chunk-PMCEX6WK.js` | src/app/features/gardening/gardening-dashboard/gardening-dashboard.ts | js | False | 123.67 kB |
 | `chunk-WHCVPIFK.js` | src/app/features/finance-tracker/finance-dashboard-page/finance-dashboard-page.ts | js | False | 122.75 kB |
-| `chunk-MBIGAEN7.js` | src/app/features/barcode-staging/barcode-staging-workbench/barcode-staging-workbench.ts | js | False | 115.64 kB |
+| `chunk-QF4ZY4XH.js` | src/app/features/barcode-staging/barcode-staging-workbench/barcode-staging-workbench.ts | js | False | 115.45 kB |
 | `styles-OATW6PEO.css` | angular:styles/global:styles | css | True | 110.29 kB |
 | `chunk-QG4KPJIO.js` | src/app/features/goals-plans/goals-plans-browser/goals-plans-browser.ts | js | False | 103.16 kB |
 | `chunk-73F2ZYM7.js` | src/app/features/admin-settings/admin-settings/admin-settings.ts | js | False | 92.56 kB |

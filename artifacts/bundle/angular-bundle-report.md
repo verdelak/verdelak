@@ -1,6 +1,6 @@
 # Angular Bundle Report
 
-Generated: 2026-09-01 23:47:08 -04:00
+Generated: 2026-09-02 13:03:29 -04:00
 
 Dist root: `C:\Projects\VerdelakCD\Verdelak.Angular\dist\Verdelak\browser`
 
@@ -15,8 +15,8 @@ Lazy review threshold: 125 kB
 | Scope | Size | Status |
 | --- | ---: | --- |
 | Initial JS/CSS | 426.83 kB | OK |
-| Lazy JS/CSS | 2393.39 kB | OK |
-| Total JS/CSS | 2820.22 kB | Informational |
+| Lazy JS/CSS | 2392.84 kB | OK |
+| Total JS/CSS | 2819.67 kB | Informational |
 | Largest initial asset | 175.93 kB | Informational |
 
 ## Largest Assets
@@ -37,7 +37,7 @@ Lazy review threshold: 125 kB
 | `chunk-IWHQSVWY.js` | src/app/features/shopping-list/shopping-list-page/shopping-list-page.ts | js | False | 76.7 kB |
 | `chunk-5IBJAPZE.js` | src/app/features/alcohol/alcohol-browser/alcohol-browser.ts | js | False | 66.63 kB |
 | `chunk-4RTEA5U7.js` | src/app/features/software/software-browser/software-browser.ts | js | False | 64.41 kB |
-| `chunk-KFUNLQRN.js` | src/app/features/chores/chore-manager/chore-manager.ts | js | False | 59.38 kB |
+| `chunk-JOAKH4A3.js` | src/app/features/chores/chore-manager/chore-manager.ts | js | False | 58.83 kB |
 | `chunk-OVYO74DZ.js` | src/app/features/shows/shows-browser/shows-browser.ts | js | False | 52.84 kB |
 | `chunk-NZ3V2JTL.js` | src/app/features/tasks/task-dashboard/task-dashboard.ts | js | False | 50.68 kB |
 | `chunk-47NEG4MP.js` | - | js | False | 46.25 kB |

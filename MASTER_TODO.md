@@ -486,6 +486,7 @@ Also:
 - Dino Admin header, preview, filter, taxonomy, and edit-form actions/controls now use shared token styling while keeping destructive actions visually distinct.
 - Dice Games import staging text area and CSV/TXT import actions now use shared token controls/actions.
 - Full Tilt match, knight, pass, and log controls/actions now use shared token controls/actions while preserving scoring and destructive semantic colors.
+- Barcode candidate field-copy and import-validation fix-row helpers now use shared soft-action tokens.
 
 ### 21. Identity / Authorization
 

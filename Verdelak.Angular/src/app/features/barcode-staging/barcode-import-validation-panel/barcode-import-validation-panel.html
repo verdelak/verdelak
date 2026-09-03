@@ -83,7 +83,7 @@
                       <div class="font-black text-slate-950">{{ detail.row.item.suggestedTitle || detail.row.item.normalizedCode }}</div>
                       <div class="mt-0.5 font-mono text-[11px] text-slate-500">{{ detail.row.item.normalizedCode }} / {{ detail.row.item.itemType }} / {{ detail.row.severity }}</div>
                     </div>
-                    <button type="button" class="rounded border border-slate-300 bg-white px-2 py-1 font-bold text-slate-700" (click)="selectValidationRow(detail.row)">Fix row</button>
+                    <button type="button" class="app-primary-soft-action rounded-md border px-2 py-1 font-bold shadow-sm transition" (click)="selectValidationRow(detail.row)">Fix row</button>
                   </div>
                   <div class="mt-2 flex flex-wrap gap-1">
                     <span *ngFor="let message of detail.messages" class="rounded px-2 py-0.5 font-bold ring-1" [ngClass]="message.tone">
@@ -113,7 +113,7 @@
                         <div class="font-black text-slate-950">{{ row.item.suggestedTitle || row.item.normalizedCode }}</div>
                         <div class="mt-0.5 font-mono text-[11px] text-slate-500">{{ row.item.normalizedCode }} / {{ row.item.itemType }}</div>
                       </div>
-                      <button type="button" class="rounded border border-slate-300 bg-white px-2 py-1 font-bold text-slate-700" (click)="selectValidationRow(row)">Fix row</button>
+                      <button type="button" class="app-primary-soft-action rounded-md border px-2 py-1 font-bold shadow-sm transition" (click)="selectValidationRow(row)">Fix row</button>
                     </div>
                     <div class="mt-2 flex flex-wrap gap-1">
                       <span *ngFor="let message of validationMessages(row)" class="rounded px-2 py-0.5 font-bold ring-1" [ngClass]="message.tone">

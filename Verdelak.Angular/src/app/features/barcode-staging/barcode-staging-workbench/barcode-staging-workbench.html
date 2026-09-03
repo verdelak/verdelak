@@ -601,7 +601,7 @@
           </div>
 
           <div class="flex flex-wrap gap-2">
-            <button type="button" class="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-700 disabled:opacity-50" (click)="fillBlankFieldsFromCandidate(row.candidate)" [disabled]="loading()">Fill blanks</button>
+            <button type="button" class="app-primary-soft-action rounded-md border px-2 py-1 text-xs font-bold shadow-sm transition disabled:opacity-50" (click)="fillBlankFieldsFromCandidate(row.candidate)" [disabled]="loading()">Fill blanks</button>
             <button type="button" class="app-primary-soft-action px-2 py-1 text-xs" (click)="selectCandidate(row.candidate)" [disabled]="loading() || row.candidate.selected">
               {{ row.candidate.selected ? 'Selected' : 'Use all fields' }}
             </button>
@@ -647,7 +647,7 @@
               <td class="px-3 py-2 text-slate-700">
                 <div class="grid gap-1">
                   <span>{{ row.candidate.provider }}</span>
-                  <button type="button" class="w-fit rounded border border-slate-300 bg-white px-2 py-0.5 text-[11px] font-bold text-slate-700 disabled:opacity-50" (click)="applyCandidateField(row.candidate, 'provider')" [disabled]="loading()">Use source</button>
+                  <button type="button" class="app-primary-soft-action w-fit rounded-md border px-2 py-0.5 text-[11px] font-bold shadow-sm transition disabled:opacity-50" (click)="applyCandidateField(row.candidate, 'provider')" [disabled]="loading()">Use source</button>
                 </div>
               </td>
               <td class="px-3 py-2 text-slate-700 align-top">{{ candidateConfidenceLabel(row.candidate) }}</td>
@@ -662,14 +662,14 @@
                 <div class="grid gap-1">
                   <span>{{ row.candidate.title || '-' }}</span>
                   <span class="w-fit rounded border px-2 py-0.5 text-[11px] font-bold" [ngClass]="candidateFieldStateTone(row.candidate.title, item.suggestedTitle)">{{ candidateFieldState(row.candidate.title, item.suggestedTitle) }}</span>
-                  <button *ngIf="row.candidate.title" type="button" class="w-fit rounded border border-slate-300 bg-white px-2 py-0.5 text-[11px] font-bold text-slate-700 disabled:opacity-50" (click)="applyCandidateField(row.candidate, 'title')" [disabled]="loading()">Use title</button>
+                  <button *ngIf="row.candidate.title" type="button" class="app-primary-soft-action w-fit rounded-md border px-2 py-0.5 text-[11px] font-bold shadow-sm transition disabled:opacity-50" (click)="applyCandidateField(row.candidate, 'title')" [disabled]="loading()">Use title</button>
                 </div>
               </td>
               <td class="max-w-56 px-3 py-2" [ngClass]="candidateValueTone(row.candidate.creator, item.suggestedCreator)">
                 <div class="grid gap-1">
                   <span>{{ row.candidate.creator || '-' }}</span>
                   <span class="w-fit rounded border px-2 py-0.5 text-[11px] font-bold" [ngClass]="candidateFieldStateTone(row.candidate.creator, item.suggestedCreator)">{{ candidateFieldState(row.candidate.creator, item.suggestedCreator) }}</span>
-                  <button *ngIf="row.candidate.creator" type="button" class="w-fit rounded border border-slate-300 bg-white px-2 py-0.5 text-[11px] font-bold text-slate-700 disabled:opacity-50" (click)="applyCandidateField(row.candidate, 'creator')" [disabled]="loading()">Use creator</button>
+                  <button *ngIf="row.candidate.creator" type="button" class="app-primary-soft-action w-fit rounded-md border px-2 py-0.5 text-[11px] font-bold shadow-sm transition disabled:opacity-50" (click)="applyCandidateField(row.candidate, 'creator')" [disabled]="loading()">Use creator</button>
                 </div>
               </td>
               <td class="max-w-56 px-3 py-2 text-slate-700 align-top">{{ row.candidate.publisher || '-' }}</td>
@@ -677,14 +677,14 @@
                 <div class="grid gap-1">
                   <span>{{ row.candidate.publishDate || '-' }}</span>
                   <span class="w-fit rounded border px-2 py-0.5 text-[11px] font-bold" [ngClass]="candidateFieldStateTone(row.candidate.publishDate, item.suggestedYear)">{{ candidateFieldState(row.candidate.publishDate, item.suggestedYear) }}</span>
-                  <button *ngIf="row.candidate.publishDate" type="button" class="w-fit rounded border border-slate-300 bg-white px-2 py-0.5 text-[11px] font-bold text-slate-700 disabled:opacity-50" (click)="applyCandidateField(row.candidate, 'year')" [disabled]="loading()">Use date</button>
+                  <button *ngIf="row.candidate.publishDate" type="button" class="app-primary-soft-action w-fit rounded-md border px-2 py-0.5 text-[11px] font-bold shadow-sm transition disabled:opacity-50" (click)="applyCandidateField(row.candidate, 'year')" [disabled]="loading()">Use date</button>
                 </div>
               </td>
               <td class="px-3 py-2" [ngClass]="candidateValueTone(row.candidate.format, item.suggestedFormat)">
                 <div class="grid gap-1">
                   <span>{{ row.candidate.format || '-' }}</span>
                   <span class="w-fit rounded border px-2 py-0.5 text-[11px] font-bold" [ngClass]="candidateFieldStateTone(row.candidate.format, item.suggestedFormat)">{{ candidateFieldState(row.candidate.format, item.suggestedFormat) }}</span>
-                  <button *ngIf="row.candidate.format" type="button" class="w-fit rounded border border-slate-300 bg-white px-2 py-0.5 text-[11px] font-bold text-slate-700 disabled:opacity-50" (click)="applyCandidateField(row.candidate, 'format')" [disabled]="loading()">Use format</button>
+                  <button *ngIf="row.candidate.format" type="button" class="app-primary-soft-action w-fit rounded-md border px-2 py-0.5 text-[11px] font-bold shadow-sm transition disabled:opacity-50" (click)="applyCandidateField(row.candidate, 'format')" [disabled]="loading()">Use format</button>
                 </div>
               </td>
               <td class="px-3 py-2 text-slate-700 align-top">{{ candidateExternalLabel(row.candidate) }}</td>
@@ -694,8 +694,8 @@
               </td>
               <td class="px-3 py-2 align-top">
                 <div class="flex flex-wrap gap-1">
-                  <button type="button" class="rounded border border-slate-300 bg-white px-2 py-1 font-bold text-slate-700 disabled:opacity-50" (click)="fillBlankFieldsFromCandidate(row.candidate)" [disabled]="loading()">Fill blanks</button>
-                  <button type="button" class="rounded border border-slate-300 bg-white px-2 py-1 font-bold text-slate-700 disabled:opacity-50" (click)="selectCandidate(row.candidate)" [disabled]="loading() || row.candidate.selected">
+                  <button type="button" class="app-primary-soft-action rounded-md border px-2 py-1 font-bold shadow-sm transition disabled:opacity-50" (click)="fillBlankFieldsFromCandidate(row.candidate)" [disabled]="loading()">Fill blanks</button>
+                  <button type="button" class="app-primary-soft-action rounded-md border px-2 py-1 font-bold shadow-sm transition disabled:opacity-50" (click)="selectCandidate(row.candidate)" [disabled]="loading() || row.candidate.selected">
                     {{ row.candidate.selected ? 'Selected' : 'Use all' }}
                   </button>
                 </div>

@@ -483,6 +483,7 @@ Also:
 - Chore manager report exports, form reset, recurrence templates, activity refresh, and row edit actions now use shared token action styling.
 - Finance tracker report dates, print/export controls, month navigation, refresh, and focused CSV actions now use shared token controls/actions across dashboard, reports, bills, and donations panels.
 - Home dashboard navigation links and Site Map filter clearing now use shared token soft-action styling.
+- Dino Admin header, preview, filter, taxonomy, and edit-form actions/controls now use shared token styling while keeping destructive actions visually distinct.
 
 ### 21. Identity / Authorization
 

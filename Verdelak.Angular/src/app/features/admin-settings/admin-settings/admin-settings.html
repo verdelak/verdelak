@@ -8,19 +8,19 @@
       </div>
     </div>
     <nav class="mt-4 flex flex-wrap gap-2" aria-label="Settings sections">
-      <a class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" href="#main-appearance">Appearance</a>
-      <a class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" href="#external-sites">External</a>
-      <a class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" href="#barcode-lookups">Barcode</a>
-      <a class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" href="#importer-defaults">Importers</a>
-      <a class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" href="#music-folder-import">Music folders</a>
-      <a class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" href="#finance-tracker">Finance</a>
-      <a class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" href="#fish-thresholds">Fish</a>
-      <a class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" href="#shopping-categories">Shopping</a>
-      <a class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" href="#recipe-lookups">Recipes</a>
-      <a class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" href="#alcohol-lookups">Alcohol</a>
-      <a class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" href="#software-platforms">Platforms</a>
-      <a class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" href="#software-locations">Locations</a>
-      <a class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" href="#spookytown-types">Spookytown</a>
+      <a class="app-primary-soft-action rounded-md border px-3 py-1.5 text-sm font-bold shadow-sm transition" href="#main-appearance">Appearance</a>
+      <a class="app-primary-soft-action rounded-md border px-3 py-1.5 text-sm font-bold shadow-sm transition" href="#external-sites">External</a>
+      <a class="app-primary-soft-action rounded-md border px-3 py-1.5 text-sm font-bold shadow-sm transition" href="#barcode-lookups">Barcode</a>
+      <a class="app-primary-soft-action rounded-md border px-3 py-1.5 text-sm font-bold shadow-sm transition" href="#importer-defaults">Importers</a>
+      <a class="app-primary-soft-action rounded-md border px-3 py-1.5 text-sm font-bold shadow-sm transition" href="#music-folder-import">Music folders</a>
+      <a class="app-primary-soft-action rounded-md border px-3 py-1.5 text-sm font-bold shadow-sm transition" href="#finance-tracker">Finance</a>
+      <a class="app-primary-soft-action rounded-md border px-3 py-1.5 text-sm font-bold shadow-sm transition" href="#fish-thresholds">Fish</a>
+      <a class="app-primary-soft-action rounded-md border px-3 py-1.5 text-sm font-bold shadow-sm transition" href="#shopping-categories">Shopping</a>
+      <a class="app-primary-soft-action rounded-md border px-3 py-1.5 text-sm font-bold shadow-sm transition" href="#recipe-lookups">Recipes</a>
+      <a class="app-primary-soft-action rounded-md border px-3 py-1.5 text-sm font-bold shadow-sm transition" href="#alcohol-lookups">Alcohol</a>
+      <a class="app-primary-soft-action rounded-md border px-3 py-1.5 text-sm font-bold shadow-sm transition" href="#software-platforms">Platforms</a>
+      <a class="app-primary-soft-action rounded-md border px-3 py-1.5 text-sm font-bold shadow-sm transition" href="#software-locations">Locations</a>
+      <a class="app-primary-soft-action rounded-md border px-3 py-1.5 text-sm font-bold shadow-sm transition" href="#spookytown-types">Spookytown</a>
     </nav>
   </header>
 
@@ -124,8 +124,8 @@
         <p class="mt-1 text-sm text-slate-600">Shared links used by the External menu for local development and future hosted URLs. Blank active links stay disabled in the menu until a URL is added.</p>
       </div>
       <div class="flex flex-wrap gap-2">
-        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="resetExternalSites()" [disabled]="externalSitesLoading()">Defaults</button>
-        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="exportExternalSitesCsv()" [disabled]="externalSitesLoading()">Export links</button>
+        <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition" (click)="resetExternalSites()" [disabled]="externalSitesLoading()">Defaults</button>
+        <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition" (click)="exportExternalSitesCsv()" [disabled]="externalSitesLoading()">Export links</button>
         <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition" (click)="addExternalSite()" [disabled]="externalSitesLoading()">Add site</button>
         <button type="button" class="app-primary-action rounded-md px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-wait disabled:opacity-60" (click)="saveExternalSites()" [disabled]="externalSitesLoading()">
           {{ externalSitesLoading() ? 'Saving.' : 'Save external sites' }}
@@ -204,7 +204,7 @@
             </td>
             <td class="px-3 py-3 align-top">
               <div class="flex flex-wrap gap-2">
-                <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50" (click)="openExternalSite(row.site)" [disabled]="!externalSiteResolvedUrl(row.site)">Open</button>
+                <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition disabled:opacity-50" (click)="openExternalSite(row.site)" [disabled]="!externalSiteResolvedUrl(row.site)">Open</button>
                 <button type="button" class="rounded-md border border-red-200 bg-white px-3 py-2 text-sm font-bold text-red-700 shadow-sm transition hover:bg-red-50" (click)="removeExternalSite(row.index)">Remove</button>
               </div>
             </td>
@@ -222,7 +222,7 @@
         <p class="mt-2 rounded-md bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700">Auto order: {{ barcodeProviderOrderPreview() }}</p>
       </div>
       <div class="flex flex-wrap gap-2">
-        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="resetBarcodeLookups()" [disabled]="barcodeLookupsLoading()">Defaults</button>
+        <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition" (click)="resetBarcodeLookups()" [disabled]="barcodeLookupsLoading()">Defaults</button>
         <button type="button" class="app-primary-action rounded-md px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-wait disabled:opacity-60" (click)="saveBarcodeLookups()" [disabled]="barcodeLookupsLoading()">
           {{ barcodeLookupsLoading() ? 'Saving.' : 'Save barcode lookups' }}
         </button>
@@ -247,8 +247,8 @@
             <td class="whitespace-nowrap px-3 py-3 font-semibold text-slate-900">{{ provider.provider }}</td>
             <td class="px-3 py-3">
               <div class="flex gap-1">
-                <button type="button" class="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-700 disabled:cursor-not-allowed disabled:opacity-40" (click)="moveBarcodeProvider(provider.provider, -1)" [disabled]="barcodeLookupsLoading() || first" [attr.aria-label]="'Move ' + provider.provider + ' up'">Up</button>
-                <button type="button" class="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-700 disabled:cursor-not-allowed disabled:opacity-40" (click)="moveBarcodeProvider(provider.provider, 1)" [disabled]="barcodeLookupsLoading() || last" [attr.aria-label]="'Move ' + provider.provider + ' down'">Down</button>
+                <button type="button" class="app-primary-soft-action rounded-md border px-2 py-1 text-xs font-bold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-40" (click)="moveBarcodeProvider(provider.provider, -1)" [disabled]="barcodeLookupsLoading() || first" [attr.aria-label]="'Move ' + provider.provider + ' up'">Up</button>
+                <button type="button" class="app-primary-soft-action rounded-md border px-2 py-1 text-xs font-bold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-40" (click)="moveBarcodeProvider(provider.provider, 1)" [disabled]="barcodeLookupsLoading() || last" [attr.aria-label]="'Move ' + provider.provider + ' down'">Down</button>
               </div>
             </td>
             <td class="px-3 py-3">
@@ -267,7 +267,7 @@
         <p class="mt-1 text-sm text-slate-600">Shared defaults used by the external imports workbench for Steam and BoardGameGeek staging.</p>
       </div>
       <div class="flex flex-wrap gap-2">
-        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="resetImporterSettings()" [disabled]="importerSettingsLoading()">Defaults</button>
+        <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition" (click)="resetImporterSettings()" [disabled]="importerSettingsLoading()">Defaults</button>
         <button type="button" class="app-primary-action rounded-md px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-wait disabled:opacity-60" (click)="saveImporterSettings()" [disabled]="importerSettingsLoading()">
           {{ importerSettingsLoading() ? 'Saving.' : 'Save importer defaults' }}
         </button>
@@ -324,10 +324,10 @@
           <span class="text-xs font-semibold text-slate-500">Saved with importer defaults; preview and import use the current value.</span>
         </label>
         <div class="flex flex-wrap gap-2">
-          <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-wait disabled:opacity-60" (click)="previewMusicFolderImport()" [disabled]="musicFolderImportLoading()">
+          <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-wait disabled:opacity-60" (click)="previewMusicFolderImport()" [disabled]="musicFolderImportLoading()">
             {{ musicFolderImportLoading() ? 'Scanning.' : 'Preview CD folders' }}
           </button>
-          <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50" (click)="exportMusicFolderImportCsv()" [disabled]="musicFolderImportLoading() || !musicFolderImportResult()">
+          <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition disabled:opacity-50" (click)="exportMusicFolderImportCsv()" [disabled]="musicFolderImportLoading() || !musicFolderImportResult()">
             Export comparison
           </button>
           <button type="button" class="app-primary-action rounded-md px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-wait disabled:opacity-60" (click)="applyMusicFolderImport()" [disabled]="musicFolderImportLoading()">
@@ -416,7 +416,7 @@
         <p class="mt-1 text-sm text-slate-600">Shared categories, year-close date, and default report period used by Finance Tracker.</p>
       </div>
       <div class="flex flex-wrap gap-2">
-        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="resetFinanceSettings()" [disabled]="financeSettingsLoading()">Defaults</button>
+        <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition" (click)="resetFinanceSettings()" [disabled]="financeSettingsLoading()">Defaults</button>
         <button type="button" class="app-primary-action rounded-md px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-wait disabled:opacity-60" (click)="saveFinanceSettings()" [disabled]="financeSettingsLoading()">
           {{ financeSettingsLoading() ? 'Saving.' : 'Save finance settings' }}
         </button>
@@ -480,7 +480,7 @@
         <p class="mt-1 text-sm text-slate-600">Shared defaults used by the Fish reports page.</p>
       </div>
       <div class="flex flex-wrap gap-2">
-        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="resetFishThresholds()" [disabled]="fishThresholdsLoading()">Defaults</button>
+        <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition" (click)="resetFishThresholds()" [disabled]="fishThresholdsLoading()">Defaults</button>
         <button type="button" class="app-primary-action rounded-md px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-wait disabled:opacity-60" (click)="saveFishThresholds()" [disabled]="fishThresholdsLoading()">
           {{ fishThresholdsLoading() ? 'Saving.' : 'Save thresholds' }}
         </button>
@@ -518,7 +518,7 @@
         <p class="mt-1 text-sm text-slate-600">Optional category suggestions used by the Shopping List page.</p>
       </div>
       <div class="flex flex-wrap gap-2">
-        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="resetShoppingCategories()" [disabled]="shoppingCategoriesLoading()">Defaults</button>
+        <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition" (click)="resetShoppingCategories()" [disabled]="shoppingCategoriesLoading()">Defaults</button>
         <button type="button" class="app-primary-action rounded-md px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-wait disabled:opacity-60" (click)="saveShoppingCategories()" [disabled]="shoppingCategoriesLoading()">
           {{ shoppingCategoriesLoading() ? 'Saving.' : 'Save categories' }}
         </button>
@@ -553,7 +553,7 @@
         <p class="mt-1 text-sm text-slate-600">Shared suggestions for recipe categories, cuisines, and food tags.</p>
       </div>
       <div class="flex flex-wrap gap-2">
-        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="resetRecipeLookups()" [disabled]="recipeLookupsLoading()">Defaults</button>
+        <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition" (click)="resetRecipeLookups()" [disabled]="recipeLookupsLoading()">Defaults</button>
         <button type="button" class="app-primary-action rounded-md px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-wait disabled:opacity-60" (click)="saveRecipeLookups()" [disabled]="recipeLookupsLoading()">
           {{ recipeLookupsLoading() ? 'Saving.' : 'Save recipe lookups' }}
         </button>
@@ -598,7 +598,7 @@
         <p class="mt-1 text-sm text-slate-600">Shared categories and storage locations used by the Alcohol inventory page.</p>
       </div>
       <div class="flex flex-wrap gap-2">
-        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="resetAlcoholLookups()" [disabled]="alcoholLookupsLoading()">Defaults</button>
+        <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition" (click)="resetAlcoholLookups()" [disabled]="alcoholLookupsLoading()">Defaults</button>
         <button type="button" class="app-primary-action rounded-md px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-wait disabled:opacity-60" (click)="saveAlcoholLookups()" [disabled]="alcoholLookupsLoading()">
           {{ alcoholLookupsLoading() ? 'Saving.' : 'Save alcohol lookups' }}
         </button>
@@ -672,7 +672,7 @@
 
         <div class="flex flex-col gap-2 sm:flex-row">
           <button type="submit" class="app-primary-action rounded-md px-4 py-2 text-sm font-bold shadow-sm transition disabled:cursor-wait disabled:opacity-60" [disabled]="softwarePlatformsLoading()">{{ softwarePlatformForm().id ? 'Save Platform' : 'Add Platform' }}</button>
-          <button type="button" class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="startNewSoftwarePlatform()">Clear</button>
+          <button type="button" class="app-primary-soft-action rounded-md border px-4 py-2 text-sm font-bold shadow-sm transition" (click)="startNewSoftwarePlatform()">Clear</button>
           <button type="button" class="rounded-md border border-red-200 bg-white px-4 py-2 text-sm font-bold text-red-700 shadow-sm transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50" (click)="deleteSelectedSoftwarePlatform()" [disabled]="softwarePlatformsLoading() || !softwarePlatformForm().id">Delete</button>
         </div>
       </form>
@@ -718,7 +718,7 @@
 
         <div class="flex flex-col gap-2 sm:flex-row">
           <button type="submit" class="app-primary-action rounded-md px-4 py-2 text-sm font-bold shadow-sm transition disabled:cursor-wait disabled:opacity-60" [disabled]="softwareLocationsLoading()">{{ softwareLocationForm().id ? 'Save Location' : 'Add Location' }}</button>
-          <button type="button" class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="startNewSoftwareLocation()">Clear</button>
+          <button type="button" class="app-primary-soft-action rounded-md border px-4 py-2 text-sm font-bold shadow-sm transition" (click)="startNewSoftwareLocation()">Clear</button>
           <button type="button" class="rounded-md border border-red-200 bg-white px-4 py-2 text-sm font-bold text-red-700 shadow-sm transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50" (click)="deleteSelectedSoftwareLocation()" [disabled]="softwareLocationsLoading() || !softwareLocationForm().id">Delete</button>
         </div>
       </form>
@@ -729,7 +729,7 @@
     <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
       <div class="flex items-center justify-between gap-3">
         <h2 class="text-lg font-bold text-slate-950">Spookytown Types</h2>
-        <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="startNewSpookytownType()">New type</button>
+        <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition" (click)="startNewSpookytownType()">New type</button>
       </div>
 
       <div class="mt-4 overflow-x-auto rounded-lg border border-slate-200">
@@ -769,7 +769,7 @@
 
         <div class="flex flex-col gap-2 sm:flex-row">
           <button type="submit" class="app-primary-action rounded-md px-4 py-2 text-sm font-bold shadow-sm transition disabled:cursor-wait disabled:opacity-60" [disabled]="loading()">Save</button>
-          <button type="button" class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="startNewSpookytownType()">Clear</button>
+          <button type="button" class="app-primary-soft-action rounded-md border px-4 py-2 text-sm font-bold shadow-sm transition" (click)="startNewSpookytownType()">Clear</button>
           <button type="button" class="rounded-md border border-red-200 bg-white px-4 py-2 text-sm font-bold text-red-700 shadow-sm transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50" (click)="deleteSelectedSpookytownType()" [disabled]="loading() || !form().originalId">Delete</button>
         </div>
       </form>

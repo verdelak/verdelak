@@ -5,7 +5,7 @@
       <p class="mt-1 text-sm text-slate-600">{{ description }}</p>
     </div>
     <div class="flex flex-wrap gap-2">
-      <button type="button" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50" (click)="reset.emit()" [disabled]="loading">Defaults</button>
+      <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm transition" (click)="reset.emit()" [disabled]="loading">Defaults</button>
       <button type="button" class="app-primary-action rounded-md px-3 py-2 text-sm font-bold shadow-sm transition disabled:cursor-wait disabled:opacity-60" (click)="save.emit()" [disabled]="loading">
         {{ loading ? loadingLabel : saveLabel }}
       </button>

@@ -7,7 +7,7 @@
         <p class="mt-1 text-sm font-semibold text-slate-600">{{ matchName() }}</p>
       </div>
       <div class="flex flex-wrap gap-2">
-        <a class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100" [href]="rulesUrl" target="_blank" rel="noopener">Official PDF</a>
+        <a class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-semibold shadow-sm transition" [href]="rulesUrl" target="_blank" rel="noopener">Official PDF</a>
         <button class="rounded-md border border-red-300 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-50" type="button" (click)="resetMatch()">Reset</button>
       </div>
     </div>
@@ -32,15 +32,15 @@
     <div class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_140px_140px_minmax(0,1fr)]">
       <label class="grid gap-1 text-sm font-semibold text-slate-700">
         Match
-        <input class="rounded-md border border-slate-300 px-3 py-2 text-sm" [ngModel]="matchName()" (ngModelChange)="setMatchName($event)">
+        <input class="app-token-control rounded-md border px-3 py-2 text-sm shadow-sm outline-none transition" [ngModel]="matchName()" (ngModelChange)="setMatchName($event)">
       </label>
       <label class="grid gap-1 text-sm font-semibold text-slate-700">
         Target
-        <input class="rounded-md border border-slate-300 px-3 py-2 text-sm" type="number" min="0" [ngModel]="targetScore()" (ngModelChange)="setTargetScore($event)">
+        <input class="app-token-control rounded-md border px-3 py-2 text-sm shadow-sm outline-none transition" type="number" min="0" [ngModel]="targetScore()" (ngModelChange)="setTargetScore($event)">
       </label>
       <label class="grid gap-1 text-sm font-semibold text-slate-700">
         Max Passes
-        <input class="rounded-md border border-slate-300 px-3 py-2 text-sm" type="number" min="0" [ngModel]="maxPasses()" (ngModelChange)="setMaxPasses($event)">
+        <input class="app-token-control rounded-md border px-3 py-2 text-sm shadow-sm outline-none transition" type="number" min="0" [ngModel]="maxPasses()" (ngModelChange)="setMaxPasses($event)">
       </label>
       <div class="rounded-md bg-slate-100 px-3 py-2">
         <p class="text-xs font-bold uppercase text-slate-500">Match Status</p>
@@ -52,7 +52,7 @@
   <section class="grid gap-4 xl:grid-cols-2">
     <article *ngFor="let player of players()" class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
       <div class="flex flex-wrap items-center justify-between gap-3">
-        <input class="min-w-48 rounded-md border border-slate-300 px-3 py-2 text-lg font-bold text-slate-950" [ngModel]="player.name" (ngModelChange)="setPlayerName(player.id, $event)">
+        <input class="app-token-control min-w-48 rounded-md border px-3 py-2 text-lg font-bold shadow-sm outline-none transition" [ngModel]="player.name" (ngModelChange)="setPlayerName(player.id, $event)">
         <div class="rounded-md bg-slate-100 px-3 py-2 text-sm font-bold text-slate-800">{{ playerScore(player) }} points</div>
       </div>
 
@@ -63,37 +63,37 @@
               <input type="radio" [name]="'selectedKnight' + player.id" [checked]="player.selectedKnightId === knight.id" (change)="selectKnight(player.id, knight.id)">
               Active
             </label>
-            <button class="rounded-md border border-slate-300 px-2 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100" type="button" (click)="removeKnight(player.id, knight.id)">Remove</button>
+            <button class="rounded-md border border-red-300 px-2 py-1 text-xs font-semibold text-red-700 transition hover:bg-red-50" type="button" (click)="removeKnight(player.id, knight.id)">Remove</button>
           </div>
 
           <div class="mt-3 grid gap-2 sm:grid-cols-2">
-            <input class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold" placeholder="Knight" [ngModel]="knight.name" (ngModelChange)="setKnightField(player.id, knight.id, 'name', $event)">
-            <input class="rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="Virtue" [ngModel]="knight.virtue" (ngModelChange)="setKnightField(player.id, knight.id, 'virtue', $event)">
+            <input class="app-token-control rounded-md border px-3 py-2 text-sm font-semibold shadow-sm outline-none transition" placeholder="Knight" [ngModel]="knight.name" (ngModelChange)="setKnightField(player.id, knight.id, 'name', $event)">
+            <input class="app-token-control rounded-md border px-3 py-2 text-sm shadow-sm outline-none transition" placeholder="Virtue" [ngModel]="knight.virtue" (ngModelChange)="setKnightField(player.id, knight.id, 'virtue', $event)">
           </div>
 
           <div class="mt-3 grid gap-2 sm:grid-cols-3">
             <div class="rounded-md bg-slate-100 p-2">
               <p class="text-xs font-bold uppercase text-slate-500">Favours</p>
               <div class="mt-1 flex items-center justify-between gap-2">
-                <button class="h-8 w-8 rounded-md border border-slate-300 font-bold" type="button" (click)="adjustKnight(player.id, knight.id, 'favours', -1)">-</button>
+                <button class="app-primary-soft-action h-8 w-8 rounded-md border font-bold transition" type="button" (click)="adjustKnight(player.id, knight.id, 'favours', -1)">-</button>
                 <span class="text-lg font-bold">{{ knight.favours }}</span>
-                <button class="h-8 w-8 rounded-md border border-slate-300 font-bold" type="button" (click)="adjustKnight(player.id, knight.id, 'favours', 1)">+</button>
+                <button class="app-primary-soft-action h-8 w-8 rounded-md border font-bold transition" type="button" (click)="adjustKnight(player.id, knight.id, 'favours', 1)">+</button>
               </div>
             </div>
             <div class="rounded-md bg-slate-100 p-2">
               <p class="text-xs font-bold uppercase text-slate-500">Score</p>
               <div class="mt-1 flex items-center justify-between gap-2">
-                <button class="h-8 w-8 rounded-md border border-slate-300 font-bold" type="button" (click)="adjustKnight(player.id, knight.id, 'score', -1)">-</button>
+                <button class="app-primary-soft-action h-8 w-8 rounded-md border font-bold transition" type="button" (click)="adjustKnight(player.id, knight.id, 'score', -1)">-</button>
                 <span class="text-lg font-bold">{{ knight.score }}</span>
-                <button class="h-8 w-8 rounded-md border border-slate-300 font-bold" type="button" (click)="adjustKnight(player.id, knight.id, 'score', 1)">+</button>
+                <button class="app-primary-soft-action h-8 w-8 rounded-md border font-bold transition" type="button" (click)="adjustKnight(player.id, knight.id, 'score', 1)">+</button>
               </div>
             </div>
             <div class="rounded-md bg-slate-100 p-2">
               <p class="text-xs font-bold uppercase text-slate-500">Injuries</p>
               <div class="mt-1 flex items-center justify-between gap-2">
-                <button class="h-8 w-8 rounded-md border border-slate-300 font-bold" type="button" (click)="adjustKnight(player.id, knight.id, 'injuries', -1)">-</button>
+                <button class="app-primary-soft-action h-8 w-8 rounded-md border font-bold transition" type="button" (click)="adjustKnight(player.id, knight.id, 'injuries', -1)">-</button>
                 <span class="text-lg font-bold">{{ knight.injuries }}</span>
-                <button class="h-8 w-8 rounded-md border border-slate-300 font-bold" type="button" (click)="adjustKnight(player.id, knight.id, 'injuries', 1)">+</button>
+                <button class="app-primary-soft-action h-8 w-8 rounded-md border font-bold transition" type="button" (click)="adjustKnight(player.id, knight.id, 'injuries', 1)">+</button>
               </div>
             </div>
           </div>
@@ -113,9 +113,9 @@
             <p class="mt-1 text-sm text-slate-600">{{ selectedKnight(playerOne()).name }} vs {{ selectedKnight(playerTwo()).name }}</p>
           </div>
           <div class="flex flex-wrap gap-2">
-            <button class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold" type="button" (click)="clearPassEntry()">Clear</button>
+            <button class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-semibold shadow-sm transition" type="button" (click)="clearPassEntry()">Clear</button>
             <button class="rounded-md border border-amber-300 px-3 py-2 text-sm font-semibold text-amber-800 hover:bg-amber-50" type="button" (click)="undoLastGuidedPass()" [disabled]="!passResults().length">Undo Last</button>
-            <button class="rounded-md bg-slate-900 px-3 py-2 text-sm font-semibold text-white" type="button" (click)="recordGuidedPass()">Record Pass</button>
+            <button class="app-primary-action rounded-md px-3 py-2 text-sm font-semibold shadow-sm transition" type="button" (click)="recordGuidedPass()">Record Pass</button>
           </div>
         </div>
 
@@ -124,9 +124,9 @@
             <p class="text-sm font-bold text-slate-950">{{ playerOne().name }}</p>
             <p class="text-xs font-semibold uppercase text-slate-500">{{ selectedKnight(playerOne()).name }}</p>
             <div class="mt-3 flex items-center gap-2">
-              <button class="h-9 w-9 rounded-md border border-slate-300 font-bold" type="button" (click)="adjustRoll(1, -1)">-</button>
-              <input class="h-9 w-24 rounded-md border border-slate-300 px-3 text-center text-sm font-bold" type="number" min="0" [ngModel]="playerOneRoll()" (ngModelChange)="setRoll(1, $event)">
-              <button class="h-9 w-9 rounded-md border border-slate-300 font-bold" type="button" (click)="adjustRoll(1, 1)">+</button>
+              <button class="app-primary-soft-action h-9 w-9 rounded-md border font-bold transition" type="button" (click)="adjustRoll(1, -1)">-</button>
+              <input class="app-token-control h-9 w-24 rounded-md border px-3 text-center text-sm font-bold shadow-sm outline-none transition" type="number" min="0" [ngModel]="playerOneRoll()" (ngModelChange)="setRoll(1, $event)">
+              <button class="app-primary-soft-action h-9 w-9 rounded-md border font-bold transition" type="button" (click)="adjustRoll(1, 1)">+</button>
               <button class="app-primary-soft-action h-9 rounded-md border px-3 text-sm font-semibold" type="button" (click)="rollDie(1)">D6</button>
             </div>
           </div>
@@ -135,9 +135,9 @@
             <p class="text-sm font-bold text-slate-950">{{ playerTwo().name }}</p>
             <p class="text-xs font-semibold uppercase text-slate-500">{{ selectedKnight(playerTwo()).name }}</p>
             <div class="mt-3 flex items-center gap-2">
-              <button class="h-9 w-9 rounded-md border border-slate-300 font-bold" type="button" (click)="adjustRoll(2, -1)">-</button>
-              <input class="h-9 w-24 rounded-md border border-slate-300 px-3 text-center text-sm font-bold" type="number" min="0" [ngModel]="playerTwoRoll()" (ngModelChange)="setRoll(2, $event)">
-              <button class="h-9 w-9 rounded-md border border-slate-300 font-bold" type="button" (click)="adjustRoll(2, 1)">+</button>
+              <button class="app-primary-soft-action h-9 w-9 rounded-md border font-bold transition" type="button" (click)="adjustRoll(2, -1)">-</button>
+              <input class="app-token-control h-9 w-24 rounded-md border px-3 text-center text-sm font-bold shadow-sm outline-none transition" type="number" min="0" [ngModel]="playerTwoRoll()" (ngModelChange)="setRoll(2, $event)">
+              <button class="app-primary-soft-action h-9 w-9 rounded-md border font-bold transition" type="button" (click)="adjustRoll(2, 1)">+</button>
               <button class="app-primary-soft-action h-9 rounded-md border px-3 text-sm font-semibold" type="button" (click)="rollDie(2)">D6</button>
             </div>
           </div>
@@ -146,19 +146,19 @@
         <div class="mt-4 grid gap-3 lg:grid-cols-[1fr_120px]">
           <label class="grid gap-1 text-sm font-semibold text-slate-700">
             Outcome
-            <select class="rounded-md border border-slate-300 px-3 py-2 text-sm" [ngModel]="passOutcome()" (ngModelChange)="setPassOutcome($event)">
+            <select class="app-token-control rounded-md border px-3 py-2 text-sm shadow-sm outline-none transition" [ngModel]="passOutcome()" (ngModelChange)="setPassOutcome($event)">
               <option *ngFor="let outcome of passOutcomes" [value]="outcome">{{ outcome }}</option>
             </select>
           </label>
           <label class="grid gap-1 text-sm font-semibold text-slate-700">
             Points
-            <input class="rounded-md border border-slate-300 px-3 py-2 text-sm" type="number" min="0" [ngModel]="passPoints()" (ngModelChange)="setPassPoints($event)">
+            <input class="app-token-control rounded-md border px-3 py-2 text-sm shadow-sm outline-none transition" type="number" min="0" [ngModel]="passPoints()" (ngModelChange)="setPassPoints($event)">
           </label>
         </div>
 
         <div class="mt-3 grid gap-2">
           <p class="rounded-md bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-900">{{ passSummary() }}</p>
-          <textarea class="min-h-20 rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="Pass notes" [ngModel]="passNotes()" (ngModelChange)="passNotes.set($event)"></textarea>
+          <textarea class="app-token-control min-h-20 rounded-md border px-3 py-2 text-sm shadow-sm outline-none transition" placeholder="Pass notes" [ngModel]="passNotes()" (ngModelChange)="passNotes.set($event)"></textarea>
         </div>
       </section>
 
@@ -166,8 +166,8 @@
       <div class="flex flex-wrap items-center justify-between gap-3">
         <h2 class="text-lg font-bold text-slate-950">Pass Tracker</h2>
         <div class="flex flex-wrap gap-2">
-          <button class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold" type="button" (click)="toggleActivePlayer()">Swap Active</button>
-          <button class="rounded-md bg-slate-900 px-3 py-2 text-sm font-semibold text-white" type="button" (click)="nextPass()">Next Pass</button>
+          <button class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-semibold shadow-sm transition" type="button" (click)="toggleActivePlayer()">Swap Active</button>
+          <button class="app-primary-action rounded-md px-3 py-2 text-sm font-semibold shadow-sm transition" type="button" (click)="nextPass()">Next Pass</button>
         </div>
       </div>
 
@@ -177,12 +177,12 @@
         <button class="app-primary-soft-action rounded-md border px-3 py-3 text-sm font-semibold" type="button" (click)="recordResult('unhorsed the opponent', 2)">Unhorsed</button>
         <button class="rounded-md border border-amber-300 px-3 py-3 text-sm font-semibold text-amber-800 hover:bg-amber-50" type="button" (click)="spendFavour()">Spend Favour</button>
         <button class="rounded-md border border-red-300 px-3 py-3 text-sm font-semibold text-red-800 hover:bg-red-50" type="button" (click)="addInjury()">Add Injury</button>
-        <button class="rounded-md border border-slate-300 px-3 py-3 text-sm font-semibold text-slate-800 hover:bg-slate-50" type="button" (click)="recordResult('no telling blow')">No Score</button>
+        <button class="app-primary-soft-action rounded-md border px-3 py-3 text-sm font-semibold shadow-sm transition" type="button" (click)="recordResult('no telling blow')">No Score</button>
       </div>
 
       <div class="mt-4 grid gap-2 sm:grid-cols-[1fr_auto]">
-        <input class="rounded-md border border-slate-300 px-3 py-2 text-sm" placeholder="Match note" [ngModel]="logText()" (ngModelChange)="logText.set($event)" (keyup.enter)="addCustomLog()">
-        <button class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold" type="button" (click)="addCustomLog()">Add Note</button>
+        <input class="app-token-control rounded-md border px-3 py-2 text-sm shadow-sm outline-none transition" placeholder="Match note" [ngModel]="logText()" (ngModelChange)="logText.set($event)" (keyup.enter)="addCustomLog()">
+        <button class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-semibold shadow-sm transition" type="button" (click)="addCustomLog()">Add Note</button>
       </div>
       </section>
 

@@ -1,6 +1,6 @@
 # Angular Bundle Report
 
-Generated: 2026-09-03 19:21:34 -04:00
+Generated: 2026-09-03 19:33:46 -04:00
 
 Dist root: `C:\Projects\VerdelakCD\Verdelak.Angular\dist\Verdelak\browser`
 
@@ -15,8 +15,8 @@ Lazy review threshold: 125 kB
 | Scope | Size | Status |
 | --- | ---: | --- |
 | Initial JS/CSS | 426.83 kB | OK |
-| Lazy JS/CSS | 2393.31 kB | OK |
-| Total JS/CSS | 2820.14 kB | Informational |
+| Lazy JS/CSS | 2393.34 kB | OK |
+| Total JS/CSS | 2820.17 kB | Informational |
 | Largest initial asset | 175.93 kB | Informational |
 
 ## Largest Assets
@@ -30,7 +30,7 @@ Lazy review threshold: 125 kB
 | `chunk-TM3KZIYR.js` | src/app/features/barcode-staging/barcode-staging-workbench/barcode-staging-workbench.ts | js | False | 115.48 kB |
 | `styles-OATW6PEO.css` | angular:styles/global:styles | css | True | 110.29 kB |
 | `chunk-QG4KPJIO.js` | src/app/features/goals-plans/goals-plans-browser/goals-plans-browser.ts | js | False | 103.16 kB |
-| `chunk-YIQSXF22.js` | src/app/features/admin-settings/admin-settings/admin-settings.ts | js | False | 91.46 kB |
+| `chunk-BQOUGT5C.js` | src/app/features/admin-settings/admin-settings/admin-settings.ts | js | False | 91.49 kB |
 | `chunk-KUK6MPPU.js` | - | js | True | 87.48 kB |
 | `chunk-IWDYZ6BY.js` | src/app/features/mtg/mtg-browser/mtg-browser.ts | js | False | 87.02 kB |
 | `chunk-P65B4IVZ.js` | src/app/features/recipes/recipe-browser/recipe-browser.ts | js | False | 77.84 kB |

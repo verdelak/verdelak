@@ -488,6 +488,7 @@ Also:
 - Full Tilt match, knight, pass, and log controls/actions now use shared token controls/actions while preserving scoring and destructive semantic colors.
 - Barcode candidate field-copy and import-validation fix-row helpers now use shared soft-action tokens.
 - Admin Settings navigation, defaults, external-link, provider-order, music-folder import, and lookup editor utility actions now use shared soft-action tokens.
+- Admin Settings external-site, barcode-provider, Steam, and BoardGameGeek checkboxes now use the shared checkbox token.
 
 ### 21. Identity / Authorization
 

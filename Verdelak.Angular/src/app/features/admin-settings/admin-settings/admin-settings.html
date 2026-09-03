@@ -174,7 +174,7 @@
         <tbody class="divide-y divide-slate-100 bg-white">
           <tr *ngFor="let row of sortedExternalSiteRows()">
             <td class="px-3 py-3 align-top">
-              <input type="checkbox" [ngModel]="row.site.isActive" (ngModelChange)="setExternalSiteField(row.index, 'isActive', $event)" [attr.aria-label]="'Enable ' + row.site.label" />
+              <input class="app-token-checkbox h-4 w-4" type="checkbox" [ngModel]="row.site.isActive" (ngModelChange)="setExternalSiteField(row.index, 'isActive', $event)" [attr.aria-label]="'Enable ' + row.site.label" />
             </td>
             <td class="px-3 py-3 align-top">
               <input class="app-token-control w-36 rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" type="text" maxlength="50" [ngModel]="row.site.key" (ngModelChange)="setExternalSiteField(row.index, 'key', $event)" />
@@ -200,7 +200,7 @@
               <input class="app-token-control w-24 rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" type="number" min="1" step="1" [ngModel]="row.site.sortOrder" (ngModelChange)="setExternalSiteField(row.index, 'sortOrder', $event)" />
             </td>
             <td class="px-3 py-3 align-top">
-              <input type="checkbox" [ngModel]="row.site.openInNewTab" (ngModelChange)="setExternalSiteField(row.index, 'openInNewTab', $event)" [attr.aria-label]="'Open ' + row.site.label + ' in a new tab'" />
+              <input class="app-token-checkbox h-4 w-4" type="checkbox" [ngModel]="row.site.openInNewTab" (ngModelChange)="setExternalSiteField(row.index, 'openInNewTab', $event)" [attr.aria-label]="'Open ' + row.site.label + ' in a new tab'" />
             </td>
             <td class="px-3 py-3 align-top">
               <div class="flex flex-wrap gap-2">
@@ -242,7 +242,7 @@
         <tbody class="divide-y divide-slate-100 bg-white">
           <tr *ngFor="let provider of barcodeProviders(); let first = first; let last = last">
             <td class="px-3 py-3">
-              <input type="checkbox" [ngModel]="provider.enabled" (ngModelChange)="setBarcodeProviderEnabled(provider.provider, $event)" [attr.aria-label]="'Enable ' + provider.provider" />
+              <input class="app-token-checkbox h-4 w-4" type="checkbox" [ngModel]="provider.enabled" (ngModelChange)="setBarcodeProviderEnabled(provider.provider, $event)" [attr.aria-label]="'Enable ' + provider.provider" />
             </td>
             <td class="whitespace-nowrap px-3 py-3 font-semibold text-slate-900">{{ provider.provider }}</td>
             <td class="px-3 py-3">
@@ -286,11 +286,11 @@
           <input class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-normal shadow-sm outline-none transition" [ngModel]="steamImporterSettings().steamId" (ngModelChange)="setSteamImporterSetting('steamId', $event)" placeholder="7656119..." />
         </label>
         <label class="flex items-center gap-2 text-sm font-semibold text-slate-700">
-          <input type="checkbox" [ngModel]="steamImporterSettings().includePlayedFreeGames" (ngModelChange)="setSteamImporterSetting('includePlayedFreeGames', $event)" />
+          <input class="app-token-checkbox h-4 w-4" type="checkbox" [ngModel]="steamImporterSettings().includePlayedFreeGames" (ngModelChange)="setSteamImporterSetting('includePlayedFreeGames', $event)" />
           Include played free games
         </label>
         <label class="flex items-center gap-2 text-sm font-semibold text-slate-700">
-          <input type="checkbox" [ngModel]="steamImporterSettings().includeAppInfo" (ngModelChange)="setSteamImporterSetting('includeAppInfo', $event)" />
+          <input class="app-token-checkbox h-4 w-4" type="checkbox" [ngModel]="steamImporterSettings().includeAppInfo" (ngModelChange)="setSteamImporterSetting('includeAppInfo', $event)" />
           Include app details
         </label>
       </article>
@@ -302,15 +302,15 @@
           <input class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-normal shadow-sm outline-none transition" [ngModel]="boardGameGeekImporterSettings().username" (ngModelChange)="setBoardGameGeekImporterSetting('username', $event)" placeholder="BoardGameGeek username" />
         </label>
         <label class="flex items-center gap-2 text-sm font-semibold text-slate-700">
-          <input type="checkbox" [ngModel]="boardGameGeekImporterSettings().includeOwned" (ngModelChange)="setBoardGameGeekImporterSetting('includeOwned', $event)" />
+          <input class="app-token-checkbox h-4 w-4" type="checkbox" [ngModel]="boardGameGeekImporterSettings().includeOwned" (ngModelChange)="setBoardGameGeekImporterSetting('includeOwned', $event)" />
           Include owned games
         </label>
         <label class="flex items-center gap-2 text-sm font-semibold text-slate-700">
-          <input type="checkbox" [ngModel]="boardGameGeekImporterSettings().includeWishlist" (ngModelChange)="setBoardGameGeekImporterSetting('includeWishlist', $event)" />
+          <input class="app-token-checkbox h-4 w-4" type="checkbox" [ngModel]="boardGameGeekImporterSettings().includeWishlist" (ngModelChange)="setBoardGameGeekImporterSetting('includeWishlist', $event)" />
           Include wishlist
         </label>
         <label class="flex items-center gap-2 text-sm font-semibold text-slate-700">
-          <input type="checkbox" [ngModel]="boardGameGeekImporterSettings().includeExpansions" (ngModelChange)="setBoardGameGeekImporterSetting('includeExpansions', $event)" />
+          <input class="app-token-checkbox h-4 w-4" type="checkbox" [ngModel]="boardGameGeekImporterSettings().includeExpansions" (ngModelChange)="setBoardGameGeekImporterSetting('includeExpansions', $event)" />
           Include expansions
         </label>
       </article>

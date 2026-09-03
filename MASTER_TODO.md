@@ -484,6 +484,7 @@ Also:
 - Finance tracker report dates, print/export controls, month navigation, refresh, and focused CSV actions now use shared token controls/actions across dashboard, reports, bills, and donations panels.
 - Home dashboard navigation links and Site Map filter clearing now use shared token soft-action styling.
 - Dino Admin header, preview, filter, taxonomy, and edit-form actions/controls now use shared token styling while keeping destructive actions visually distinct.
+- Dice Games import staging text area and CSV/TXT import actions now use shared token controls/actions.
 
 ### 21. Identity / Authorization
 

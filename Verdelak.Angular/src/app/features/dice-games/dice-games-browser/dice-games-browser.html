@@ -68,11 +68,11 @@
     </div>
     <div class="grid gap-3 p-4 lg:grid-cols-[minmax(0,1fr)_18rem]">
       <div class="grid gap-2">
-        <textarea rows="5" class="w-full rounded border border-slate-300 px-3 py-2 text-sm text-slate-800" [ngModel]="importText()" (ngModelChange)="importText.set($event)" [placeholder]="tab() === 'dnd' ? 'set,id,number,card name,subtitle,cost,type,alignment,equippable,rarity,die limit,owned cards,owned dice,owned foil,want qty,notes,source sheet' : 'owned/note,die,race or set,role,type,health,points,notes'"></textarea>
+        <textarea rows="5" class="app-token-control w-full rounded-md border px-3 py-2 text-sm font-normal shadow-sm outline-none transition" [ngModel]="importText()" (ngModelChange)="importText.set($event)" [placeholder]="tab() === 'dnd' ? 'set,id,number,card name,subtitle,cost,type,alignment,equippable,rarity,die limit,owned cards,owned dice,owned foil,want qty,notes,source sheet' : 'owned/note,die,race or set,role,type,health,points,notes'"></textarea>
         <div class="flex flex-wrap gap-2">
-          <label class="rounded border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">Upload CSV/TXT<input type="file" class="hidden" accept=".csv,.txt,.tsv,text/csv,text/plain" (change)="handleImportFile($event)"></label>
-          <button type="button" class="rounded bg-emerald-900 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" [disabled]="importing() || cleanImportRows().length === 0" (click)="importCleanRows()">{{ importing() ? 'Importing.' : 'Import Clean Rows' }}</button>
-          <button type="button" class="rounded border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700" (click)="clearImport()">Clear</button>
+          <label class="app-primary-soft-action rounded-md border px-4 py-2 text-sm font-bold shadow-sm transition">Upload CSV/TXT<input type="file" class="hidden" accept=".csv,.txt,.tsv,text/csv,text/plain" (change)="handleImportFile($event)"></label>
+          <button type="button" class="app-primary-action rounded-md px-4 py-2 text-sm font-bold shadow-sm transition disabled:opacity-50" [disabled]="importing() || cleanImportRows().length === 0" (click)="importCleanRows()">{{ importing() ? 'Importing.' : 'Import Clean Rows' }}</button>
+          <button type="button" class="app-primary-soft-action rounded-md border px-4 py-2 text-sm font-bold shadow-sm transition" (click)="clearImport()">Clear</button>
         </div>
       </div>
       <div class="max-h-48 overflow-auto rounded border border-slate-200 bg-slate-50 p-2 text-xs">

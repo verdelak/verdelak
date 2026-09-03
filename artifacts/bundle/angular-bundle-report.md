@@ -1,6 +1,6 @@
 # Angular Bundle Report
 
-Generated: 2026-09-02 21:25:14 -04:00
+Generated: 2026-09-02 23:41:23 -04:00
 
 Dist root: `C:\Projects\VerdelakCD\Verdelak.Angular\dist\Verdelak\browser`
 
@@ -15,8 +15,8 @@ Lazy review threshold: 125 kB
 | Scope | Size | Status |
 | --- | ---: | --- |
 | Initial JS/CSS | 426.83 kB | OK |
-| Lazy JS/CSS | 2392.93 kB | OK |
-| Total JS/CSS | 2819.76 kB | Informational |
+| Lazy JS/CSS | 2392.77 kB | OK |
+| Total JS/CSS | 2819.6 kB | Informational |
 | Largest initial asset | 175.93 kB | Informational |
 
 ## Largest Assets

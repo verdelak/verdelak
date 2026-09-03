@@ -481,6 +481,7 @@ Also:
 - External Imports action buttons now use shared token controls/actions across navigation, provider settings saves, preview/ignore actions, and staged-item filter clearing.
 - Alcohol browser action buttons and primary form controls now use shared token controls/actions across header exports, filtering, reports, lookup merge, import staging, and item editing.
 - Chore manager report exports, form reset, recurrence templates, activity refresh, and row edit actions now use shared token action styling.
+- Finance tracker report dates, print/export controls, month navigation, refresh, and focused CSV actions now use shared token controls/actions across dashboard, reports, bills, and donations panels.
 
 ### 21. Identity / Authorization
 

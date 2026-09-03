@@ -5,9 +5,9 @@
           <p class="mt-1 text-sm text-slate-600">History and yearly totals for {{ selectedYear() }}.</p>
         </div>
         <div class="flex flex-wrap gap-2">
-          <button class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50" type="button" (click)="printBillAnalyticsReport()">Print Analytics</button>
-          <button class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50" type="button" (click)="exportBillPaymentHistoryCsv()">Export Payment History</button>
-          <button class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50" type="button" (click)="exportBillAnalyticsCsv()">Export Analytics</button>
+          <button class="app-primary-soft-action rounded-md border px-3 py-1.5 text-xs font-bold shadow-sm transition" type="button" (click)="printBillAnalyticsReport()">Print Analytics</button>
+          <button class="app-primary-soft-action rounded-md border px-3 py-1.5 text-xs font-bold shadow-sm transition" type="button" (click)="exportBillPaymentHistoryCsv()">Export Payment History</button>
+          <button class="app-primary-soft-action rounded-md border px-3 py-1.5 text-xs font-bold shadow-sm transition" type="button" (click)="exportBillAnalyticsCsv()">Export Analytics</button>
         </div>
       </div>
 

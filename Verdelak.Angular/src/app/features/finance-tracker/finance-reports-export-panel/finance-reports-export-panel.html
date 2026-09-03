@@ -9,30 +9,30 @@
       <div class="grid gap-2 rounded-md bg-slate-50 p-3 sm:grid-cols-2 lg:grid-cols-1">
         <label class="grid gap-1 text-xs font-bold uppercase text-slate-500">
           From
-          <input class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold normal-case text-slate-900" type="date" [ngModel]="vm.reportStartDate()" (ngModelChange)="vm.setReportStartDate($event)">
+          <input class="app-token-control rounded-md border px-3 py-2 text-sm font-semibold normal-case shadow-sm outline-none transition" type="date" [ngModel]="vm.reportStartDate()" (ngModelChange)="vm.setReportStartDate($event)">
         </label>
         <label class="grid gap-1 text-xs font-bold uppercase text-slate-500">
           To
-          <input class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold normal-case text-slate-900" type="date" [ngModel]="vm.reportEndDate()" (ngModelChange)="vm.setReportEndDate($event)">
+          <input class="app-token-control rounded-md border px-3 py-2 text-sm font-semibold normal-case shadow-sm outline-none transition" type="date" [ngModel]="vm.reportEndDate()" (ngModelChange)="vm.setReportEndDate($event)">
         </label>
       </div>
       <div class="grid gap-2">
         <div class="flex flex-wrap gap-2">
-          <button class="rounded-md bg-slate-900 px-3 py-2 text-sm font-semibold text-white" type="button" (click)="vm.printFinanceSummaryReport()">Print Summary</button>
-          <button class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold hover:bg-slate-50" type="button" (click)="vm.printBalancesReport()">Print Balances</button>
-          <button class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold hover:bg-slate-50" type="button" (click)="vm.printBillsReport()">Print Bills</button>
-          <button class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold hover:bg-slate-50" type="button" (click)="vm.printBillAnalyticsReport()">Print Bill Analytics</button>
-          <button class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold hover:bg-slate-50" type="button" (click)="vm.printSnapshotsReport()">Print Snapshots</button>
-          <button class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold hover:bg-slate-50" type="button" (click)="vm.printDonationReport()">Print Donations</button>
-          <button class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold hover:bg-slate-50" type="button" (click)="vm.printNetWorthHistoryReport()">Print Net Worth</button>
-          <button *ngIf="vm.accountHistory().length" class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold hover:bg-slate-50" type="button" (click)="vm.printSelectedAccountHistoryReport()">Print Account History</button>
+          <button class="app-primary-action rounded-md px-3 py-2 text-sm font-semibold shadow-sm transition" type="button" (click)="vm.printFinanceSummaryReport()">Print Summary</button>
+          <button class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-semibold shadow-sm transition" type="button" (click)="vm.printBalancesReport()">Print Balances</button>
+          <button class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-semibold shadow-sm transition" type="button" (click)="vm.printBillsReport()">Print Bills</button>
+          <button class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-semibold shadow-sm transition" type="button" (click)="vm.printBillAnalyticsReport()">Print Bill Analytics</button>
+          <button class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-semibold shadow-sm transition" type="button" (click)="vm.printSnapshotsReport()">Print Snapshots</button>
+          <button class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-semibold shadow-sm transition" type="button" (click)="vm.printDonationReport()">Print Donations</button>
+          <button class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-semibold shadow-sm transition" type="button" (click)="vm.printNetWorthHistoryReport()">Print Net Worth</button>
+          <button *ngIf="vm.accountHistory().length" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-semibold shadow-sm transition" type="button" (click)="vm.printSelectedAccountHistoryReport()">Print Account History</button>
           <button class="app-primary-soft-action px-3 py-2 text-sm" type="button" (click)="vm.exportFinanceWorkbook()">Full .xlsx Workbook</button>
         </div>
         <div class="flex flex-wrap gap-2">
-          <button class="rounded-md border border-slate-300 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50" type="button" (click)="vm.exportBalancesCsv()">Balances CSV</button>
-          <button class="rounded-md border border-slate-300 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50" type="button" (click)="vm.exportBillsCsv()">Bills CSV</button>
-          <button class="rounded-md border border-slate-300 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50" type="button" (click)="vm.exportSnapshotsCsv()">Snapshots CSV</button>
-          <button class="rounded-md border border-slate-300 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50" type="button" (click)="vm.exportDonationsCsv()">Donations CSV</button>
+          <button class="app-primary-soft-action rounded-md border px-3 py-2 text-xs font-bold shadow-sm transition" type="button" (click)="vm.exportBalancesCsv()">Balances CSV</button>
+          <button class="app-primary-soft-action rounded-md border px-3 py-2 text-xs font-bold shadow-sm transition" type="button" (click)="vm.exportBillsCsv()">Bills CSV</button>
+          <button class="app-primary-soft-action rounded-md border px-3 py-2 text-xs font-bold shadow-sm transition" type="button" (click)="vm.exportSnapshotsCsv()">Snapshots CSV</button>
+          <button class="app-primary-soft-action rounded-md border px-3 py-2 text-xs font-bold shadow-sm transition" type="button" (click)="vm.exportDonationsCsv()">Donations CSV</button>
         </div>
       </div>
     </div>

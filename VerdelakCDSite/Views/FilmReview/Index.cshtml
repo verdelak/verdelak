@@ -1,0 +1,168 @@
+@model FilmReviewIndexViewModel
+
+@{
+    ViewData["Title"] = "Film Review";
+    var heroImageUrl = Model.Appearance.HeroImageUrl;
+}
+
+<section class="film-hero border rounded-3 bg-white overflow-hidden mb-4">
+    <div class="row g-0 align-items-stretch">
+        <div class="col-lg-7 p-4 p-lg-5">
+            <p class="text-uppercase fw-semibold site-accent mb-2">@Model.Appearance.BrandName</p>
+            <h1 class="display-5 fw-semibold mb-3">@Model.Appearance.Tagline</h1>
+            <p class="lead text-secondary mb-4">Browse the movie inventory that will feed the public review surface as notes and ratings mature.</p>
+            <form class="row g-2" asp-controller="FilmReview" asp-action="Index" method="get">
+                <div class="col-md-5">
+                    <label class="visually-hidden" for="search">Search films</label>
+                    <input class="form-control form-control-lg" id="search" name="search" value="@Model.SearchTerm" placeholder="Search title, creator, notes" />
+                </div>
+                <div class="col-md-3">
+                    <label class="visually-hidden" for="format">Format</label>
+                    <select class="form-select form-select-lg" id="format" name="format">
+                        <option value="">All formats</option>
+                        @foreach (var format in Model.Catalog.Formats)
+                        {
+                            <option value="@format" selected="@(string.Equals(Model.Format, format, StringComparison.OrdinalIgnoreCase))">@format</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-check h-100 d-flex align-items-center ps-0">
+                        <input type="hidden" name="includeWishlist" value="false" />
+                        <input class="form-check-input ms-0 me-2" id="includeWishlist" name="includeWishlist" type="checkbox" value="true" checked="@Model.IncludeWishlist" />
+                        <label class="form-check-label small fw-semibold" for="includeWishlist">Wanted</label>
+                    </div>
+                </div>
+                <div class="col-md-2 d-grid">
+                    <button class="btn btn-site btn-lg" type="submit">Search</button>
+                </div>
+            </form>
+            @if (Model.HasSearch || Model.HasFormat || !Model.IncludeWishlist)
+            {
+                <a class="btn btn-outline-secondary mt-3" asp-controller="FilmReview" asp-action="Index">Clear filters</a>
+            }
+        </div>
+        <div class="col-lg-5">
+            @if (!string.IsNullOrWhiteSpace(heroImageUrl))
+            {
+                <img class="film-hero-image" src="@heroImageUrl" alt="@($"{Model.Appearance.BrandName} hero image")" />
+            }
+            else
+            {
+                <div class="film-hero-empty h-100 d-flex align-items-center justify-content-center p-4 text-center">
+                    <div class="row g-3 w-100">
+                        <div class="col-4">
+                            <div class="display-6 fw-semibold">@Model.Catalog.OwnedCount</div>
+                            <div class="text-secondary">Owned</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="display-6 fw-semibold">@Model.Catalog.WishlistCount</div>
+                            <div class="text-secondary">Wanted</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="display-6 fw-semibold">@Model.Catalog.Formats.Count</div>
+                            <div class="text-secondary">Formats</div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+{
+    <div class="alert alert-warning" role="alert">@Model.ErrorMessage</div>
+}
+
+<section class="row g-4 align-items-start">
+    <aside class="col-lg-3">
+        <div class="position-lg-sticky">
+            <div class="border rounded-3 bg-white p-3 shadow-sm mb-3">
+                <p class="text-secondary mb-1">Catalog snapshot</p>
+                <div class="row g-2">
+                    <div class="col-6">
+                        <div class="h3 fw-semibold mb-0">@Model.Catalog.OwnedCount</div>
+                        <div class="small text-secondary">Owned</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="h3 fw-semibold mb-0">@Model.Catalog.WishlistCount</div>
+                        <div class="small text-secondary">Wanted</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="h3 fw-semibold mb-0">@Model.Catalog.TotalCount</div>
+                        <div class="small text-secondary">Matched</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="h3 fw-semibold mb-0">@Model.ShowingCount</div>
+                        <div class="small text-secondary">Shown</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border rounded-3 bg-white p-3 shadow-sm">
+                <h2 class="h5 mb-2">Formats</h2>
+                <div class="d-flex flex-wrap gap-2">
+                    @foreach (var format in Model.Catalog.Formats)
+                    {
+                        <a class="badge rounded-pill text-decoration-none @(string.Equals(Model.Format, format, StringComparison.OrdinalIgnoreCase) ? "text-bg-site" : "text-bg-light")"
+                           asp-controller="FilmReview"
+                           asp-action="Index"
+                           asp-route-search="@Model.SearchTerm"
+                           asp-route-format="@format"
+                           asp-route-includeWishlist="@Model.IncludeWishlist">
+                            @format
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <div class="col-lg-9">
+        <div class="d-flex align-items-end justify-content-between gap-3 mb-3">
+            <div>
+                <h2 class="h3 mb-1">Films</h2>
+                <p class="text-secondary mb-0">Showing @Model.ShowingCount entries from @Model.ApiBaseUrl</p>
+            </div>
+        </div>
+
+        @if (Model.Catalog.Items.Count == 0 && string.IsNullOrWhiteSpace(Model.ErrorMessage))
+        {
+            <div class="border rounded-3 bg-white p-4 text-secondary">No films matched those filters.</div>
+        }
+        else
+        {
+            <div class="row g-3">
+                @foreach (var item in Model.Catalog.Items)
+                {
+                    <div class="col-md-6 col-xxl-4">
+                        <article class="film-card h-100 border rounded-3 bg-white p-3">
+                            <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+                                <h3 class="h5 mb-0">@item.Title</h3>
+                                <span class="badge @(item.IsWishlist ? "text-bg-warning" : "text-bg-site")">@item.StatusLabel</span>
+                            </div>
+                            <p class="small text-secondary mb-2">
+                                @item.Format
+                                @if (!string.IsNullOrWhiteSpace(item.ReleaseYear))
+                                {
+                                    <span> / @item.ReleaseYear</span>
+                                }
+                            </p>
+                            @if (!string.IsNullOrWhiteSpace(item.Creator))
+                            {
+                                <p class="small mb-3">@item.Creator</p>
+                            }
+                            <a class="btn btn-outline-site w-100"
+                               asp-controller="FilmReview"
+                               asp-action="Detail"
+                               asp-route-id="@item.Id">
+                                View notes
+                            </a>
+                        </article>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</section>

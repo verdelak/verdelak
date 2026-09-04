@@ -17,11 +17,3 @@ export interface GamePlay {
   playCount: number;
   notes?: string;
 }
-
-export interface GamePlay {
-  playID: number;
-  gameID: number;
-  playDate: string;
-  playCount: number;
-  notes?: string;
-}

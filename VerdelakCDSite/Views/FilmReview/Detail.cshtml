@@ -1,0 +1,53 @@
+@model FilmReviewDetailViewModel
+
+@{
+    ViewData["Title"] = Model.Film?.Title ?? "Film Review";
+}
+
+<a class="btn btn-outline-secondary mb-3" asp-controller="FilmReview" asp-action="Index">Back to Film Review</a>
+
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+{
+    <div class="alert alert-warning" role="alert">@Model.ErrorMessage</div>
+}
+
+@if (Model.Film is not null)
+{
+    <article class="border rounded-3 bg-white p-4 p-lg-5 shadow-sm">
+        <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-4">
+            <div>
+                <p class="text-uppercase fw-semibold site-accent mb-2">@Model.Appearance.BrandName</p>
+                <h1 class="display-6 fw-semibold mb-2">@Model.Film.Title</h1>
+                @if (!string.IsNullOrWhiteSpace(Model.Film.Creator))
+                {
+                    <p class="lead text-secondary mb-0">@Model.Film.Creator</p>
+                }
+            </div>
+            <div class="text-lg-end">
+                <span class="badge @(Model.Film.IsWishlist ? "text-bg-warning" : "text-bg-site") mb-2">@Model.Film.StatusLabel</span>
+                <p class="mb-0 text-secondary">@Model.Film.Format</p>
+                @if (!string.IsNullOrWhiteSpace(Model.Film.ReleaseYear))
+                {
+                    <p class="mb-0 text-secondary">@Model.Film.ReleaseYear</p>
+                }
+            </div>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(Model.Film.Notes))
+        {
+            <section class="film-notes border-top pt-4">
+                <h2 class="h4 mb-3">Notes</h2>
+                <p class="text-secondary mb-0">@Model.Film.Notes</p>
+            </section>
+        }
+        else
+        {
+            <div class="border-top pt-4 text-secondary">No public notes have been added yet.</div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Model.Film.Source))
+        {
+            <p class="small text-secondary mt-4 mb-0">Source: @Model.Film.Source</p>
+        }
+    </article>
+}

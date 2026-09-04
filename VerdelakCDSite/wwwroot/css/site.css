@@ -172,6 +172,79 @@ body {
   aspect-ratio: 4 / 3;
 }
 
+.personal-hero-side {
+  min-height: 18rem;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--verd-primary) 88%, #111827), var(--verd-accent));
+}
+
+.personal-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 5rem;
+  height: 5rem;
+  border: 1px solid rgba(255, 255, 255, .45);
+  border-radius: 50%;
+  color: #fff;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.contact-pill {
+  color: #243447;
+}
+
+.resume-section-rule {
+  display: inline-block;
+  width: 2.25rem;
+  height: .25rem;
+  border-radius: 999px;
+  background: var(--verd-accent);
+}
+
+.resume-item {
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.resume-item:hover {
+  box-shadow: 0 .75rem 1.75rem rgba(15, 23, 42, .08);
+  transform: translateY(-2px);
+}
+
+.resume-item-body {
+  white-space: pre-line;
+}
+
+.film-hero {
+  min-height: 360px;
+}
+
+.film-hero-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  object-fit: cover;
+}
+
+.film-hero-empty {
+  background: linear-gradient(135deg, #fff7ed, #f8fafc);
+}
+
+.film-card {
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.film-card:hover {
+  box-shadow: 0 .75rem 1.75rem rgba(15, 23, 42, .08);
+  transform: translateY(-2px);
+}
+
+.film-notes {
+  white-space: pre-line;
+}
+
 @media (min-width: 992px) {
   .position-lg-sticky {
     position: sticky;

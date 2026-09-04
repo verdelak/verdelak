@@ -1,0 +1,57 @@
+@model ResumeSectionViewModel
+
+<section class="resume-section mb-4">
+    <div class="d-flex align-items-center gap-2 mb-3">
+        <span class="resume-section-rule"></span>
+        <h2 class="h4 fw-semibold mb-0">@Model.Title</h2>
+    </div>
+
+    @if (Model.Items.Count == 0)
+    {
+        <div class="text-muted bg-white border rounded-3 p-3">No published entries yet.</div>
+    }
+    else
+    {
+        <div class="vstack gap-3">
+            @foreach (var item in Model.Items)
+            {
+                <article class="resume-item bg-white border rounded-3 p-3 p-lg-4 shadow-sm">
+                    <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
+                        <div>
+                            <h3 class="@(Model.Compact ? "h6" : "h5") fw-semibold mb-1">@item.Title</h3>
+                            @if (!string.IsNullOrWhiteSpace(item.Subtitle))
+                            {
+                                <p class="text-secondary mb-1">@item.Subtitle</p>
+                            }
+                        </div>
+                        <div class="text-md-end small text-muted">
+                            @if (!string.IsNullOrWhiteSpace(item.DateRange))
+                            {
+                                <div>@item.DateRange</div>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(item.Location))
+                            {
+                                <div>@item.Location</div>
+                            }
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(item.Body))
+                    {
+                        <p class="resume-item-body text-secondary mt-3 mb-0">@item.Body</p>
+                    }
+
+                    @if (item.Tags.Count > 0)
+                    {
+                        <div class="d-flex flex-wrap gap-2 mt-3">
+                            @foreach (var tag in item.Tags)
+                            {
+                                <span class="badge rounded-pill text-bg-light border">@tag</span>
+                            }
+                        </div>
+                    }
+                </article>
+            }
+        </div>
+    }
+</section>

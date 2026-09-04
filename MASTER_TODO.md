@@ -351,6 +351,8 @@ Remaining only if desired:
 
 - External site URLs centralized in Admin Settings for Bartender, Dino, CD, Personal, and Film Review, with local/production URL sets, External menu resolution, active/ready/missing URL summaries, duplicate-key/missing-field review, direct open links, and CSV export.
 - External Sites admin row editing now uses stable row identity while still displaying sorted rows, so unsaved key edits/removals continue targeting the intended site.
+- Personal public MVC site surface added in VerdelakCDSite with Bootstrap resume rendering from the public Resume API and Main Appearance settings.
+- Film Review public API and MVC site surface added with Bootstrap catalog/detail rendering from movie inventory plus Film Review Appearance settings.
 
 ## Admin / Infrastructure
 

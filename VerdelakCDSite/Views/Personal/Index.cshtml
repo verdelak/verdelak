@@ -1,0 +1,80 @@
+@model PersonalIndexViewModel
+
+@{
+    ViewData["Title"] = "Personal";
+    var profile = Model.Profile;
+}
+
+<section class="personal-hero bg-white border rounded-3 overflow-hidden shadow-sm mb-4">
+    <div class="row g-0 align-items-stretch">
+        <div class="col-lg-8 p-4 p-lg-5">
+            <p class="text-uppercase text-muted small fw-semibold mb-2">Resume</p>
+            <h1 class="display-5 fw-bold mb-2">@profile.Name</h1>
+            <p class="fs-4 text-secondary mb-3">@profile.Title</p>
+            @if (!string.IsNullOrWhiteSpace(profile.Summary))
+            {
+                <p class="lead mb-4">@profile.Summary</p>
+            }
+
+            @if (Model.HasContact)
+            {
+                <div class="d-flex flex-wrap gap-2">
+                    @if (!string.IsNullOrWhiteSpace(profile.Location))
+                    {
+                        <span class="badge rounded-pill text-bg-light border contact-pill">@profile.Location</span>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(profile.Email))
+                    {
+                        <a class="badge rounded-pill text-bg-light border contact-pill text-decoration-none" href="mailto:@profile.Email">@profile.Email</a>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(profile.Phone))
+                    {
+                        <a class="badge rounded-pill text-bg-light border contact-pill text-decoration-none" href="tel:@profile.Phone">@profile.Phone</a>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(profile.Website))
+                    {
+                        <a class="badge rounded-pill text-bg-light border contact-pill text-decoration-none" href="@profile.Website" target="_blank" rel="noreferrer">@profile.Website</a>
+                    }
+                </div>
+            }
+        </div>
+        <div class="col-lg-4 personal-hero-side d-flex align-items-end p-4 p-lg-5">
+            <div>
+                <div class="personal-mark mb-3">@GetInitials(profile.Name)</div>
+                <p class="text-white-50 mb-0">@Model.Appearance.Tagline</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+{
+    <div class="alert alert-warning" role="alert">
+        <strong>Resume API:</strong> @Model.ErrorMessage
+        <span class="d-block small mt-1">Configured API base: @Model.ApiBaseUrl</span>
+    </div>
+}
+
+<div class="row g-4">
+    <div class="col-xl-8">
+        @await Html.PartialAsync("_ResumeSection", new ResumeSectionViewModel("Experience", Model.Experience))
+        @await Html.PartialAsync("_ResumeSection", new ResumeSectionViewModel("Projects", Model.Projects))
+    </div>
+    <div class="col-xl-4">
+        @await Html.PartialAsync("_ResumeSection", new ResumeSectionViewModel("Skills", Model.Skills, true))
+        @await Html.PartialAsync("_ResumeSection", new ResumeSectionViewModel("Education", Model.Education, true))
+        @await Html.PartialAsync("_ResumeSection", new ResumeSectionViewModel("Certifications & Awards", Model.CertificationsAndAwards, true))
+    </div>
+</div>
+
+@functions {
+    private static string GetInitials(string name)
+    {
+        var initials = string.Join(string.Empty, name
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Take(2)
+            .Select(part => char.ToUpperInvariant(part[0])));
+
+        return string.IsNullOrWhiteSpace(initials) ? "V" : initials;
+    }
+}

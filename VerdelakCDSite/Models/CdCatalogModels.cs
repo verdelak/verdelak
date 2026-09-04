@@ -91,6 +91,22 @@ public sealed class PublicAppearanceSettings
         AccentColor = "#0f766e"
     };
 
+    public static PublicAppearanceSettings PersonalSiteDefault { get; } = new()
+    {
+        BrandName = "Verdelak",
+        Tagline = "Resume, writing, and personal projects.",
+        PrimaryColor = "#2563eb",
+        AccentColor = "#0f766e"
+    };
+
+    public static PublicAppearanceSettings FilmReviewSiteDefault { get; } = new()
+    {
+        BrandName = "Verdelak Film Review",
+        Tagline = "Movie notes, ratings, and review writing.",
+        PrimaryColor = "#7c3aed",
+        AccentColor = "#be123c"
+    };
+
     public string BrandName { get; init; } = "Verdelak CD Collection";
 
     public string Tagline { get; init; } = "Browse the collection by band and read CD reviews.";

@@ -17,9 +17,19 @@ public interface IVerdelakApiClient
 
     Task<IReadOnlyList<PublicDinoTaxonomyNode>> GetDinoTaxonomyAsync(CancellationToken cancellationToken);
 
+    Task<PublicResumeDocument> GetResumeAsync(CancellationToken cancellationToken);
+
+    Task<PublicAppearanceSettings> GetMainAppearanceAsync(CancellationToken cancellationToken);
+
     Task<PublicAppearanceSettings> GetCdSiteAppearanceAsync(CancellationToken cancellationToken);
 
     Task<PublicAppearanceSettings> GetDinoSiteAppearanceAsync(CancellationToken cancellationToken);
+
+    Task<PublicFilmReviewCatalog> GetFilmReviewCatalogAsync(string? search, string? format, bool includeWishlist, int limit, CancellationToken cancellationToken);
+
+    Task<PublicFilmReviewItem?> GetFilmReviewItemAsync(int id, CancellationToken cancellationToken);
+
+    Task<PublicAppearanceSettings> GetFilmReviewAppearanceAsync(CancellationToken cancellationToken);
 }
 
 public sealed class VerdelakApiClient(HttpClient httpClient) : IVerdelakApiClient
@@ -67,6 +77,18 @@ public sealed class VerdelakApiClient(HttpClient httpClient) : IVerdelakApiClien
         return await httpClient.GetFromJsonAsync<IReadOnlyList<PublicDinoTaxonomyNode>>("api/dino/taxonomy", cancellationToken) ?? [];
     }
 
+    public async Task<PublicResumeDocument> GetResumeAsync(CancellationToken cancellationToken)
+    {
+        return await httpClient.GetFromJsonAsync<PublicResumeDocument>("api/resume", cancellationToken)
+            ?? PublicResumeDocument.Empty;
+    }
+
+    public async Task<PublicAppearanceSettings> GetMainAppearanceAsync(CancellationToken cancellationToken)
+    {
+        return await httpClient.GetFromJsonAsync<PublicAppearanceSettings>("api/admin/settings/main-appearance", cancellationToken)
+            ?? PublicAppearanceSettings.PersonalSiteDefault;
+    }
+
     public async Task<PublicAppearanceSettings> GetCdSiteAppearanceAsync(CancellationToken cancellationToken)
     {
         return await httpClient.GetFromJsonAsync<PublicAppearanceSettings>("api/admin/settings/cd-site-appearance", cancellationToken)
@@ -77,5 +99,37 @@ public sealed class VerdelakApiClient(HttpClient httpClient) : IVerdelakApiClien
     {
         return await httpClient.GetFromJsonAsync<PublicAppearanceSettings>("api/admin/settings/dino-site-appearance", cancellationToken)
             ?? PublicAppearanceSettings.DinoSiteDefault;
+    }
+
+    public async Task<PublicFilmReviewCatalog> GetFilmReviewCatalogAsync(
+        string? search,
+        string? format,
+        bool includeWishlist,
+        int limit,
+        CancellationToken cancellationToken)
+    {
+        var query = $"api/film-review?includeWishlist={includeWishlist.ToString().ToLowerInvariant()}&limit={Math.Clamp(limit, 1, 500)}";
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            query += $"&search={Uri.EscapeDataString(search)}";
+        }
+        if (!string.IsNullOrWhiteSpace(format))
+        {
+            query += $"&format={Uri.EscapeDataString(format)}";
+        }
+
+        return await httpClient.GetFromJsonAsync<PublicFilmReviewCatalog>(query, cancellationToken)
+            ?? new PublicFilmReviewCatalog();
+    }
+
+    public async Task<PublicFilmReviewItem?> GetFilmReviewItemAsync(int id, CancellationToken cancellationToken)
+    {
+        return await httpClient.GetFromJsonAsync<PublicFilmReviewItem>($"api/film-review/{id}", cancellationToken);
+    }
+
+    public async Task<PublicAppearanceSettings> GetFilmReviewAppearanceAsync(CancellationToken cancellationToken)
+    {
+        return await httpClient.GetFromJsonAsync<PublicAppearanceSettings>("api/admin/settings/film-review-appearance", cancellationToken)
+            ?? PublicAppearanceSettings.FilmReviewSiteDefault;
     }
 }

@@ -450,6 +450,7 @@ Also:
 - Shopping and Recipes route/edit/open/cuisine/shopping-result tones now use shared soft action and soft-surface token classes, clearing their remaining indigo/sky primary utility hits.
 - Shows browser and want-list Goals scheduling panels, watch-candidate chips, scheduled-year badges, and quick scheduling actions now use shared token surface/action classes, clearing Shows indigo/sky primary utility hits.
 - Task Dashboard and Chores category/source tone helpers now use shared token or non-sky semantic classes for Goals, learning, and pets, clearing those sections' remaining indigo/sky primary utility hits.
+- Board Games browser and detail view refreshed with tokenized summary cards, owned/wanted/base/expansion filters, parent links for expansions, rating snapshots, cleaner play logging, and cleaned duplicate model declarations.
 - Fish tank list now uses shared token classes for the section kicker, tank log save action, and fallback history tone, clearing Fish indigo/sky primary utility hits.
 - Gardening dashboard, seed inventory, tray/plot grids, and seed-start report panels now use shared token surface/action/text classes for indoor, started, planted, maintenance, update, and fallback cell tones, clearing Gardening indigo/sky primary utility hits.
 - Finance savings and asset visualizations now use emerald semantic classes instead of sky utilities, leaving the Angular app scan clean for hard-coded indigo/sky utility classes.

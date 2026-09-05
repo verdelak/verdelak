@@ -130,4 +130,34 @@ export class BoardgameDetailComponent  implements OnInit {
     });
   }
 
+  statusLabel(game: BoardGame): string {
+    if (game.owns && game.wishlist) {
+      return 'Owned / wanted';
+    }
+
+    if (game.wishlist) {
+      return 'Wanted';
+    }
+
+    return game.owns ? 'Owned' : 'Review';
+  }
+
+  statusTone(game: BoardGame): string {
+    if (game.wishlist && !game.owns) {
+      return 'bg-amber-50 text-amber-800 ring-amber-200';
+    }
+
+    if (game.owns && game.wishlist) {
+      return 'app-token-soft-surface app-token-text-primary app-token-ring';
+    }
+
+    return game.owns
+      ? 'bg-emerald-50 text-emerald-800 ring-emerald-200'
+      : 'bg-slate-100 text-slate-700 ring-slate-200';
+  }
+
+  gameTypeLabel(game: BoardGame): string {
+    return game.isExpansion ? 'Expansion' : 'Base game';
+  }
+
 }

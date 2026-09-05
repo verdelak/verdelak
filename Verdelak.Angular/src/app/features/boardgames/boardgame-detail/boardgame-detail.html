@@ -1,171 +1,157 @@
-<div *ngIf="error(); else gameDetail">
-  <p class="error">{{ error() }}</p>
-  <button (click)="goBack()">Back</button>
+<div *ngIf="error(); else gameDetail" class="grid gap-3 p-4">
+  <p class="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-bold text-rose-800">{{ error() }}</p>
+  <button type="button" class="app-primary-soft-action w-fit rounded-md border px-3 py-2 text-sm font-bold shadow-sm" (click)="goBack()">Back</button>
 </div>
 
 <ng-template #gameDetail>
-  <div *ngIf="game()">
-    <h2>{{ game()!.title }}</h2>
-    <div *ngIf="!isEditing(); else editForm">
-    <!-- read-only view -->
-    <p *ngIf="game()!.isExpansion && baseGame()">
-        This is an expansion for:
-        <a [routerLink]="['/boardgames', baseGame()!.gameID]">{{ baseGame()!.title }}</a>
-    </p>
+  <div *ngIf="game() as current" class="grid gap-4 p-4 text-slate-900">
+    <header class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <p class="app-token-text-primary text-xs font-bold uppercase tracking-wide">{{ gameTypeLabel(current) }}</p>
+          <h1 class="text-2xl font-black text-slate-950">{{ current.title }}</h1>
+          <p *ngIf="current.isExpansion && baseGame()" class="mt-1 text-sm font-semibold text-slate-600">
+            Expands
+            <a class="app-token-link" [routerLink]="['/boardgames', baseGame()!.gameID]">{{ baseGame()!.title }}</a>
+          </p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button type="button" class="app-primary-soft-action rounded-md border px-3 py-2 text-sm font-bold shadow-sm" (click)="goBack()">Back</button>
+          <button *ngIf="!isEditing()" type="button" class="app-primary-action rounded-md px-3 py-2 text-sm font-bold shadow-sm" (click)="startEdit()">Edit</button>
+        </div>
+      </div>
+    </header>
 
-    <!-- current details -->
-    <p>
-      <strong>Owned:</strong> {{ game()!.owns ? '✅ Yes' : 'No' }}<br>
-      <strong>Wishlist:</strong> {{ game()!.wishlist ? '🛒 Yes' : 'No' }}<br>
-      <strong>My Rating:</strong> {{ game()!.personalRating ?? '—' }}<br>
-      <strong>BGG Rating:</strong> {{ game()!.bgg_Rating?.toFixed(3) ?? '—' }}<br>
-    </p>
+    <ng-container *ngIf="!isEditing(); else editForm">
+      <section class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+          <p class="text-xs font-bold uppercase text-slate-500">Status</p>
+          <span class="mt-2 inline-flex rounded-full px-2 py-1 text-xs font-black ring-1" [ngClass]="statusTone(current)">{{ statusLabel(current) }}</span>
+        </article>
+        <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+          <p class="text-xs font-bold uppercase text-slate-500">My Rating</p>
+          <p class="mt-1 text-2xl font-black text-slate-950">{{ current.personalRating ?? '-' }}</p>
+        </article>
+        <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+          <p class="text-xs font-bold uppercase text-slate-500">BGG Rating</p>
+          <p class="mt-1 text-2xl font-black text-slate-950">{{ current.bgg_Rating?.toFixed(3) ?? '-' }}</p>
+        </article>
+        <article class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+          <p class="text-xs font-bold uppercase text-slate-500">Expansions</p>
+          <p class="mt-1 text-2xl font-black text-slate-950">{{ current.isExpansion ? '-' : expansions().length }}</p>
+        </article>
+      </section>
 
-    <p>
-      <strong>Notes:</strong><br>
-      <span *ngIf="game()!.notes; else noNotes">{{ game()!.notes }}</span>
-      <ng-template #noNotes><i>No notes</i></ng-template>
-    </p>
+      <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <h2 class="text-lg font-bold text-slate-950">Notes</h2>
+        <p class="mt-2 whitespace-pre-line text-sm text-slate-600">{{ current.notes || 'No notes' }}</p>
+      </section>
 
-    <button (click)="startEdit()">Edit</button>
-    <button (click)="goBack()">Back</button>
-    </div>
+      <section *ngIf="!current.isExpansion && expansions().length > 0" class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <h2 class="text-lg font-bold text-slate-950">Expansions</h2>
+        <div class="mt-3 grid gap-2 md:grid-cols-2">
+          <a *ngFor="let exp of expansions()" class="rounded-md border border-slate-200 p-3 hover:bg-slate-50" [routerLink]="['/boardgames', exp.gameID]">
+            <span class="block font-black text-slate-950">{{ exp.title }}</span>
+            <span class="mt-1 inline-flex rounded-full px-2 py-1 text-xs font-black ring-1" [ngClass]="statusTone(exp)">{{ statusLabel(exp) }}</span>
+          </a>
+        </div>
+      </section>
 
-    <p *ngIf="game()!.isExpansion">
-      <strong>This is an expansion.</strong>
-      <br>
-      <span *ngIf="game()!.baseGameID">
-        Base Game ID:
-        <a [routerLink]="['/boardgames', game()!.baseGameID]">{{ game()!.baseGameID }}</a>
-      </span>
-    </p>
+      <section *ngIf="!current.isExpansion" class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <h2 class="text-lg font-bold text-slate-950">Log a Play</h2>
+        <form class="mt-3 grid gap-3 lg:grid-cols-[12rem_8rem_1fr_auto]" (ngSubmit)="logPlay()">
+          <label class="grid gap-1 text-xs font-black uppercase text-slate-500">
+            Date
+            <input class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-semibold normal-case text-slate-800 shadow-sm outline-none" type="date" [ngModel]="playDate()" (ngModelChange)="playDate.set($event)" name="playDate" />
+          </label>
+          <label class="grid gap-1 text-xs font-black uppercase text-slate-500">
+            Plays
+            <input class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-semibold normal-case text-slate-800 shadow-sm outline-none" type="number" min="1" [ngModel]="playCount()" (ngModelChange)="playCount.set($event)" name="playCount" />
+          </label>
+          <label class="grid gap-1 text-xs font-black uppercase text-slate-500">
+            Notes
+            <input class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-semibold normal-case text-slate-800 shadow-sm outline-none" [ngModel]="playNote()" (ngModelChange)="playNote.set($event)" name="playNote" placeholder="Optional play note" />
+          </label>
+          <div class="flex items-end">
+            <button class="app-primary-action rounded-md px-4 py-2 text-sm font-bold shadow-sm" type="submit">Log Play</button>
+          </div>
+        </form>
+      </section>
 
-    <div *ngIf="!game()!.isExpansion && expansions().length > 0">
-        <h3>Expansions</h3>
-        <ul>
-            <li *ngFor="let exp of expansions()">
-            <a [routerLink]="['/boardgames', exp.gameID]">{{ exp.title }}</a>
-            <span *ngIf="exp.owns">✅</span>
-            <span *ngIf="exp.wishlist">🛒</span>
-            </li>
-        </ul>
-    </div>
-
-    <div *ngIf="game()!.isExpansion && baseGame()">
-    <p class="base-game-ref">
-        This is an expansion for:
-        <a [routerLink]="['/boardgames', baseGame()!.gameID]">{{ baseGame()!.title }}</a>
-    </p>
-    </div>
-
-
-        <h3>Log a Play</h3>
-    <form (ngSubmit)="logPlay()">
-    <label>
-        Date:
-        <input
-            type="date"
-            [ngModel]="playDate()"
-            (ngModelChange)="playDate.set($event)"
-            name="playDate"
-            />
-    </label><br>
-
-    <label>
-        Plays:
-        <input
-        type="number"
-        [ngModel]="playCount()"
-        (ngModelChange)="playCount.set($event)"
-        name="playCount"
-        />    
-    </label><br>
-
-    <label>
-        Notes:
-        <textarea
-        [ngModel]="playNote()"
-        (ngModelChange)="playNote.set($event)"
-        name="playNote"
-        rows="2"
-        ></textarea>
-    </label><br>
-
-    <button type="submit">Log Play</button>
-    </form>
-
-    <div *ngIf="playHistory().length > 0">
-        <h3>Play History</h3>
-        <table class="play-table">
-            <thead>
-            <tr>
-                <th>Date</th>
-                <th>Plays</th>
-                <th>Notes</th>
-            </tr>
+      <section *ngIf="!current.isExpansion && playHistory().length > 0" class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+        <div class="border-b border-slate-200 bg-slate-50 px-4 py-3">
+          <h2 class="text-lg font-bold text-slate-950">Play History</h2>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-[40rem] text-sm">
+            <thead class="bg-slate-50 text-xs uppercase text-slate-500">
+              <tr>
+                <th class="px-3 py-2 text-left">Date</th>
+                <th class="px-3 py-2 text-right">Plays</th>
+                <th class="px-3 py-2 text-left">Notes</th>
+              </tr>
             </thead>
             <tbody>
-            <tr *ngFor="let play of playHistory()">
-                <td>{{ play.playDate }}</td>
-                <td>{{ play.playCount }}</td>
-                <td>{{ play.notes || '—' }}</td>
-            </tr>
+              <tr *ngFor="let play of playHistory()" class="border-t border-slate-100">
+                <td class="px-3 py-2">{{ play.playDate | date:'mediumDate' }}</td>
+                <td class="px-3 py-2 text-right font-semibold">{{ play.playCount }}</td>
+                <td class="px-3 py-2 text-slate-600">{{ play.notes || '-' }}</td>
+              </tr>
             </tbody>
-        </table>
+          </table>
         </div>
-
-    <button (click)="goBack()">Back to List</button>
+      </section>
+    </ng-container>
   </div>
 </ng-template>
 
 <ng-template #editForm>
-  <form (ngSubmit)="saveChanges()">
-    <label>
-      Title:
-      <input [(ngModel)]="editModel()!.title" name="title" required />
-    </label><br>
+  <form class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm" (ngSubmit)="saveChanges()">
+    <h2 class="text-lg font-bold text-slate-950">Edit Game</h2>
 
-    <label>
-      <input type="checkbox" [(ngModel)]="editModel()!.owns" name="owns" />
-      Owned
-    </label>
+    <div class="mt-3 grid gap-3 lg:grid-cols-2">
+      <label class="grid gap-1 text-xs font-black uppercase text-slate-500 lg:col-span-2">
+        Title
+        <input class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-semibold normal-case text-slate-800 shadow-sm outline-none" [(ngModel)]="editModel()!.title" name="title" required />
+      </label>
 
-    <label>
-      <input type="checkbox" [(ngModel)]="editModel()!.wishlist" name="wishlist" />
-      Wishlist
-    </label><br>
+      <label class="grid gap-1 text-xs font-black uppercase text-slate-500">
+        My Rating
+        <input class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-semibold normal-case text-slate-800 shadow-sm outline-none" type="number" step="0.1" min="0" max="10" [(ngModel)]="editModel()!.personalRating" name="rating" />
+      </label>
 
-    <label>
-      My Rating:
-      <input type="number" step="0.1" min="0" max="10"
-             [(ngModel)]="editModel()!.personalRating"
-             name="rating" />
-    </label><br>
-
-    <label>
-      Notes:<br>
-      <textarea [(ngModel)]="editModel()!.notes" name="notes" rows="4"></textarea>
-    </label><br>
-
-    <label>
-    <input type="checkbox" [(ngModel)]="editModel()!.isExpansion" name="isExpansion" />
-    Is Expansion
-    </label><br>
-
-    <div *ngIf="editModel()!.isExpansion">
-    <label>
-        Base Game:
-        <select [(ngModel)]="editModel()!.baseGameID" name="baseGameID">
-        <option [ngValue]="null">-- None Selected --</option>
-        <option *ngFor="let base of baseGameOptions()" [ngValue]="base.gameID">
-            {{ base.title }}
-        </option>
+      <label class="grid gap-1 text-xs font-black uppercase text-slate-500">
+        Base Game
+        <select class="app-token-control rounded-md border bg-white px-3 py-2 text-sm font-semibold normal-case text-slate-800 shadow-sm outline-none" [(ngModel)]="editModel()!.baseGameID" name="baseGameID" [disabled]="!editModel()!.isExpansion">
+          <option [ngValue]="null">None selected</option>
+          <option *ngFor="let base of baseGameOptions()" [ngValue]="base.gameID">{{ base.title }}</option>
         </select>
-    </label><br>
+      </label>
+
+      <label class="grid gap-1 text-xs font-black uppercase text-slate-500 lg:col-span-2">
+        Notes
+        <textarea class="app-token-control min-h-28 rounded-md border bg-white px-3 py-2 text-sm font-semibold normal-case text-slate-800 shadow-sm outline-none" [(ngModel)]="editModel()!.notes" name="notes" rows="4"></textarea>
+      </label>
     </div>
 
-    <button type="submit">Save</button>
-    <button type="button" (click)="cancelEdit()">Cancel</button>
+    <div class="mt-3 flex flex-wrap gap-3">
+      <label class="flex items-center gap-2 rounded-md border border-slate-200 px-3 py-2 text-sm font-bold text-slate-700">
+        <input class="app-token-checkbox" type="checkbox" [(ngModel)]="editModel()!.owns" name="owns" />
+        Owned
+      </label>
+      <label class="flex items-center gap-2 rounded-md border border-slate-200 px-3 py-2 text-sm font-bold text-slate-700">
+        <input class="app-token-checkbox" type="checkbox" [(ngModel)]="editModel()!.wishlist" name="wishlist" />
+        Wanted
+      </label>
+      <label class="flex items-center gap-2 rounded-md border border-slate-200 px-3 py-2 text-sm font-bold text-slate-700">
+        <input class="app-token-checkbox" type="checkbox" [(ngModel)]="editModel()!.isExpansion" name="isExpansion" />
+        Expansion
+      </label>
+    </div>
+
+    <div class="mt-4 flex flex-wrap gap-2">
+      <button class="app-primary-action rounded-md px-4 py-2 text-sm font-bold shadow-sm" type="submit">Save</button>
+      <button class="app-primary-soft-action rounded-md border px-4 py-2 text-sm font-bold shadow-sm" type="button" (click)="cancelEdit()">Cancel</button>
+    </div>
   </form>
 </ng-template>
-
